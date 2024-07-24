@@ -3,6 +3,7 @@ import React from "react";
 import { TrashIcon } from "@radix-ui/react-icons";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Todo from "./Todo";
 
 interface Props {
   column: ColumnTypes;
@@ -98,9 +99,9 @@ flex-col"
           {!editMode && column.title}
           {editMode && (
             <input
-            value={column.title}
-            className="bg-slate-900 text-primary-foreground border rounded outline-none px-2"
-            onChange={(e) => updateColumn(column.id, e.target.value)}
+              value={column.title}
+              className="bg-slate-900 text-primary-foreground border rounded outline-none px-2"
+              onChange={(e) => updateColumn(column.id, e.target.value)}
               autoFocus
               onBlur={() => setEditMode(false)}
               onKeyDown={(e) => {
@@ -118,7 +119,23 @@ flex-col"
         </button>
       </div>
 
-      <div className="flex flex-grow">Content</div>
+      <div className="flex flex-grow">
+        <Todo
+          title="Research Featured Order"
+          description="An order feature is needed for users when making purchases"
+          dueDate="16 May"
+          tags={[
+            {
+              title: "UI Design",
+              color: "#b1d1f5",
+            },
+            {
+              title: "Research",
+              color: "#d5ff81",
+            },
+          ]}
+        />
+      </div>
 
       <div>Footer</div>
     </div>

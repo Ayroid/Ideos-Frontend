@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import { ColumnTypes, Id } from "../types";
-import ColumnContainer from "@/components/columnContainer";
+import ColumnContainer from "@/components/ColumnContainer";
 import {
   DndContext,
   DragEndEvent,
