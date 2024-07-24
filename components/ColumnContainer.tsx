@@ -42,15 +42,7 @@ function ColumnContainer(props: Props) {
       <div
         ref={setNodeRef}
         style={style}
-        className="bg-slate-800 text-primary-foreground shadow hover:bg-primary/90 
-    opacity-40
-    border-2
-w-[350px]
-h-[500px]
-max-h-[500px]
-rounded-md
-flex
-flex-col"
+        className="flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md border-2 bg-slate-800 text-primary-foreground opacity-40 shadow hover:bg-primary/90"
       ></div>
     );
   }
@@ -59,48 +51,23 @@ flex-col"
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-slate-800 text-primary-foreground shadow hover:bg-primary/90 
-  w-[350px]
-  h-[500px]
-  max-h-[500px]
-  rounded-md
-  flex
-  flex-col"
+      className="flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md bg-slate-800 text-primary-foreground shadow hover:bg-primary/90"
     >
       <div
         {...attributes}
         {...listeners}
         onClick={() => setEditMode(true)}
-        className="bg-slate-900
-            text-md
-            h-[60px]
-            cursor-grab
-            rounded-md
-            rounded-b-none
-            p-3
-            font-bold
-            border-slate-800 
-            border-4
-            flex
-            items-center
-            justify-between
-        "
+        className="text-md flex h-[60px] cursor-grab items-center justify-between rounded-md rounded-b-none border-4 border-slate-800 bg-slate-900 p-3 font-bold"
       >
         <div className="flex gap-2">
-          <div
-            className="
-            flex
-            justify-center
-            items-center bg-slate-800 px-2 p-1 text-sm rounded-full
-            "
-          >
+          <div className="flex items-center justify-center rounded-full bg-slate-800 p-1 px-2 text-sm">
             0
           </div>
           {!editMode && column.title}
           {editMode && (
             <input
               value={column.title}
-              className="bg-slate-900 text-primary-foreground border rounded outline-none px-2"
+              className="rounded border bg-slate-900 px-2 text-primary-foreground outline-none"
               onChange={(e) => updateColumn(column.id, e.target.value)}
               autoFocus
               onBlur={() => setEditMode(false)}
@@ -113,7 +80,7 @@ flex-col"
         </div>
         <button
           onClick={() => deleteColumn(column.id)}
-          className="hover-stroke-black hover:bg-slate-900 rounded px-1 py-2"
+          className="hover-stroke-black rounded px-1 py-2 hover:bg-slate-900"
         >
           <TrashIcon></TrashIcon>
         </button>

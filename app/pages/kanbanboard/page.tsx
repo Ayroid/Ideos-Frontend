@@ -32,7 +32,7 @@ const KanbanBoard = () => {
       activationConstraint: {
         distance: 3,
       },
-    })
+    }),
   );
 
   useEffect(() => {
@@ -41,7 +41,7 @@ const KanbanBoard = () => {
   }, []);
 
   return (
-    <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-[40px] bg-slate-950">
+    <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden bg-slate-950 px-[40px]">
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
@@ -61,7 +61,7 @@ const KanbanBoard = () => {
             </SortableContext>
           </div>
           <Button
-            className="h-[60px] min-w[350px] cursor-pointer hover:ring-2 flex gap-2"
+            className="min-w[350px] flex h-[60px] cursor-pointer gap-2 hover:ring-2"
             onClick={createNewColumn}
           >
             <PlusCircledIcon></PlusCircledIcon>
@@ -79,7 +79,7 @@ const KanbanBoard = () => {
                 />
               )}
             </DragOverlay>,
-            document.body
+            document.body,
           )}
       </DndContext>
     </div>
@@ -113,7 +113,7 @@ const KanbanBoard = () => {
           };
         }
         return col;
-      })
+      }),
     );
   }
 
@@ -138,11 +138,11 @@ const KanbanBoard = () => {
     }
     setColumns((columns) => {
       const activeColumnIndex = columns.findIndex(
-        (col) => col.id === activeColumnId
+        (col) => col.id === activeColumnId,
       );
 
       const overColumnIndex = columns.findIndex(
-        (col) => col.id === overColumnId
+        (col) => col.id === overColumnId,
       );
 
       return arrayMove(columns, activeColumnIndex, overColumnIndex);
