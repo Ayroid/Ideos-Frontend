@@ -1,7 +1,7 @@
-import { ColumnTypes, Id } from "@/app/pages/types";
-import React from "react";
-import { TrashIcon } from "@radix-ui/react-icons";
-import { useSortable } from "@dnd-kit/sortable";
+import { ColumnTypes, Id, TodoProps } from "@/app/pages/types";
+import React, { useMemo } from "react";
+import { TrashIcon, PlusCircledIcon } from "@radix-ui/react-icons";
+import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Todo from "./Todo";
 
@@ -9,12 +9,17 @@ interface Props {
   column: ColumnTypes;
   deleteColumn: (id: Id) => void;
   updateColumn: (id: Id, title: string) => void;
+
+  createTodo: (columnId: Id) => void;
+  todos: TodoProps[];
 }
 
-function ColumnContainer(props: Props) {
-  const { column, deleteColumn, updateColumn } = props;
+function ColumnContainer(props: Readonly<Props>) {
+  const { column, deleteColumn, updateColumn, createTodo, todos } = props;
 
   const [editMode, setEditMode] = React.useState(false);
+
+  const todoIds = useMemo(() => todos.map((todo) => todo.id), [todos]);
 
   const {
     attributes,
@@ -86,25 +91,25 @@ function ColumnContainer(props: Props) {
         </button>
       </div>
 
-      <div className="flex flex-grow">
-        <Todo
-          title="Research Featured Order"
-          description="An order feature is needed for users when making purchases"
-          dueDate="16 May"
-          tags={[
-            {
-              title: "UI Design",
-              color: "#b1d1f5",
-            },
-            {
-              title: "Research",
-              color: "#d5ff81",
-            },
-          ]}
-        />
+      <div className="flex flex-grow flex-col overflow-x-hidden overflow-y-auto ">
+        <SortableContext items={todoIds}>
+        {todos.map((todo) => (
+          <Todo
+            key={todo.id}
+            todo = {todo}
+          />
+        ))}
+        </SortableContext>
       </div>
 
-      <div>Footer</div>
+      <button
+        className="active:slate-700 flex items-center gap-2 rounded-md border-2 border-slate-700 p-4 hover:bg-slate-600"
+        onClick={() => {
+          createTodo(column.id);
+        }}
+      >
+        <PlusCircledIcon></PlusCircledIcon>Add Todo
+      </button>
     </div>
   );
 }

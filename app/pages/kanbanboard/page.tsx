@@ -3,11 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import React, { useEffect, useMemo, useState } from "react";
-import { ColumnTypes, Id } from "../types";
+import { ColumnTypes, Id, TodoProps } from "../types";
 import ColumnContainer from "@/components/ColumnContainer";
 import {
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
@@ -16,6 +17,8 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
+import Todo from "@/components/Todo";
+import { todo } from "node:test";
 
 const KanbanBoard = () => {
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
@@ -25,7 +28,11 @@ const KanbanBoard = () => {
 
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
 
+  const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
+
   const [isClient, setIsClient] = useState(false);
+
+  const [todos, setTodos] = useState<TodoProps[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -46,6 +53,7 @@ const KanbanBoard = () => {
         sensors={sensors}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
+        onDragOver={onDragOver}
       >
         <div className="m-auto flex gap-4">
           <div className="flex gap-2">
@@ -56,6 +64,10 @@ const KanbanBoard = () => {
                   column={col}
                   deleteColumn={deleteColumn}
                   updateColumn={updateColumn}
+                  createTodo={createTodo}
+                  // TODO: Create a edit and delete todo function
+
+                  todos={todos.filter((t) => t.columnId === col.id)}
                 />
               ))}
             </SortableContext>
@@ -76,8 +88,11 @@ const KanbanBoard = () => {
                   column={activeColumn}
                   deleteColumn={deleteColumn}
                   updateColumn={updateColumn}
+                  createTodo={createTodo}
+                  todos={todos.filter((t) => t.columnId === activeColumn.id)}
                 />
               )}
+              {activeTodo && <Todo todo={activeTodo} />}
             </DragOverlay>,
             document.body,
           )}
@@ -101,6 +116,9 @@ const KanbanBoard = () => {
   function deleteColumn(id: Id) {
     const filteredColumns = columns.filter((col) => col.id !== id);
     setColumns(filteredColumns);
+
+    const newTodos = todos.filter((todo) => todo.columnId !== id);
+    setTodos(newTodos);
   }
 
   function updateColumn(id: Id, title: string) {
@@ -121,10 +139,16 @@ const KanbanBoard = () => {
     if (event.active.data.current?.type === "Column") {
       setActiveColumn(event.active.data.current.column);
     }
-    return;
+
+    if (event.active.data.current?.type === "Todo") {
+      setActiveTodo(event.active.data.current.todo);
+    }
   }
 
   function onDragEnd(event: DragEndEvent) {
+    setActiveColumn(null);
+    setActiveTodo(null);
+
     const { active, over } = event;
 
     if (!over) {
@@ -147,6 +171,70 @@ const KanbanBoard = () => {
 
       return arrayMove(columns, activeColumnIndex, overColumnIndex);
     });
+  }
+
+  function onDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+
+    if (!over) {
+      return;
+    }
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) {
+      return;
+    }
+
+    const isActivatingTodo = active.data.current?.type === "Todo";
+    const isOverTodo = over.data.current?.type === "Todo";
+
+    if(!isActivatingTodo) return; 
+
+    if (isActivatingTodo && isOverTodo) {
+      setTodos((todos) => {
+        const activeIndex = todos.findIndex((todo) => todo.id === activeId);
+        const overIndex = todos.findIndex((todo) => todo.id === overId);
+
+        todos[activeIndex].columnId = todos[overIndex].columnId;
+        
+
+        return arrayMove(todos, activeIndex, overIndex);
+      });
+    }
+
+    const isOverAColumn = over.data.current?.type === "Column";
+
+    if (isActivatingTodo && isOverAColumn) {
+      setTodos((todos) => {
+        const activeIndex = todos.findIndex((todo) => todo.id === activeId);
+
+        todos[activeIndex].columnId = overId;
+
+        return arrayMove(todos, activeIndex, activeIndex);
+      });
+    }
+
+  }
+
+  function createTodo(columnId: Id) {
+    const todoToAdd: TodoProps = {
+      id: generateId(),
+      title: `Todo ${todos.length + 1}`,
+      columnId,
+      description: "Add Description",
+      tags: [
+        { title: "UI Design", color: "#b1d1f5" },
+        {
+          title: "Research",
+          color: "#d5ff81",
+        },
+      ],
+      dueDate: "2022-01-01",
+    };
+
+    setTodos([...todos, todoToAdd]);
   }
 };
 
