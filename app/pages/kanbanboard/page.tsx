@@ -18,7 +18,6 @@ import {
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import Todo from "@/components/Todo";
-import { todo } from "node:test";
 
 const KanbanBoard = () => {
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
@@ -48,7 +47,7 @@ const KanbanBoard = () => {
   }, []);
 
   return (
-    <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden bg-slate-950 px-[40px]">
+    <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden bg-[#191A1C] px-[40px]">
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
@@ -73,7 +72,7 @@ const KanbanBoard = () => {
             </SortableContext>
           </div>
           <Button
-            className="min-w[350px] flex h-[60px] cursor-pointer gap-2 hover:ring-2"
+            className="min-w[350px] flex h-[60px] cursor-pointer gap-2 bg-[#111214] hover:bg-[#2B2E33] hover:ring-2 hover:ring-slate-700"
             onClick={createNewColumn}
           >
             <PlusCircledIcon></PlusCircledIcon>
@@ -190,7 +189,7 @@ const KanbanBoard = () => {
     const isActivatingTodo = active.data.current?.type === "Todo";
     const isOverTodo = over.data.current?.type === "Todo";
 
-    if(!isActivatingTodo) return; 
+    if (!isActivatingTodo) return;
 
     if (isActivatingTodo && isOverTodo) {
       setTodos((todos) => {
@@ -198,7 +197,6 @@ const KanbanBoard = () => {
         const overIndex = todos.findIndex((todo) => todo.id === overId);
 
         todos[activeIndex].columnId = todos[overIndex].columnId;
-        
 
         return arrayMove(todos, activeIndex, overIndex);
       });
@@ -215,7 +213,6 @@ const KanbanBoard = () => {
         return arrayMove(todos, activeIndex, activeIndex);
       });
     }
-
   }
 
   function createTodo(columnId: Id) {

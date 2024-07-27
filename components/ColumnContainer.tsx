@@ -1,23 +1,50 @@
 import { ColumnTypes, Id, TodoProps } from "@/app/pages/types";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { TrashIcon, PlusCircledIcon } from "@radix-ui/react-icons";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Todo from "./Todo";
 
+// Function to get a random color class
+function getRandomColor() {
+  const colors = [
+    "bg-blue-500",
+    "bg-red-500",
+    "bg-green-500",
+    "bg-yellow-500",
+    "bg-purple-500",
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// Separate ColoredBar component to avoid re-render issues
+const ColoredBar = () => {
+  const [colorClass, setColorClass] = useState("");
+
+  useEffect(() => {
+    setColorClass(getRandomColor());
+  }, []);
+
+  return (
+    <div className="relative flex items-center justify-center rounded-full bg-[#111214] p-1 px-2 text-sm">
+      <div
+        className={`absolute left-0 top-1/2 h-full w-1 ${colorClass} -translate-y-1/2 transform`}
+      ></div>
+    </div>
+  );
+};
+
 interface Props {
   column: ColumnTypes;
   deleteColumn: (id: Id) => void;
   updateColumn: (id: Id, title: string) => void;
-
   createTodo: (columnId: Id) => void;
   todos: TodoProps[];
 }
 
 function ColumnContainer(props: Readonly<Props>) {
   const { column, deleteColumn, updateColumn, createTodo, todos } = props;
-
-  const [editMode, setEditMode] = React.useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const todoIds = useMemo(() => todos.map((todo) => todo.id), [todos]);
 
@@ -42,12 +69,15 @@ function ColumnContainer(props: Readonly<Props>) {
     transition,
   };
 
+  const columnContainerHoverColor = "#27282C";
+  const columnTitleHoverColor = "#2B2E33";
+
   if (isDragging) {
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className="flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md border-2 bg-slate-800 text-primary-foreground opacity-40 shadow hover:bg-primary/90"
+        className={`flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md border-2 bg-[#2C2F34] text-primary-foreground opacity-40 shadow-xl`}
       ></div>
     );
   }
@@ -56,23 +86,21 @@ function ColumnContainer(props: Readonly<Props>) {
     <div
       ref={setNodeRef}
       style={style}
-      className="flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md bg-slate-800 text-primary-foreground shadow hover:bg-primary/90"
+      className={`flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md bg-[#111214] text-primary-foreground shadow hover:bg-[${columnContainerHoverColor}]`}
     >
       <div
         {...attributes}
         {...listeners}
         onClick={() => setEditMode(true)}
-        className="text-md flex h-[60px] cursor-grab items-center justify-between rounded-md rounded-b-none border-4 border-slate-800 bg-slate-900 p-3 font-bold"
+        className={`text-md flex h-[60px] cursor-grab items-center justify-between rounded-md rounded-b-none border-slate-800 bg-[#111214] p-3 font-bold hover:bg-[${columnTitleHoverColor}]`}
       >
         <div className="flex gap-2">
-          <div className="flex items-center justify-center rounded-full bg-slate-800 p-1 px-2 text-sm">
-            0
-          </div>
+          <ColoredBar />
           {!editMode && column.title}
           {editMode && (
             <input
               value={column.title}
-              className="rounded border bg-slate-900 px-2 text-primary-foreground outline-none"
+              className="mt-2 h-10 rounded-lg border bg-[#111214] px-2 text-primary-foreground outline-none"
               onChange={(e) => updateColumn(column.id, e.target.value)}
               autoFocus
               onBlur={() => setEditMode(false)}
@@ -85,30 +113,25 @@ function ColumnContainer(props: Readonly<Props>) {
         </div>
         <button
           onClick={() => deleteColumn(column.id)}
-          className="hover-stroke-black rounded px-1 py-2 hover:bg-slate-900"
+          className="rounded px-1 py-2 hover:bg-[#2C2F34]"
         >
-          <TrashIcon></TrashIcon>
+          <TrashIcon />
         </button>
       </div>
 
-      <div className="flex flex-grow flex-col overflow-x-hidden overflow-y-auto ">
+      <div className="flex flex-grow flex-col overflow-y-auto overflow-x-hidden">
         <SortableContext items={todoIds}>
-        {todos.map((todo) => (
-          <Todo
-            key={todo.id}
-            todo = {todo}
-          />
-        ))}
+          {todos.map((todo) => (
+            <Todo key={todo.id} todo={todo} />
+          ))}
         </SortableContext>
       </div>
 
       <button
-        className="active:slate-700 flex items-center gap-2 rounded-md border-2 border-slate-700 p-4 hover:bg-slate-600"
-        onClick={() => {
-          createTodo(column.id);
-        }}
+        className="flex items-center gap-2 rounded-md border-0 border-slate-700 p-4 hover:bg-[#2A2D32]"
+        onClick={() => createTodo(column.id)}
       >
-        <PlusCircledIcon></PlusCircledIcon>Add Todo
+        <PlusCircledIcon /> Add Todo
       </button>
     </div>
   );

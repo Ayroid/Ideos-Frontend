@@ -41,7 +41,7 @@ const Todo = ({ todo }: Props) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`m-2 h-fit rounded-md p-4 ${isDragging ? 'bg-slate-800 opacity-40 border-2' : 'bg-[#1c1c21]'} flex flex-col`}
+      className={`m-2 h-fit rounded-md p-4 ${isDragging ? "border-2 bg-slate-800 opacity-40" : "bg-[#1c1c21]"} flex flex-col`}
     >
       <div className="flex justify-between">
         <div id="tags" className="mb-2 flex gap-2">
