@@ -5,7 +5,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BsCalendar2, BsThreeDots } from "react-icons/bs";
+import { BsCalendar2, BsThreeDotsVertical } from "react-icons/bs";
 import { TodoProps } from "@/app/pages/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -58,8 +58,8 @@ const Todo = ({ todo }: Props) => {
 
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <BsThreeDots
-              color="rgb(55 65 81)"
+            <BsThreeDotsVertical
+              color="rgb(255 255 255)"
               className="-mt-3 cursor-pointer"
             />
           </DropdownMenuTrigger>
