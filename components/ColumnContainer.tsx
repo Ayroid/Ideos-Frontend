@@ -26,9 +26,9 @@ const ColoredBar = () => {
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center rounded-full bg-[#111214] p-1 px-2 text-sm">
+    <div className="relative flex items-center justify-center rounded-full p-1 px-2 text-sm">
       <div
-        className={`absolute left-0 top-1/2 h-full w-1 ${colorClass} -translate-y-1/2 transform`}
+        className={`absolute left-0 top-1/2 h-6 w-1 ${colorClass} -translate-y-1/2 transform`}
       ></div>
     </div>
   );
@@ -86,21 +86,19 @@ function ColumnContainer(props: Readonly<Props>) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md bg-[#111214] text-primary-foreground shadow hover:bg-[${columnContainerHoverColor}]`}
+      className={`flex h-[600px] max-h-[500px] w-[350px] flex-col rounded-md bg-[#111214] text-primary-foreground shadow hover:bg-[${columnContainerHoverColor}]`}
     >
       <div
         {...attributes}
         {...listeners}
-        onClick={() => setEditMode(true)}
         className={`text-md flex h-[60px] cursor-grab items-center justify-between rounded-md rounded-b-none border-slate-800 bg-[#111214] p-3 font-bold hover:bg-[${columnTitleHoverColor}]`}
       >
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-9/12" onClick={() => setEditMode(true)}>
           <ColoredBar />
-          {!editMode && column.title}
-          {editMode && (
+          {editMode ? (
             <input
               value={column.title}
-              className="mt-2 h-10 rounded-lg border bg-[#111214] px-2 text-primary-foreground outline-none"
+              className="text-md h-10 border-b-2 bg-transparent text-primary-foreground outline-none w-full"
               onChange={(e) => updateColumn(column.id, e.target.value)}
               autoFocus
               onBlur={() => setEditMode(false)}
@@ -109,14 +107,24 @@ function ColumnContainer(props: Readonly<Props>) {
                 setEditMode(false);
               }}
             />
+          ) : (
+            <p className="text-md">{column.title}</p>
           )}
         </div>
-        <button
-          onClick={() => deleteColumn(column.id)}
-          className="rounded px-1 py-2 hover:bg-[#2C2F34]"
-        >
-          <TrashIcon />
-        </button>
+        <div className="z-10 flex justify-center align-middle w-3/12">
+          <button
+            className="flex items-center gap-2 rounded-md border-0 border-slate-700 p-4 hover:bg-[#2A2D32]"
+            onClick={() => createTodo(column.id)}
+          >
+            <PlusCircledIcon />
+          </button>
+          <button
+            onClick={() => deleteColumn(column.id)}
+            className="rounded px-1 py-2 hover:bg-[#2C2F34]"
+          >
+            <TrashIcon />
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-grow flex-col overflow-y-auto overflow-x-hidden">
@@ -126,13 +134,6 @@ function ColumnContainer(props: Readonly<Props>) {
           ))}
         </SortableContext>
       </div>
-
-      <button
-        className="flex items-center gap-2 rounded-md border-0 border-slate-700 p-4 hover:bg-[#2A2D32]"
-        onClick={() => createTodo(column.id)}
-      >
-        <PlusCircledIcon /> Add Todo
-      </button>
     </div>
   );
 }
