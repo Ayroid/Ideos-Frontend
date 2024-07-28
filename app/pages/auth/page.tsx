@@ -3,6 +3,7 @@ import {
   RegisterLink,
   LogoutLink,
 } from "@kinde-oss/kinde-auth-nextjs/components";
+import Link from "next/link";
 
 import React from "react";
 
@@ -18,6 +19,12 @@ const loginPage = () => {
       <LogoutLink className="rounded-md bg-slate-600 px-4 py-2 text-white">
         Sign out
       </LogoutLink>
+      <Link
+        href="/"
+        className="rounded-md bg-slate-600 px-4 py-2 text-white"
+      >
+        HomePage
+      </Link>
     </div>
   );
 };
