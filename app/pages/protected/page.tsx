@@ -1,4 +1,5 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { redirect } from "next/navigation";
 
 const Page = async () => {
@@ -29,7 +30,14 @@ const Page = async () => {
       <h1>
         Hey {user.given_name} {user.family_name}
       </h1>
-      <img src={user.picture!} alt="user profile" />
+      <Avatar>
+        <AvatarImage src={user.picture!} />
+        <AvatarFallback>
+          {user.given_name?.charAt(0)}
+          {user.family_name?.charAt(0)}
+        </AvatarFallback>
+      </Avatar>
+
       {data ? <pre>{JSON.stringify(data, null, 2)}</pre> : <p>Loading...</p>}
     </div>
   );

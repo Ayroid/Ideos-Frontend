@@ -1,10 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { PlusCircledIcon } from "@radix-ui/react-icons";
-import React, { useEffect, useMemo, useState } from "react";
-import { ColumnTypes, Id, TodoProps } from "../types";
 import ColumnContainer from "@/components/ColumnContainer";
+import Todo from "@/components/Todo";
+import { Button } from "@/components/ui/button";
 import {
   DndContext,
   DragEndEvent,
@@ -16,21 +14,16 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
+import { GoPlusCircle } from "react-icons/go";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import Todo from "@/components/Todo";
+import { ColumnTypes, Id, TodoProps } from "../types";
 
 const KanbanBoard = () => {
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
-  console.log(columns);
-
-  const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
-
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
-
   const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
-
   const [isClient, setIsClient] = useState(false);
-
   const [todos, setTodos] = useState<TodoProps[]>([]);
 
   const sensors = useSensors(
@@ -43,61 +36,7 @@ const KanbanBoard = () => {
 
   useEffect(() => {
     setIsClient(true);
-    console.log("its true");
   }, []);
-
-  return (
-    <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden bg-[#191A1C] px-[40px]">
-      <DndContext
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragOver={onDragOver}
-      >
-        <div className="m-auto flex gap-4">
-          <div className="flex gap-2">
-            <SortableContext items={columnsId}>
-              {columns.map((col) => (
-                <ColumnContainer
-                  key={col.id}
-                  column={col}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  createTodo={createTodo}
-                  // TODO: Create a edit and delete todo function
-
-                  todos={todos.filter((t) => t.columnId === col.id)}
-                />
-              ))}
-            </SortableContext>
-          </div>
-          <Button
-            className="min-w[350px] flex h-[60px] cursor-pointer gap-2 bg-[#111214] hover:bg-[#2B2E33] hover:ring-2 hover:ring-slate-700"
-            onClick={createNewColumn}
-          >
-            <PlusCircledIcon></PlusCircledIcon>
-            Add Column
-          </Button>
-        </div>
-        {isClient &&
-          createPortal(
-            <DragOverlay>
-              {activeColumn && (
-                <ColumnContainer
-                  column={activeColumn}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  createTodo={createTodo}
-                  todos={todos.filter((t) => t.columnId === activeColumn.id)}
-                />
-              )}
-              {activeTodo && <Todo todo={activeTodo} />}
-            </DragOverlay>,
-            document.body,
-          )}
-      </DndContext>
-    </div>
-  );
 
   function createNewColumn() {
     const columnToAdd: ColumnTypes = {
@@ -113,24 +52,13 @@ const KanbanBoard = () => {
   }
 
   function deleteColumn(id: Id) {
-    const filteredColumns = columns.filter((col) => col.id !== id);
-    setColumns(filteredColumns);
-
-    const newTodos = todos.filter((todo) => todo.columnId !== id);
-    setTodos(newTodos);
+    setColumns(columns.filter((col) => col.id !== id));
+    setTodos(todos.filter((todo) => todo.columnId !== id));
   }
 
   function updateColumn(id: Id, title: string) {
     setColumns((columns) =>
-      columns.map((col) => {
-        if (col.id === id) {
-          return {
-            ...col,
-            title,
-          };
-        }
-        return col;
-      }),
+      columns.map((col) => (col.id === id ? { ...col, title } : col)),
     );
   }
 
@@ -218,21 +146,112 @@ const KanbanBoard = () => {
   function createTodo(columnId: Id) {
     const todoToAdd: TodoProps = {
       id: generateId(),
-      title: `Todo ${todos.length + 1}`,
+      title: `Add Title`,
       columnId,
       description: "Add Description",
       tags: [
         { title: "UI Design", color: "#b1d1f5" },
-        {
-          title: "Research",
-          color: "#d5ff81",
-        },
+        { title: "Research", color: "#d5ff81" },
       ],
-      dueDate: "2022-01-01",
+      dueDate: null,
     };
 
     setTodos([...todos, todoToAdd]);
   }
+
+  function updateTodoTitle(id: Id, title: string) {
+    setTodos((todos) =>
+      todos.map((todo) => {
+        if (todo.id === id) {
+          return { ...todo, title };
+        }
+        return todo;
+      }),
+    );
+  }
+
+  function updateTodoDescription(id: Id, description: string) {
+    setTodos((todos) =>
+      todos.map((todo) => {
+        if (todo.id === id) {
+          return { ...todo, description };
+        }
+        return todo;
+      }),
+    );
+  }
+
+  function updateTodoDueDate(id: Id, dueDate: string) {
+    console.log(dueDate);
+    setTodos((todos) =>
+      todos.map((todo) => {
+        if (todo.id === id) {
+          return { ...todo, dueDate };
+        }
+        return todo;
+      }),
+    );
+  }
+
+  return (
+    <div className="m-auto flex min-h-screen w-full items-center">
+      <DndContext
+        sensors={sensors}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragOver={onDragOver}
+      >
+        <div className="m-auto flex gap-4">
+          <div className="flex gap-4">
+            <SortableContext items={columns.map((col) => col.id)}>
+              {columns.map((col) => (
+                <ColumnContainer
+                  key={col.id}
+                  column={col}
+                  deleteColumn={deleteColumn}
+                  updateColumn={updateColumn}
+                  createTodo={createTodo}
+                  updateTodoTitle={updateTodoTitle}
+                  updateTodoDescription={updateTodoDescription}
+                  updateTodoDueDate={updateTodoDueDate}
+                  todos={todos.filter((t) => t.columnId === col.id)}
+                />
+              ))}
+            </SortableContext>
+          </div>
+          <Button onClick={createNewColumn}>
+            <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
+          </Button>
+        </div>
+        {isClient &&
+          createPortal(
+            <DragOverlay>
+              {activeColumn && (
+                <ColumnContainer
+                  column={activeColumn}
+                  deleteColumn={deleteColumn}
+                  updateColumn={updateColumn}
+                  createTodo={createTodo}
+                  updateTodoTitle={updateTodoTitle}
+                  updateTodoDescription={updateTodoDescription}
+                  updateTodoDueDate={updateTodoDueDate}
+                  todos={todos.filter((t) => t.columnId === activeColumn.id)}
+                />
+              )}
+              {activeTodo && (
+                <Todo
+                  todo={activeTodo}
+                  updateTodoDescription={updateTodoDescription}
+                  updateTodoTitle={updateTodoTitle}
+                  updateTodoDueDate={updateTodoDueDate}
+                />
+              )}
+            </DragOverlay>,
+            document.body,
+          )}
+      </DndContext>
+    </div>
+  );
 };
 
 export default KanbanBoard;

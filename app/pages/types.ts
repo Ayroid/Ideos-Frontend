@@ -5,7 +5,7 @@ export type ColumnTypes = {
   title: string;
 };
 
-export type  TodoProps = {
+export type TodoProps = {
   id: Id;
   title: string;
   columnId: Id;
@@ -14,6 +14,5 @@ export type  TodoProps = {
     title: string;
     color: string;
   }[];
-  dueDate: string;
-}
-
+  dueDate: string | null;
+};
