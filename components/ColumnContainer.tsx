@@ -1,19 +1,12 @@
-import { ColumnTypes, Id, TodoProps } from "@/app/pages/types";
-import React, { useEffect, useMemo, useState } from "react";
-import { TrashIcon, PlusCircledIcon } from "@radix-ui/react-icons";
-import { SortableContext, useSortable } from "@dnd-kit/sortable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { ColumnTypes, Id, TodoProps } from "@/types";
+import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
+import { useEffect, useMemo, useState } from "react";
 import Todo from "./Todo";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from "./ui/button";
 
 // Function to get a random color class
 function getRandomColor() {
@@ -48,10 +41,11 @@ interface Props {
   column: ColumnTypes;
   deleteColumn: (id: Id) => void;
   updateColumn: (id: Id, title: string) => void;
-  createTodo: (columnId: Id) => void;
+  // createTodo: (columnId: Id) => void;
   updateTodoTitle: (id: Id, title: string) => void;
   updateTodoDescription: (id: Id, description: string) => void;
   updateTodoDueDate: (id: Id, date: string) => void;
+  setPopUpVisible: (value: boolean) => void;
   todos: TodoProps[];
 }
 function ColumnContainer(props: Readonly<Props>) {
@@ -59,10 +53,11 @@ function ColumnContainer(props: Readonly<Props>) {
     column,
     deleteColumn,
     updateColumn,
-    createTodo,
+
     updateTodoTitle,
     updateTodoDescription,
     updateTodoDueDate,
+    setPopUpVisible,
     todos,
   } = props;
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -117,7 +112,7 @@ function ColumnContainer(props: Readonly<Props>) {
             {...attributes}
             {...listeners}
             className={
-              "flex cursor-grab items-center justify-between rounded-md p-4 font-bold"
+              "flex cursor-grab items-center justify-between rounded-md p-4 font-bold hover:bg-primary-foreground"
             }
           >
             <div
@@ -141,13 +136,23 @@ function ColumnContainer(props: Readonly<Props>) {
                 <p className="text-md">{column.title}</p>
               )}
             </div>
-            <div className="z-10 flex w-3/12 justify-end gap-4 py-2">
-              <button onClick={() => createTodo(column.id)}>
+            <div className="z-10 flex w-3/12 justify-end gap-2">
+              <Button
+                variant="ghost"
+                className="m-0 px-1"
+                onClick={() => {
+                  setPopUpVisible(true);
+                }}
+              >
                 <PlusCircledIcon />
-              </button>
-              <button onClick={() => deleteColumn(column.id)}>
+              </Button>
+              <Button
+                variant="ghost"
+                className="m-0 px-1"
+                onClick={() => deleteColumn(column.id)}
+              >
                 <TrashIcon />
-              </button>
+              </Button>
             </div>
           </div>
         </CardTitle>

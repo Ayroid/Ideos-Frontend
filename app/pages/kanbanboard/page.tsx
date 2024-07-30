@@ -17,7 +17,9 @@ import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { GoPlusCircle } from "react-icons/go";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ColumnTypes, Id, TodoProps } from "../types";
+import { ColumnTypes, Id, TodoProps } from "../../../types";
+import Popup from "@/components/Popup";
+import TodoForm from "@/components/TodoForm";
 
 const KanbanBoard = () => {
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
@@ -25,6 +27,8 @@ const KanbanBoard = () => {
   const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [todos, setTodos] = useState<TodoProps[]>([]);
+  const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
+  const [activeColumnId, setActiveColumnId] = useState<Id | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -143,20 +147,20 @@ const KanbanBoard = () => {
     }
   }
 
-  function createTodo(columnId: Id) {
+  function createTodo(newTodo: TodoProps) {
     const todoToAdd: TodoProps = {
       id: generateId(),
-      title: `Add Title`,
-      columnId,
-      description: "Add Description",
-      tags: [
-        { title: "UI Design", color: "#b1d1f5" },
-        { title: "Research", color: "#d5ff81" },
-      ],
-      dueDate: null,
+      title: newTodo.title,
+      columnId: newTodo.columnId,
+      description: newTodo.description,
+      tags: newTodo.tags,
+      dueDate: newTodo.dueDate,
     };
 
+    console.log(todoToAdd);
+
     setTodos([...todos, todoToAdd]);
+    setPopUpVisible(false);
   }
 
   function updateTodoTitle(id: Id, title: string) {
@@ -210,10 +214,13 @@ const KanbanBoard = () => {
                   column={col}
                   deleteColumn={deleteColumn}
                   updateColumn={updateColumn}
-                  createTodo={createTodo}
                   updateTodoTitle={updateTodoTitle}
                   updateTodoDescription={updateTodoDescription}
                   updateTodoDueDate={updateTodoDueDate}
+                  setPopUpVisible={(value: boolean) => {
+                    setPopUpVisible(value);
+                    setActiveColumnId(col.id);
+                  }}
                   todos={todos.filter((t) => t.columnId === col.id)}
                 />
               ))}
@@ -231,10 +238,10 @@ const KanbanBoard = () => {
                   column={activeColumn}
                   deleteColumn={deleteColumn}
                   updateColumn={updateColumn}
-                  createTodo={createTodo}
                   updateTodoTitle={updateTodoTitle}
                   updateTodoDescription={updateTodoDescription}
                   updateTodoDueDate={updateTodoDueDate}
+                  setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
                   todos={todos.filter((t) => t.columnId === activeColumn.id)}
                 />
               )}
@@ -250,6 +257,15 @@ const KanbanBoard = () => {
             document.body,
           )}
       </DndContext>
+      {popUpVisible && (
+        <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
+          <TodoForm
+            createTodo={createTodo}
+            activeColumnId={activeColumnId}
+            onClose={() => setPopUpVisible(false)}
+          />
+        </Popup>
+      )}
     </div>
   );
 };

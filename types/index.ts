@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export type Id = string | number;
 
 export type ColumnTypes = {
@@ -15,4 +17,11 @@ export type TodoProps = {
     color: string;
   }[];
   dueDate: string | null;
+};
+
+export type PopupProps = {
+  children: ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  container?: boolean;
 };

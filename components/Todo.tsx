@@ -1,4 +1,3 @@
-import { Id, TodoProps } from "@/app/pages/types";
 import { DatePicker } from "@/components/ui/date-picker"; // Import DatePicker
 import {
   DropdownMenu,
@@ -7,12 +6,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Id, TodoProps } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { HiTag } from "react-icons/hi2";
-import { Button } from "@/components/ui/button";
 
 interface Props {
   todo: TodoProps;
@@ -91,18 +89,17 @@ const Todo = ({
     >
       <div className="flex items-start justify-between">
         <div id="tags" className="mb-2 flex flex-wrap gap-2">
-          {todo.tags.map((tag) => (
+          {todo.tags.map((tag: { title: string; color: string }) => (
             <p
               key={tag.title}
               style={{ backgroundColor: tag.color }}
-              className="text-nowrap rounded-sm px-2 py-1 text-[0.75rem] font-medium text-black"
+              className="text-nowrap rounded-sm px-2 py-1 text-[0.75rem] font-bold text-white"
             >
               {tag.title}
             </p>
           ))}
         </div>
         <div className="mt-1 flex gap-1">
-          <HiTag size="18" />
           <DropdownMenu>
             <DropdownMenuTrigger>
               <BsThreeDotsVertical
