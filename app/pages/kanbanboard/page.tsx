@@ -1,6 +1,7 @@
 "use client";
 
 import ColumnContainer from "@/components/ColumnContainer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +14,20 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis,
+} from "@/components/ui/breadcrumb";
+
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { GoPlusCircle } from "react-icons/go";
+import { FiHome } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ColumnTypes, Id, TodoProps } from "../../../types";
@@ -198,65 +211,99 @@ const KanbanBoard = () => {
   }
 
   return (
-    <div className="m-auto flex min-h-screen w-full items-center">
-      <DndContext
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragOver={onDragOver}
-      >
-        <div className="m-auto flex gap-4">
-          <div className="flex gap-4">
-            <SortableContext items={columns.map((col) => col.id)}>
-              {columns.map((col) => (
-                <ColumnContainer
-                  key={col.id}
-                  column={col}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  updateTodoTitle={updateTodoTitle}
-                  updateTodoDescription={updateTodoDescription}
-                  updateTodoDueDate={updateTodoDueDate}
+    <div className="box-border h-screen p-10">
+      <div className="m-auto flex h-full w-full flex-col items-start rounded-3xl bg-[#191A1C] px-10">
+        <div className="mt-10 w-4/5">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                
+                <BreadcrumbLink href="/"><FiHome /></BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbEllipsis />
+                </BreadcrumbItem>
+              </BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        <div className="mt-10">
+          <Tabs defaultValue="account">
+            <TabsList>
+              <TabsTrigger value="Board">Board</TabsTrigger>
+              <TabsTrigger value="List">List</TabsTrigger>
+              <TabsTrigger value="Timeline">Timeline</TabsTrigger>
+              <TabsTrigger value="DueTasks">Due Tasks</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+        <DndContext
+          sensors={sensors}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragOver={onDragOver}
+        >
+          <div className="m-auto mt-10 flex w-full gap-4">
+            <div className="flex gap-4">
+              <SortableContext items={columns.map((col) => col.id)}>
+                {columns.map((col) => (
+                  <ColumnContainer
+                    key={col.id}
+                    column={col}
+                    deleteColumn={deleteColumn}
+                    updateColumn={updateColumn}
+                      updateTodoTitle={updateTodoTitle}
+                    updateTodoDescription={updateTodoDescription}
+                    updateTodoDueDate={updateTodoDueDate}
                   setPopUpVisible={(value: boolean) => {
                     setPopUpVisible(value);
                     setActiveColumnId(col.id);
                   }}
-                  todos={todos.filter((t) => t.columnId === col.id)}
-                />
-              ))}
-            </SortableContext>
+                    todos={todos.filter((t) => t.columnId === col.id)}
+                  />
+                ))}
+              </SortableContext>
+            </div>
+            <Button onClick={createNewColumn}>
+              <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
+            </Button>
           </div>
-          <Button onClick={createNewColumn}>
-            <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
-          </Button>
-        </div>
-        {isClient &&
-          createPortal(
-            <DragOverlay>
-              {activeColumn && (
-                <ColumnContainer
-                  column={activeColumn}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  updateTodoTitle={updateTodoTitle}
-                  updateTodoDescription={updateTodoDescription}
-                  updateTodoDueDate={updateTodoDueDate}
+          {isClient &&
+            createPortal(
+              <DragOverlay>
+                {activeColumn && (
+                  <ColumnContainer
+                    column={activeColumn}
+                    deleteColumn={deleteColumn}
+                    updateColumn={updateColumn}
+                      updateTodoTitle={updateTodoTitle}
+                    updateTodoDescription={updateTodoDescription}
+                    updateTodoDueDate={updateTodoDueDate}
                   setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
-                  todos={todos.filter((t) => t.columnId === activeColumn.id)}
-                />
-              )}
-              {activeTodo && (
-                <Todo
-                  todo={activeTodo}
-                  updateTodoDescription={updateTodoDescription}
-                  updateTodoTitle={updateTodoTitle}
-                  updateTodoDueDate={updateTodoDueDate}
-                />
-              )}
-            </DragOverlay>,
-            document.body,
-          )}
-      </DndContext>
+                    todos={todos.filter((t) => t.columnId === activeColumn.id)}
+                  />
+                )}
+                {activeTodo && (
+                  <Todo
+                    todo={activeTodo}
+                    updateTodoDescription={updateTodoDescription}
+                    updateTodoTitle={updateTodoTitle}
+                    updateTodoDueDate={updateTodoDueDate}
+                  />
+                )}
+              </DragOverlay>,
+              document.body,
+            )}
+        </DndContext>
       {popUpVisible && (
         <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
           <TodoForm
@@ -266,6 +313,7 @@ const KanbanBoard = () => {
           />
         </Popup>
       )}
+      </div>
     </div>
   );
 };
