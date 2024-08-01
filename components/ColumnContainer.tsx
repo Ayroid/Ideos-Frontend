@@ -40,7 +40,7 @@ const ColoredBar = () => {
 interface Props {
   column: ColumnTypes;
   deleteColumn: (id: Id) => void;
-  updateColumn: (id: Id, title: string) => void;
+  updateColumn: (id: Id, title: string, server: boolean) => void;
   // createTodo: (columnId: Id) => void;
   updateTodoTitle: (id: Id, title: string) => void;
   updateTodoDescription: (id: Id, description: string) => void;
@@ -53,7 +53,6 @@ function ColumnContainer(props: Readonly<Props>) {
     column,
     deleteColumn,
     updateColumn,
-
     updateTodoTitle,
     updateTodoDescription,
     updateTodoDueDate,
@@ -72,7 +71,7 @@ function ColumnContainer(props: Readonly<Props>) {
     transition,
     isDragging,
   } = useSortable({
-    id: column.id,
+    id: column._id,
     data: {
       type: "Column",
       column,
@@ -84,9 +83,6 @@ function ColumnContainer(props: Readonly<Props>) {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  const columnContainerHoverColor = "#27282C";
-  const columnTitleHoverColor = "#2B2E33";
 
   if (isDragging) {
     return (
@@ -124,11 +120,17 @@ function ColumnContainer(props: Readonly<Props>) {
                 <input
                   value={column.title}
                   className="text-md w-full bg-transparent outline-none"
-                  onChange={(e) => updateColumn(column.id, e.target.value)}
+                  onChange={(e) =>
+                    updateColumn(column._id, e.target.value, !editMode)
+                  }
                   autoFocus
-                  onBlur={() => setEditMode(false)}
+                  onBlur={() => {
+                    updateColumn(column._id, column.title, editMode);
+                    setEditMode(false);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key !== "Enter") return;
+                    updateColumn(column._id, column.title, editMode);
                     setEditMode(false);
                   }}
                 />
@@ -149,7 +151,7 @@ function ColumnContainer(props: Readonly<Props>) {
               <Button
                 variant="ghost"
                 className="m-0 px-1"
-                onClick={() => deleteColumn(column.id)}
+                onClick={() => deleteColumn(column._id)}
               >
                 <TrashIcon />
               </Button>

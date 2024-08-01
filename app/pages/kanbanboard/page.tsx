@@ -1,7 +1,7 @@
 "use client";
 
 import ColumnContainer from "@/components/ColumnContainer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,8 +33,12 @@ import { createPortal } from "react-dom";
 import { ColumnTypes, Id, TodoProps } from "../../../types";
 import Popup from "@/components/Popup";
 import TodoForm from "@/components/TodoForm";
+import axios from "axios";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 const KanbanBoard = () => {
+  const { getAccessTokenRaw } = useKindeBrowserClient();
+  const accessToken = getAccessTokenRaw();
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
   const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
@@ -42,6 +46,30 @@ const KanbanBoard = () => {
   const [todos, setTodos] = useState<TodoProps[]>([]);
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
   const [activeColumnId, setActiveColumnId] = useState<Id | null>(null);
+
+  useEffect(() => {
+    const fetchColumns = async () => {
+      try {
+        console.log("Sending Request");
+        const response = await axios.get(
+          `http://localhost:5000/api/todoColumns`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+        console.log(response.data);
+        setColumns(response.data);
+      } catch (error) {
+        console.error("Error fetching columns:", error);
+      }
+    };
+
+    if (accessToken) {
+      fetchColumns();
+    }
+  }, [accessToken]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -55,28 +83,67 @@ const KanbanBoard = () => {
     setIsClient(true);
   }, []);
 
-  function createNewColumn() {
-    const columnToAdd: ColumnTypes = {
-      id: generateId(),
-      title: `Column ${columns.length + 1}`,
+  function generateId() {
+    return Math.floor(Math.random() * 10001).toString();
+  }
+
+  async function createNewColumn() {
+    const title = `Column ${columns.length + 1 || 1}`;
+
+    const data = {
+      title,
     };
 
-    setColumns([...columns, columnToAdd]);
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/todoColumns`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+      setColumns([...columns, { title, _id: response.data }]);
+    } catch (error) {
+      console.error("Error creating new column:", error);
+    }
   }
 
-  function generateId() {
-    return Math.floor(Math.random() * 10001);
+  async function updateColumn(id: Id, title: string, server: boolean) {
+    try {
+      if (!server) {
+        setColumns((columns) =>
+          columns.map((col) => (col._id === id ? { ...col, title } : col)),
+        );
+      } else {
+        await axios.put(
+          `http://localhost:5000/api/todoColumns/${id}`,
+          { title },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+      }
+    } catch (error) {
+      console.error("Error updating column:", error);
+    }
   }
 
-  function deleteColumn(id: Id) {
-    setColumns(columns.filter((col) => col.id !== id));
-    setTodos(todos.filter((todo) => todo.columnId !== id));
-  }
-
-  function updateColumn(id: Id, title: string) {
-    setColumns((columns) =>
-      columns.map((col) => (col.id === id ? { ...col, title } : col)),
-    );
+  async function deleteColumn(id: Id) {
+    try {
+      setColumns(columns.filter((col) => col._id !== id));
+      setTodos(todos.filter((todo) => todo.columnId !== id));
+      await axios.delete(`http://localhost:5000/api/todoColumns/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error deleting column:", error);
+    }
   }
 
   function onDragStart(event: DragStartEvent) {
@@ -106,11 +173,11 @@ const KanbanBoard = () => {
     }
     setColumns((columns) => {
       const activeColumnIndex = columns.findIndex(
-        (col) => col.id === activeColumnId,
+        (col) => col._id === activeColumnId,
       );
 
       const overColumnIndex = columns.findIndex(
-        (col) => col.id === overColumnId,
+        (col) => col._id === overColumnId,
       );
 
       return arrayMove(columns, activeColumnIndex, overColumnIndex);
@@ -217,8 +284,9 @@ const KanbanBoard = () => {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                
-                <BreadcrumbLink href="/"><FiHome /></BreadcrumbLink>
+                <BreadcrumbLink href="/">
+                  <FiHome />
+                </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
@@ -254,21 +322,21 @@ const KanbanBoard = () => {
         >
           <div className="m-auto mt-10 flex w-full gap-4">
             <div className="flex gap-4">
-              <SortableContext items={columns.map((col) => col.id)}>
+              <SortableContext items={columns.map((col) => col._id)}>
                 {columns.map((col) => (
                   <ColumnContainer
-                    key={col.id}
+                    key={col._id}
                     column={col}
                     deleteColumn={deleteColumn}
                     updateColumn={updateColumn}
-                      updateTodoTitle={updateTodoTitle}
+                    updateTodoTitle={updateTodoTitle}
                     updateTodoDescription={updateTodoDescription}
                     updateTodoDueDate={updateTodoDueDate}
-                  setPopUpVisible={(value: boolean) => {
-                    setPopUpVisible(value);
-                    setActiveColumnId(col.id);
-                  }}
-                    todos={todos.filter((t) => t.columnId === col.id)}
+                    setPopUpVisible={(value: boolean) => {
+                      setPopUpVisible(value);
+                      setActiveColumnId(col._id);
+                    }}
+                    todos={todos.filter((t) => t.columnId === col._id)}
                   />
                 ))}
               </SortableContext>
@@ -285,11 +353,11 @@ const KanbanBoard = () => {
                     column={activeColumn}
                     deleteColumn={deleteColumn}
                     updateColumn={updateColumn}
-                      updateTodoTitle={updateTodoTitle}
+                    updateTodoTitle={updateTodoTitle}
                     updateTodoDescription={updateTodoDescription}
                     updateTodoDueDate={updateTodoDueDate}
-                  setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
-                    todos={todos.filter((t) => t.columnId === activeColumn.id)}
+                    setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
+                    todos={todos.filter((t) => t.columnId === activeColumn._id)}
                   />
                 )}
                 {activeTodo && (
@@ -304,15 +372,15 @@ const KanbanBoard = () => {
               document.body,
             )}
         </DndContext>
-      {popUpVisible && (
-        <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
-          <TodoForm
-            createTodo={createTodo}
-            activeColumnId={activeColumnId}
-            onClose={() => setPopUpVisible(false)}
-          />
-        </Popup>
-      )}
+        {popUpVisible && (
+          <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
+            <TodoForm
+              createTodo={createTodo}
+              activeColumnId={activeColumnId}
+              onClose={() => setPopUpVisible(false)}
+            />
+          </Popup>
+        )}
       </div>
     </div>
   );
