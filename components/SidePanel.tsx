@@ -10,11 +10,9 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { redirect } from "next/navigation";
-
-
 
 export const Logo = () => {
   return (
@@ -31,19 +29,16 @@ export const Logo = () => {
 };
 
 export const LogoIcon = () => {
-
-
   return (
     <Link
       href="#"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
+      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
-      <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
+      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-black dark:bg-white" />
     </Link>
   );
 };
-export default  async function SidebarComponent() {
-
+export default function SidebarComponent() {
   const links = [
     {
       label: "Dashboard",
@@ -75,13 +70,10 @@ export default  async function SidebarComponent() {
     },
   ];
 
-  const [open, setOpen] = useState(false); 
-  
-  const {  getUser } = getKindeServerSession();
-  const user = await getUser();
-  if (!user) return redirect("/pages/auth/signin");
+  const [open, setOpen] = useState(false);
 
-  
+  const { getUser } = useKindeBrowserClient();
+  const user = getUser();
 
   return (
     <div
@@ -92,7 +84,7 @@ export default  async function SidebarComponent() {
       <Sidebar open={open} setOpen={setOpen} animate={true}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          {open ? <Logo /> : <LogoIcon />}
+            {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
@@ -101,13 +93,14 @@ export default  async function SidebarComponent() {
           </div>
           <div>
             <SidebarLink
-            
               link={{
-                label: "profine",
+                label: user?.given_name ?? "User",
                 href: "#",
                 icon: (
                   <Image
-                    src="https://assets.aceternity.com/manu.png"
+                    src={
+                      user?.picture ?? "https://assets.aceternity.com/manu.png"
+                    }
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}
