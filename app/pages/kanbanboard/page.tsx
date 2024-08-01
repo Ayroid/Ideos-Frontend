@@ -212,8 +212,8 @@ const KanbanBoard = () => {
 
   return (
     <div className="box-border h-screen p-10">
-      <div className="m-auto flex h-full w-full flex-col items-start rounded-3xl bg-[#191A1C] px-10">
-        <div className="mt-10 w-4/5">
+      <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10">
+        <div className="mt-10">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>

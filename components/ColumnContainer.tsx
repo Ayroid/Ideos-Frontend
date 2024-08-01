@@ -94,7 +94,7 @@ function ColumnContainer(props: Readonly<Props>) {
         ref={setNodeRef}
         style={style}
         className={
-          "flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md border-2 bg-[#2C2F34] text-primary-foreground opacity-40 shadow-xl"
+          "flex h-[500px] max-h-[500px] w-[350px] flex-col rounded-md border-2 bg-primary-foreground text-primary-foreground opacity-40 shadow-xl"
         }
       ></div>
     );
