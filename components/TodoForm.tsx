@@ -111,7 +111,12 @@ const TodoForm = ({ createTodo, activeColumnId, onClose }: TodoFormProps) => {
           <div className="mb-4">
             <div className="flex items-center justify-between">
               <label htmlFor="todoFormTags">Tags</label>
-              <Button id="todoFormTags" variant="ghost" onClick={handleAddTag}>
+              <Button
+                type="button"
+                id="todoFormTags"
+                variant="ghost"
+                onClick={handleAddTag}
+              >
                 <PlusCircledIcon className="mr-2" /> Add Tag
               </Button>
             </div>
