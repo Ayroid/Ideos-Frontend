@@ -11,8 +11,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { redirect } from "next/navigation";
 
 export const Logo = () => {
   return (
@@ -42,7 +43,7 @@ export default function SidebarComponent() {
   const links = [
     {
       label: "Dashboard",
-      href: "#",
+      href: "/",
       icon: (
         <IconBrandTabler className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
@@ -96,16 +97,20 @@ export default function SidebarComponent() {
               link={{
                 label: user?.given_name ?? "User",
                 href: "#",
-                icon: (
+                icon: user?.picture ? (
                   <Image
                     src={
-                      user?.picture ?? "https://assets.aceternity.com/manu.png"
-                    }
+                      user?.picture}
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}
                     alt="Avatar"
                   />
+                ) : (
+                  <Avatar>
+                  <AvatarImage />
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
                 ),
               }}
             />

@@ -279,7 +279,7 @@ const KanbanBoard = () => {
 
   return (
     <div className="box-border h-screen p-10">
-      <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10">
+      {/* <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10"> */}
         <div className="mt-10">
           <Breadcrumb>
             <BreadcrumbList>
@@ -382,7 +382,7 @@ const KanbanBoard = () => {
           </Popup>
         )}
       </div>
-    </div>
+    // </div>
   );
 };
 
