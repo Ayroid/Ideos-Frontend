@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ColumnTypes, Id, TodoProps } from "@/types";
+import { ColumnTypes, TodoProps } from "@/types";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
@@ -39,12 +39,12 @@ const ColoredBar = () => {
 
 interface Props {
   column: ColumnTypes;
-  deleteColumn: (id: Id) => void;
-  updateColumn: (id: Id, title: string, server: boolean) => void;
-  // createTodo: (columnId: Id) => void;
-  updateTodoTitle: (id: Id, title: string) => void;
-  updateTodoDescription: (id: Id, description: string) => void;
-  updateTodoDueDate: (id: Id, date: string) => void;
+  deleteColumn: (id: string) => void;
+  updateColumn: (id: string, title: string, server: boolean) => void;
+  updateTodoTitle: (id: string, title: string) => void;
+  updateTodoDescription: (id: string, description: string) => void;
+  updateTodoDueDate: (id: string, date: string) => void;
+  deleteTodo: (id: string) => void;
   setPopUpVisible: (value: boolean) => void;
   todos: TodoProps[];
 }
@@ -56,12 +56,13 @@ function ColumnContainer(props: Readonly<Props>) {
     updateTodoTitle,
     updateTodoDescription,
     updateTodoDueDate,
+    deleteTodo,
     setPopUpVisible,
     todos,
   } = props;
   const [editMode, setEditMode] = useState<boolean>(false);
 
-  const todoIds = useMemo(() => todos.map((todo) => todo.id), [todos]);
+  const todoIds = useMemo(() => todos.map((todo) => todo.uniqueId), [todos]);
 
   const {
     attributes,
@@ -71,7 +72,7 @@ function ColumnContainer(props: Readonly<Props>) {
     transition,
     isDragging,
   } = useSortable({
-    id: column._id,
+    id: column.uniqueId,
     data: {
       type: "Column",
       column,
@@ -121,16 +122,16 @@ function ColumnContainer(props: Readonly<Props>) {
                   value={column.title}
                   className="text-md w-full bg-transparent outline-none"
                   onChange={(e) =>
-                    updateColumn(column._id, e.target.value, !editMode)
+                    updateColumn(column.uniqueId, e.target.value, !editMode)
                   }
                   autoFocus
                   onBlur={() => {
-                    updateColumn(column._id, column.title, editMode);
+                    updateColumn(column.uniqueId, column.title, editMode);
                     setEditMode(false);
                   }}
                   onKeyDown={(e) => {
                     if (e.key !== "Enter") return;
-                    updateColumn(column._id, column.title, editMode);
+                    updateColumn(column.uniqueId, column.title, editMode);
                     setEditMode(false);
                   }}
                 />
@@ -151,7 +152,7 @@ function ColumnContainer(props: Readonly<Props>) {
               <Button
                 variant="ghost"
                 className="m-0 px-1"
-                onClick={() => deleteColumn(column._id)}
+                onClick={() => deleteColumn(column.uniqueId)}
               >
                 <TrashIcon />
               </Button>
@@ -165,11 +166,12 @@ function ColumnContainer(props: Readonly<Props>) {
           <SortableContext items={todoIds}>
             {todos.map((todo) => (
               <Todo
-                key={todo.id}
+                key={todo.uniqueId}
                 todo={todo}
                 updateTodoTitle={updateTodoTitle}
                 updateTodoDescription={updateTodoDescription}
                 updateTodoDueDate={updateTodoDueDate}
+                deleteTodo={deleteTodo}
               />
             ))}
           </SortableContext>

@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Id, TodoProps } from "@/types";
+import { TodoProps } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useRef, useState } from "react";
@@ -14,9 +14,10 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 
 interface Props {
   todo: TodoProps;
-  updateTodoTitle: (id: Id, title: string) => void;
-  updateTodoDescription: (id: Id, description: string) => void;
-  updateTodoDueDate: (id: Id, dueDate: string) => void;
+  updateTodoTitle: (id: string, title: string) => void;
+  updateTodoDescription: (id: string, description: string) => void;
+  updateTodoDueDate: (id: string, dueDate: string) => void;
+  deleteTodo: (id: string) => void;
 }
 
 const Todo = ({
@@ -24,6 +25,7 @@ const Todo = ({
   updateTodoTitle,
   updateTodoDescription,
   updateTodoDueDate,
+  deleteTodo,
 }: Props) => {
   const [titleEditMode, setTitleEditMode] = useState<boolean>(false);
   const [descEditMode, setDescEditMode] = useState<boolean>(false);
@@ -46,7 +48,7 @@ const Todo = ({
     transition,
     isDragging,
   } = useSortable({
-    id: todo.id,
+    id: todo.uniqueId,
     data: {
       type: "Todo",
       todo,
@@ -75,7 +77,7 @@ const Todo = ({
   const handleDateChange = (date: Date | undefined) => {
     setTodoDueDate(date);
     if (date) {
-      updateTodoDueDate(todo.id, date.toISOString());
+      updateTodoDueDate(todo.uniqueId, date.toISOString());
     }
   };
 
@@ -107,11 +109,16 @@ const Todo = ({
                 className="cursor-pointer"
               />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="-mt-4 mr-24">
+            <DropdownMenuContent className="mr-24">
               <DropdownMenuItem>Edit</DropdownMenuItem>
               <DropdownMenuItem>Assign</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500 focus:text-red-500">
+              <DropdownMenuItem
+                className="text-red-500 focus:text-red-500"
+                onClick={() => {
+                  deleteTodo(todo.uniqueId);
+                }}
+              >
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -128,12 +135,12 @@ const Todo = ({
             autoFocus
             onBlur={() => {
               setTitleEditMode(false);
-              updateTodoTitle(todo.id, todoTitle);
+              updateTodoTitle(todo.uniqueId, todoTitle);
             }}
             onKeyDown={(e) => {
               if (e.key !== "Enter") return;
               setTitleEditMode(false);
-              updateTodoTitle(todo.id, todoTitle);
+              updateTodoTitle(todo.uniqueId, todoTitle);
             }}
           />
         ) : (
@@ -153,12 +160,12 @@ const Todo = ({
             autoFocus
             onBlur={() => {
               setDescEditMode(false);
-              updateTodoDescription(todo.id, todoDescription);
+              updateTodoDescription(todo.uniqueId, todoDescription);
             }}
             onKeyDown={(e) => {
               if (e.key !== "Enter") return;
               setDescEditMode(false);
-              updateTodoDescription(todo.id, todoDescription);
+              updateTodoDescription(todo.uniqueId, todoDescription);
             }}
           />
         ) : (

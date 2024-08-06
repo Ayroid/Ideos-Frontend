@@ -30,11 +30,12 @@ import { GoPlusCircle } from "react-icons/go";
 import { FiHome } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ColumnTypes, Id, TodoProps } from "../../../types";
+import { ColumnTypes, TodoProps } from "../../../types";
 import Popup from "@/components/Popup";
 import TodoForm from "@/components/TodoForm";
 import axios from "axios";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { generateUniqueId } from "@/utils/generateId";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
@@ -45,7 +46,7 @@ const KanbanBoard = () => {
   const [isClient, setIsClient] = useState(false);
   const [todos, setTodos] = useState<TodoProps[]>([]);
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
-  const [activeColumnId, setActiveColumnId] = useState<Id | null>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -59,8 +60,20 @@ const KanbanBoard = () => {
             },
           },
         );
-        console.log(response.data);
-        setColumns(response.data);
+        const fetchedColumns = response.data;
+
+        const fetchedTodos = fetchedColumns.reduce(
+          (acc: TodoProps[], col: ColumnTypes) => {
+            if (col.todoIds && col.todoIds.length > 0) {
+              acc.push(...col.todoIds);
+            }
+            return acc;
+          },
+          [],
+        );
+
+        setColumns(fetchedColumns);
+        setTodos(fetchedTodos);
       } catch (error) {
         console.error("Error fetching columns:", error);
       }
@@ -88,33 +101,32 @@ const KanbanBoard = () => {
   }
 
   async function createNewColumn() {
-    const title = `Column ${columns.length + 1 || 1}`;
-
-    const data = {
-      title,
-    };
-
     try {
-      const response = await axios.post(
-        `http://localhost:5000/api/todoColumns`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+      const uniqueId = generateUniqueId({ obj: "Col" });
+      const title = "New Column";
+
+      const data: ColumnTypes = {
+        uniqueId,
+        title,
+        todoIds: [],
+      };
+
+      setColumns([...columns, data]);
+      await axios.post(`http://localhost:5000/api/todoColumns`, data, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
-      );
-      setColumns([...columns, { title, _id: response.data }]);
+      });
     } catch (error) {
       console.error("Error creating new column:", error);
     }
   }
 
-  async function updateColumn(id: Id, title: string, server: boolean) {
+  async function updateColumn(id: string, title: string, server: boolean) {
     try {
       if (!server) {
         setColumns((columns) =>
-          columns.map((col) => (col._id === id ? { ...col, title } : col)),
+          columns.map((col) => (col.uniqueId === id ? { ...col, title } : col)),
         );
       } else {
         await axios.put(
@@ -132,9 +144,9 @@ const KanbanBoard = () => {
     }
   }
 
-  async function deleteColumn(id: Id) {
+  async function deleteColumn(id: string) {
     try {
-      setColumns(columns.filter((col) => col._id !== id));
+      setColumns(columns.filter((col) => col.uniqueId !== id));
       setTodos(todos.filter((todo) => todo.columnId !== id));
       await axios.delete(`http://localhost:5000/api/todoColumns/${id}`, {
         headers: {
@@ -173,11 +185,11 @@ const KanbanBoard = () => {
     }
     setColumns((columns) => {
       const activeColumnIndex = columns.findIndex(
-        (col) => col._id === activeColumnId,
+        (col) => col.uniqueId === activeColumnId,
       );
 
       const overColumnIndex = columns.findIndex(
-        (col) => col._id === overColumnId,
+        (col) => col.uniqueId === overColumnId,
       );
 
       return arrayMove(columns, activeColumnIndex, overColumnIndex);
@@ -205,8 +217,10 @@ const KanbanBoard = () => {
 
     if (isActivatingTodo && isOverTodo) {
       setTodos((todos) => {
-        const activeIndex = todos.findIndex((todo) => todo.id === activeId);
-        const overIndex = todos.findIndex((todo) => todo.id === overId);
+        const activeIndex = todos.findIndex(
+          (todo) => todo.uniqueId === activeId,
+        );
+        const overIndex = todos.findIndex((todo) => todo.uniqueId === overId);
 
         todos[activeIndex].columnId = todos[overIndex].columnId;
 
@@ -218,35 +232,44 @@ const KanbanBoard = () => {
 
     if (isActivatingTodo && isOverAColumn) {
       setTodos((todos) => {
-        const activeIndex = todos.findIndex((todo) => todo.id === activeId);
-
-        todos[activeIndex].columnId = overId;
-
+        const activeIndex = todos.findIndex(
+          (todo) => todo.uniqueId === activeId,
+        );
+        todos[activeIndex].columnId = String(overId);
         return arrayMove(todos, activeIndex, activeIndex);
       });
     }
   }
 
-  function createTodo(newTodo: TodoProps) {
-    const todoToAdd: TodoProps = {
-      id: generateId(),
-      title: newTodo.title,
-      columnId: newTodo.columnId,
-      description: newTodo.description,
-      tags: newTodo.tags,
-      dueDate: newTodo.dueDate,
-    };
+  async function createTodo(newTodo: TodoProps) {
+    try {
+      const uniqueId = generateUniqueId({ obj: "Todo" });
 
-    console.log(todoToAdd);
+      const data: TodoProps = {
+        uniqueId,
+        title: newTodo.title,
+        columnId: newTodo.columnId,
+        description: newTodo.description,
+        tags: newTodo.tags,
+        dueDate: newTodo.dueDate,
+      };
 
-    setTodos([...todos, todoToAdd]);
-    setPopUpVisible(false);
+      setTodos([...todos, data]);
+      setPopUpVisible(false);
+      await axios.post(`http://localhost:5000/api/todos`, data, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating new column:", error);
+    }
   }
 
-  function updateTodoTitle(id: Id, title: string) {
+  function updateTodoTitle(id: string, title: string) {
     setTodos((todos) =>
       todos.map((todo) => {
-        if (todo.id === id) {
+        if (todo.uniqueId === id) {
           return { ...todo, title };
         }
         return todo;
@@ -254,10 +277,10 @@ const KanbanBoard = () => {
     );
   }
 
-  function updateTodoDescription(id: Id, description: string) {
+  function updateTodoDescription(id: string, description: string) {
     setTodos((todos) =>
       todos.map((todo) => {
-        if (todo.id === id) {
+        if (todo.uniqueId === id) {
           return { ...todo, description };
         }
         return todo;
@@ -265,11 +288,11 @@ const KanbanBoard = () => {
     );
   }
 
-  function updateTodoDueDate(id: Id, dueDate: string) {
+  function updateTodoDueDate(id: string, dueDate: string) {
     console.log(dueDate);
     setTodos((todos) =>
       todos.map((todo) => {
-        if (todo.id === id) {
+        if (todo.uniqueId === id) {
           return { ...todo, dueDate };
         }
         return todo;
@@ -277,9 +300,30 @@ const KanbanBoard = () => {
     );
   }
 
+  async function deleteTodo(id: string) {
+    try {
+      setTodos((todos) => todos.filter((todo) => todo.uniqueId !== id));
+
+      setColumns((columns) =>
+        columns.map((col) => ({
+          ...col,
+          todoIds: col.todoIds.filter((todoId) => todoId.uniqueId !== id),
+        })),
+      );
+
+      await axios.delete(`http://localhost:5000/api/todos/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
+  }
+
   return (
     <div className="box-border h-screen p-10">
-      <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10">
+      <div className="m-auto flex h-full w-fit min-w-full flex-col items-start rounded-3xl bg-primary-foreground px-10">
         <div className="mt-10">
           <Breadcrumb>
             <BreadcrumbList>
@@ -322,21 +366,22 @@ const KanbanBoard = () => {
         >
           <div className="m-auto mt-10 flex w-full gap-4">
             <div className="flex gap-4">
-              <SortableContext items={columns.map((col) => col._id)}>
+              <SortableContext items={columns.map((col) => col.uniqueId)}>
                 {columns.map((col) => (
                   <ColumnContainer
-                    key={col._id}
+                    key={col.uniqueId}
                     column={col}
                     deleteColumn={deleteColumn}
                     updateColumn={updateColumn}
                     updateTodoTitle={updateTodoTitle}
                     updateTodoDescription={updateTodoDescription}
                     updateTodoDueDate={updateTodoDueDate}
+                    deleteTodo={deleteTodo}
                     setPopUpVisible={(value: boolean) => {
                       setPopUpVisible(value);
-                      setActiveColumnId(col._id);
+                      setActiveColumnId(col.uniqueId);
                     }}
-                    todos={todos.filter((t) => t.columnId === col._id)}
+                    todos={todos.filter((t) => t.columnId === col.uniqueId)}
                   />
                 ))}
               </SortableContext>
@@ -356,8 +401,11 @@ const KanbanBoard = () => {
                     updateTodoTitle={updateTodoTitle}
                     updateTodoDescription={updateTodoDescription}
                     updateTodoDueDate={updateTodoDueDate}
+                    deleteTodo={deleteTodo}
                     setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
-                    todos={todos.filter((t) => t.columnId === activeColumn._id)}
+                    todos={todos.filter(
+                      (t) => t.columnId === activeColumn.uniqueId,
+                    )}
                   />
                 )}
                 {activeTodo && (
@@ -366,6 +414,7 @@ const KanbanBoard = () => {
                     updateTodoDescription={updateTodoDescription}
                     updateTodoTitle={updateTodoTitle}
                     updateTodoDueDate={updateTodoDueDate}
+                    deleteTodo={deleteTodo}
                   />
                 )}
               </DragOverlay>,

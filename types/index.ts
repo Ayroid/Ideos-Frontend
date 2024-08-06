@@ -1,17 +1,15 @@
 import { ReactNode } from "react";
 
-export type Id = string | number;
-
 export type ColumnTypes = {
-  _id: Id;
+  uniqueId: string;
   title: string;
-  todoIds?: string[];
+  todoIds: TodoProps[];
 };
 
 export type TodoProps = {
-  id: Id;
+  uniqueId: string;
   title: string;
-  columnId: Id;
+  columnId: string;
   description: string;
   tags: {
     title: string;
@@ -25,4 +23,8 @@ export type PopupProps = {
   isOpen: boolean;
   onClose: () => void;
   container?: boolean;
+};
+
+export type uniqueIdProps = {
+  obj: "Todo" | "Col";
 };
