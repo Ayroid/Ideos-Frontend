@@ -35,7 +35,9 @@ export const LogoIcon = () => {
       href="#"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
-      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-black dark:bg-white" />
+      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-black dark:bg-white">
+      <img src="/io-logo-color 1.png" alt="Logo"></img>
+      </div>
     </Link>
   );
 };
@@ -50,7 +52,7 @@ export default function SidebarComponent() {
     },
     {
       label: "Profile",
-      href: "#",
+      href: "/pages/profile",
       icon: (
         <IconUserBolt className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
@@ -99,8 +101,7 @@ export default function SidebarComponent() {
                 href: "#",
                 icon: user?.picture ? (
                   <Image
-                    src={
-                      user?.picture}
+                    src={user?.picture}
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}
@@ -108,9 +109,9 @@ export default function SidebarComponent() {
                   />
                 ) : (
                   <Avatar>
-                  <AvatarImage />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
+                    <AvatarImage />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
                 ),
               }}
             />
