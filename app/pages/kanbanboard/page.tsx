@@ -324,113 +324,113 @@ const KanbanBoard = () => {
   return (
     <div className="box-border h-screen p-10">
       {/* <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10"> */}
-        <div className="mt-10">
-          <Breadcrumb>
+      <div className="mt-10">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">
+                <FiHome />
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/">
-                  <FiHome />
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/components">Components</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbEllipsis />
-                </BreadcrumbItem>
-              </BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+                <BreadcrumbEllipsis />
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        <div className="mt-10">
-          <Tabs defaultValue="account">
-            <TabsList>
-              <TabsTrigger value="Board">Board</TabsTrigger>
-              <TabsTrigger value="List">List</TabsTrigger>
-              <TabsTrigger value="Timeline">Timeline</TabsTrigger>
-              <TabsTrigger value="DueTasks">Due Tasks</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-        <DndContext
-          sensors={sensors}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onDragOver={onDragOver}
-        >
-          <div className="m-auto mt-10 flex w-full gap-4">
-            <div className="flex gap-4">
-              <SortableContext items={columns.map((col) => col.uniqueId)}>
-                {columns.map((col) => (
-                  <ColumnContainer
-                    key={col.uniqueId}
-                    column={col}
-                    deleteColumn={deleteColumn}
-                    updateColumn={updateColumn}
-                    updateTodoTitle={updateTodoTitle}
-                    updateTodoDescription={updateTodoDescription}
-                    updateTodoDueDate={updateTodoDueDate}
-                    deleteTodo={deleteTodo}
-                    setPopUpVisible={(value: boolean) => {
-                      setPopUpVisible(value);
-                      setActiveColumnId(col.uniqueId);
-                    }}
-                    todos={todos.filter((t) => t.columnId === col.uniqueId)}
-                  />
-                ))}
-              </SortableContext>
-            </div>
-            <Button onClick={createNewColumn}>
-              <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
-            </Button>
-          </div>
-          {isClient &&
-            createPortal(
-              <DragOverlay>
-                {activeColumn && (
-                  <ColumnContainer
-                    column={activeColumn}
-                    deleteColumn={deleteColumn}
-                    updateColumn={updateColumn}
-                    updateTodoTitle={updateTodoTitle}
-                    updateTodoDescription={updateTodoDescription}
-                    updateTodoDueDate={updateTodoDueDate}
-                    deleteTodo={deleteTodo}
-                    setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
-                    todos={todos.filter(
-                      (t) => t.columnId === activeColumn.uniqueId,
-                    )}
-                  />
-                )}
-                {activeTodo && (
-                  <Todo
-                    todo={activeTodo}
-                    updateTodoDescription={updateTodoDescription}
-                    updateTodoTitle={updateTodoTitle}
-                    updateTodoDueDate={updateTodoDueDate}
-                    deleteTodo={deleteTodo}
-                  />
-                )}
-              </DragOverlay>,
-              document.body,
-            )}
-        </DndContext>
-        {popUpVisible && (
-          <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
-            <TodoForm
-              createTodo={createTodo}
-              activeColumnId={activeColumnId}
-              onClose={() => setPopUpVisible(false)}
-            />
-          </Popup>
-        )}
+            <BreadcrumbItem>
+              <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
+      <div className="mt-10">
+        <Tabs defaultValue="account">
+          <TabsList>
+            <TabsTrigger value="Board">Board</TabsTrigger>
+            <TabsTrigger value="List">List</TabsTrigger>
+            <TabsTrigger value="Timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="DueTasks">Due Tasks</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+      <DndContext
+        sensors={sensors}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragOver={onDragOver}
+      >
+        <div className="m-auto mt-10 flex w-full gap-4">
+          <div className="flex gap-4">
+            <SortableContext items={columns.map((col) => col.uniqueId)}>
+              {columns.map((col) => (
+                <ColumnContainer
+                  key={col.uniqueId}
+                  column={col}
+                  deleteColumn={deleteColumn}
+                  updateColumn={updateColumn}
+                  updateTodoTitle={updateTodoTitle}
+                  updateTodoDescription={updateTodoDescription}
+                  updateTodoDueDate={updateTodoDueDate}
+                  deleteTodo={deleteTodo}
+                  setPopUpVisible={(value: boolean) => {
+                    setPopUpVisible(value);
+                    setActiveColumnId(col.uniqueId);
+                  }}
+                  todos={todos.filter((t) => t.columnId === col.uniqueId)}
+                />
+              ))}
+            </SortableContext>
+          </div>
+          <Button onClick={createNewColumn}>
+            <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
+          </Button>
+        </div>
+        {isClient &&
+          createPortal(
+            <DragOverlay>
+              {activeColumn && (
+                <ColumnContainer
+                  column={activeColumn}
+                  deleteColumn={deleteColumn}
+                  updateColumn={updateColumn}
+                  updateTodoTitle={updateTodoTitle}
+                  updateTodoDescription={updateTodoDescription}
+                  updateTodoDueDate={updateTodoDueDate}
+                  deleteTodo={deleteTodo}
+                  setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
+                  todos={todos.filter(
+                    (t) => t.columnId === activeColumn.uniqueId,
+                  )}
+                />
+              )}
+              {activeTodo && (
+                <Todo
+                  todo={activeTodo}
+                  updateTodoDescription={updateTodoDescription}
+                  updateTodoTitle={updateTodoTitle}
+                  updateTodoDueDate={updateTodoDueDate}
+                  deleteTodo={deleteTodo}
+                />
+              )}
+            </DragOverlay>,
+            document.body,
+          )}
+      </DndContext>
+      {popUpVisible && (
+        <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
+          <TodoForm
+            createTodo={createTodo}
+            activeColumnId={activeColumnId}
+            onClose={() => setPopUpVisible(false)}
+          />
+        </Popup>
+      )}
+    </div>
     // </div>
   );
 };
