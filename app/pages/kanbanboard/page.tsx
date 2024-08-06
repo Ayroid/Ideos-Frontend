@@ -4,6 +4,7 @@ import ColumnContainer from "@/components/ColumnContainer";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DndContext,
   DragEndEvent,
@@ -41,6 +42,7 @@ const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
   const accessToken = getAccessTokenRaw();
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
+  const [columnsLoading, setColumnsLoading] = useState<Boolean>(false);
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
   const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -51,6 +53,7 @@ const KanbanBoard = () => {
   useEffect(() => {
     const fetchColumns = async () => {
       try {
+        setColumnsLoading(true);
         console.log("Sending Request");
         const response = await axios.get(
           `http://localhost:5000/api/todoColumns`,
@@ -76,6 +79,8 @@ const KanbanBoard = () => {
         setTodos(fetchedTodos);
       } catch (error) {
         console.error("Error fetching columns:", error);
+      } finally {
+        setColumnsLoading(false);
       }
     };
 
@@ -95,10 +100,6 @@ const KanbanBoard = () => {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  function generateId() {
-    return Math.floor(Math.random() * 10001).toString();
-  }
 
   async function createNewColumn() {
     try {
@@ -322,9 +323,9 @@ const KanbanBoard = () => {
   }
 
   return (
-    <div className="box-border h-screen p-10">
+    <div>
       {/* <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10"> */}
-      <div className="mt-10">
+      <div>
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -348,7 +349,7 @@ const KanbanBoard = () => {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className="mt-10">
+      <div className="mt-10 flex justify-between">
         <Tabs defaultValue="account">
           <TabsList>
             <TabsTrigger value="Board">Board</TabsTrigger>
@@ -357,15 +358,25 @@ const KanbanBoard = () => {
             <TabsTrigger value="DueTasks">Due Tasks</TabsTrigger>
           </TabsList>
         </Tabs>
+        <Button onClick={createNewColumn}>
+          <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
+        </Button>
       </div>
-      <DndContext
-        sensors={sensors}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragOver={onDragOver}
-      >
-        <div className="m-auto mt-10 flex w-full gap-4">
-          <div className="flex gap-4">
+      {columnsLoading ? (
+        <div className="mt-10 flex gap-4 overflow-auto">
+          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
+          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
+          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
+          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
+        </div>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragOver={onDragOver}
+        >
+          <div className="mt-10 flex gap-4 overflow-auto">
             <SortableContext items={columns.map((col) => col.uniqueId)}>
               {columns.map((col) => (
                 <ColumnContainer
@@ -386,41 +397,38 @@ const KanbanBoard = () => {
               ))}
             </SortableContext>
           </div>
-          <Button onClick={createNewColumn}>
-            <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
-          </Button>
-        </div>
-        {isClient &&
-          createPortal(
-            <DragOverlay>
-              {activeColumn && (
-                <ColumnContainer
-                  column={activeColumn}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  updateTodoTitle={updateTodoTitle}
-                  updateTodoDescription={updateTodoDescription}
-                  updateTodoDueDate={updateTodoDueDate}
-                  deleteTodo={deleteTodo}
-                  setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
-                  todos={todos.filter(
-                    (t) => t.columnId === activeColumn.uniqueId,
-                  )}
-                />
-              )}
-              {activeTodo && (
-                <Todo
-                  todo={activeTodo}
-                  updateTodoDescription={updateTodoDescription}
-                  updateTodoTitle={updateTodoTitle}
-                  updateTodoDueDate={updateTodoDueDate}
-                  deleteTodo={deleteTodo}
-                />
-              )}
-            </DragOverlay>,
-            document.body,
-          )}
-      </DndContext>
+          {isClient &&
+            createPortal(
+              <DragOverlay>
+                {activeColumn && (
+                  <ColumnContainer
+                    column={activeColumn}
+                    deleteColumn={deleteColumn}
+                    updateColumn={updateColumn}
+                    updateTodoTitle={updateTodoTitle}
+                    updateTodoDescription={updateTodoDescription}
+                    updateTodoDueDate={updateTodoDueDate}
+                    deleteTodo={deleteTodo}
+                    setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
+                    todos={todos.filter(
+                      (t) => t.columnId === activeColumn.uniqueId,
+                    )}
+                  />
+                )}
+                {activeTodo && (
+                  <Todo
+                    todo={activeTodo}
+                    updateTodoDescription={updateTodoDescription}
+                    updateTodoTitle={updateTodoTitle}
+                    updateTodoDueDate={updateTodoDueDate}
+                    deleteTodo={deleteTodo}
+                  />
+                )}
+              </DragOverlay>,
+              document.body,
+            )}
+        </DndContext>
+      )}
       {popUpVisible && (
         <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
           <TodoForm

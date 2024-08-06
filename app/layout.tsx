@@ -25,9 +25,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex">
-            <SidebarComponent />
-            <main className="flex-1">{children}</main>
+          <div className="flex h-screen w-screen overflow-hidden">
+            <div >
+              <SidebarComponent />
+            </div>
+            <main className="box-border h-full w-full p-10 overflow-y-auto">{children}</main>
           </div>
         </ThemeProvider>
       </body>

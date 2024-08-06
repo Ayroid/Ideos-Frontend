@@ -35,8 +35,12 @@ export const LogoIcon = () => {
       href="#"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
-      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-black dark:bg-white">
-      <img src="/io-logo-color 1.png" alt="Logo"></img>
+      <div className="flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm">
+        <img
+          src="/io-logo-color 1.png"
+          className="h-6 w-6 rounded-full"
+          alt="Logo"
+        ></img>
       </div>
     </Link>
   );
@@ -87,7 +91,9 @@ export default function SidebarComponent() {
       <Sidebar open={open} setOpen={setOpen} animate={true}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-            {open ? <Logo /> : <LogoIcon />}
+            <div className="flex items-center gap-2">
+              <LogoIcon /> {open ? "Ideos" : null}
+            </div>
             <div className="mt-8 flex flex-col gap-2">
               {links.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />

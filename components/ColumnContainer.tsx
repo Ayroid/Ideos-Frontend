@@ -101,7 +101,7 @@ function ColumnContainer(props: Readonly<Props>) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={"flex min-h-[500px] w-[350px] flex-col"}
+      className={"flex min-h-[500px] min-w-[350px] flex-col"}
     >
       <CardHeader className="p-0">
         <CardTitle>
