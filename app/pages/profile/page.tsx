@@ -106,7 +106,7 @@ function UserProfile() {
   );
 }
 
-function CalendarIcon(props: SVGProps<SVGSVGElement>) {
+function CalendarIcon(props: Readonly<SVGProps<SVGSVGElement>>) {
   return (
     <svg
       {...props}
