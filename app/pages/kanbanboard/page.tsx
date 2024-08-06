@@ -42,7 +42,7 @@ const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
   const accessToken = getAccessTokenRaw();
   const [columns, setColumns] = useState<ColumnTypes[]>([]);
-  const [columnsLoading, setColumnsLoading] = useState<Boolean>(false);
+  const [columnsLoading, setColumnsLoading] = useState<boolean>(true);
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
   const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -53,7 +53,6 @@ const KanbanBoard = () => {
   useEffect(() => {
     const fetchColumns = async () => {
       try {
-        setColumnsLoading(true);
         console.log("Sending Request");
         const response = await axios.get(
           `http://localhost:5000/api/todoColumns`,
@@ -364,10 +363,10 @@ const KanbanBoard = () => {
       </div>
       {columnsLoading ? (
         <div className="mt-10 flex gap-4 overflow-auto">
-          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
-          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
-          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
-          <Skeleton className="rounded-lg h-[500px] w-[350px]" />
+          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
         </div>
       ) : (
         <DndContext
