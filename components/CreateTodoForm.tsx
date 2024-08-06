@@ -18,7 +18,11 @@ interface TodoFormProps {
   onClose: () => void;
 }
 
-const TodoForm = ({ createTodo, activeColumnId, onClose }: TodoFormProps) => {
+const CreateTodoForm = ({
+  createTodo,
+  activeColumnId,
+  onClose,
+}: TodoFormProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -160,4 +164,4 @@ const TodoForm = ({ createTodo, activeColumnId, onClose }: TodoFormProps) => {
   );
 };
 
-export default TodoForm;
+export default CreateTodoForm;

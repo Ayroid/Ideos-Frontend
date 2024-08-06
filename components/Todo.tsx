@@ -1,4 +1,4 @@
-import { DatePicker } from "@/components/ui/date-picker"; // Import DatePicker
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,37 +9,19 @@ import {
 import { TodoProps } from "@/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import Popup from "./Popup";
+import UpdateTodoForm from "./UpdateTodoForm";
 
 interface Props {
   todo: TodoProps;
-  updateTodoTitle: (id: string, title: string) => void;
-  updateTodoDescription: (id: string, description: string) => void;
-  updateTodoDueDate: (id: string, dueDate: string) => void;
+  columnId?: string;
+  updateTodo: (todoData: TodoProps) => void;
   deleteTodo: (id: string) => void;
 }
 
-const Todo = ({
-  todo,
-  updateTodoTitle,
-  updateTodoDescription,
-  updateTodoDueDate,
-  deleteTodo,
-}: Props) => {
-  const [titleEditMode, setTitleEditMode] = useState<boolean>(false);
-  const [descEditMode, setDescEditMode] = useState<boolean>(false);
-
-  const [todoTitle, setTodoTitle] = useState<string>(todo.title);
-  const [todoDescription, setTodoDescription] = useState<string>(
-    todo.description,
-  );
-  const [todoDueDate, setTodoDueDate] = useState<Date | undefined>(
-    todo.dueDate ? new Date(todo.dueDate) : undefined,
-  ); // State for due date
-
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+const Todo = ({ todo, columnId, updateTodo, deleteTodo }: Props) => {
   const {
     attributes,
     listeners,
@@ -60,125 +42,81 @@ const Todo = ({
     transition,
   };
 
-  useEffect(() => {
-    if (descEditMode && textareaRef.current) {
-      adjustTextareaHeight();
-    }
-  }, [descEditMode, todoDescription]);
-
-  const adjustTextareaHeight = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto"; // Reset height to auto to shrink if needed
-      textarea.style.height = `${textarea.scrollHeight}px`; // Set height to scrollHeight
-    }
-  };
-
-  const handleDateChange = (date: Date | undefined) => {
-    setTodoDueDate(date);
-    if (date) {
-      updateTodoDueDate(todo.uniqueId, date.toISOString());
-    }
-  };
+  const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`h-fit w-full rounded-md border-2 bg-primary-foreground p-4 ${isDragging ? "opacity-40" : "opacity-100"} flex flex-col`}
-    >
-      <div className="flex items-start justify-between">
-        <div id="tags" className="mb-2 flex flex-wrap gap-2">
-          {todo.tags.map((tag: { title: string; color: string }) => (
-            <p
-              key={tag.title}
-              style={{ backgroundColor: tag.color }}
-              className="text-nowrap rounded-sm px-2 py-1 text-[0.75rem] font-bold text-white"
-            >
-              {tag.title}
-            </p>
-          ))}
-        </div>
-        <div className="mt-1 flex gap-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <BsThreeDotsVertical
-                color="rgb(255 255 255)"
-                className="cursor-pointer"
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-24">
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Assign</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-500 focus:text-red-500"
-                onClick={() => {
-                  deleteTodo(todo.uniqueId);
-                }}
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className={`h-fit w-full rounded-md border-2 bg-primary-foreground p-4 ${isDragging ? "opacity-40" : "opacity-100"} flex flex-col`}
+      >
+        <div className="flex items-start justify-between">
+          <div id="tags" className="mb-2 flex flex-wrap gap-2">
+            {todo.tags.map((tag: { title: string; color: string }) => (
+              <p
+                key={tag.title}
+                style={{ backgroundColor: tag.color }}
+                className="text-nowrap rounded-sm px-2 py-1 text-[0.75rem] font-bold text-white"
               >
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {tag.title}
+              </p>
+            ))}
+          </div>
+          <div className="mt-1 flex gap-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <BsThreeDotsVertical
+                  color="rgb(255 255 255)"
+                  className="cursor-pointer"
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="mr-24">
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPopUpVisible(true);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem>Assign</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-500 focus:text-red-500"
+                  onClick={() => {
+                    deleteTodo(todo.uniqueId);
+                  }}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-      <div id="content">
-        {titleEditMode ? (
-          <input
-            type="text"
-            value={todoTitle}
-            className="text-md my-2 w-full bg-transparent text-xl font-bold text-white outline-none"
-            onChange={(e) => setTodoTitle(e.target.value)}
-            autoFocus
-            onBlur={() => {
-              setTitleEditMode(false);
-              updateTodoTitle(todo.uniqueId, todoTitle);
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              setTitleEditMode(false);
-              updateTodoTitle(todo.uniqueId, todoTitle);
-            }}
-          />
-        ) : (
-          <h1
-            className="my-2 bg-transparent text-xl font-bold text-white"
-            onClick={() => setTitleEditMode(true)}
-          >
-            {todoTitle}
+        <div id="content">
+          <h1 className="my-2 bg-transparent text-xl font-bold text-white">
+            {todo.title}
           </h1>
-        )}
-        {descEditMode ? (
-          <textarea
-            ref={textareaRef}
-            value={todoDescription}
-            className="text-md w-full resize-none text-clip bg-transparent text-gray-400 outline-none"
-            onChange={(e) => setTodoDescription(e.target.value)}
-            autoFocus
-            onBlur={() => {
-              setDescEditMode(false);
-              updateTodoDescription(todo.uniqueId, todoDescription);
-            }}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              setDescEditMode(false);
-              updateTodoDescription(todo.uniqueId, todoDescription);
-            }}
-          />
-        ) : (
-          <p
-            className="text-wrap break-words text-gray-400"
-            onClick={() => setDescEditMode(true)}
-          >
-            {todoDescription}
+
+          <p className="text-wrap break-words text-gray-400">
+            {todo.description}
           </p>
-        )}
+        </div>
+        <DatePicker disabled selectedDate={new Date(String(todo.dueDate))} />
       </div>
-      <DatePicker selectedDate={todoDueDate} onDateChange={handleDateChange} />
-    </div>
+      {popUpVisible && (
+        <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
+          <UpdateTodoForm
+            updateTodo={updateTodo}
+            todo={todo}
+            activeColumnId={columnId!}
+            onClose={() => setPopUpVisible(false)}
+          />
+        </Popup>
+      )}
+    </>
   );
 };
 

@@ -33,7 +33,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ColumnTypes, TodoProps } from "../../../types";
 import Popup from "@/components/Popup";
-import TodoForm from "@/components/TodoForm";
+import TodoForm from "@/components/CreateTodoForm";
 import axios from "axios";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { generateUniqueId } from "@/utils/generateId";
@@ -262,42 +262,33 @@ const KanbanBoard = () => {
         },
       });
     } catch (error) {
-      console.error("Error creating new column:", error);
+      console.error("Error creating new todo:", error);
     }
   }
 
-  function updateTodoTitle(id: string, title: string) {
-    setTodos((todos) =>
-      todos.map((todo) => {
-        if (todo.uniqueId === id) {
-          return { ...todo, title };
-        }
-        return todo;
-      }),
-    );
-  }
-
-  function updateTodoDescription(id: string, description: string) {
-    setTodos((todos) =>
-      todos.map((todo) => {
-        if (todo.uniqueId === id) {
-          return { ...todo, description };
-        }
-        return todo;
-      }),
-    );
-  }
-
-  function updateTodoDueDate(id: string, dueDate: string) {
-    console.log(dueDate);
-    setTodos((todos) =>
-      todos.map((todo) => {
-        if (todo.uniqueId === id) {
-          return { ...todo, dueDate };
-        }
-        return todo;
-      }),
-    );
+  async function updateTodo(todoData: TodoProps) {
+    try {
+      setTodos((todos) =>
+        todos.map((todo) => {
+          if (todo.uniqueId === todoData.uniqueId) {
+            return { ...todoData };
+          }
+          return todo;
+        }),
+      );
+      setPopUpVisible(false);
+      await axios.put(
+        `http://localhost:5000/api/todos/${todoData.uniqueId}`,
+        todoData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+    } catch (error) {
+      console.error("Error updating todo:", error);
+    }
   }
 
   async function deleteTodo(id: string) {
@@ -383,9 +374,7 @@ const KanbanBoard = () => {
                   column={col}
                   deleteColumn={deleteColumn}
                   updateColumn={updateColumn}
-                  updateTodoTitle={updateTodoTitle}
-                  updateTodoDescription={updateTodoDescription}
-                  updateTodoDueDate={updateTodoDueDate}
+                  updateTodo={updateTodo}
                   deleteTodo={deleteTodo}
                   setPopUpVisible={(value: boolean) => {
                     setPopUpVisible(value);
@@ -404,9 +393,7 @@ const KanbanBoard = () => {
                     column={activeColumn}
                     deleteColumn={deleteColumn}
                     updateColumn={updateColumn}
-                    updateTodoTitle={updateTodoTitle}
-                    updateTodoDescription={updateTodoDescription}
-                    updateTodoDueDate={updateTodoDueDate}
+                    updateTodo={updateTodo}
                     deleteTodo={deleteTodo}
                     setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
                     todos={todos.filter(
@@ -417,9 +404,7 @@ const KanbanBoard = () => {
                 {activeTodo && (
                   <Todo
                     todo={activeTodo}
-                    updateTodoDescription={updateTodoDescription}
-                    updateTodoTitle={updateTodoTitle}
-                    updateTodoDueDate={updateTodoDueDate}
+                    updateTodo={updateTodo}
                     deleteTodo={deleteTodo}
                   />
                 )}

@@ -41,9 +41,7 @@ interface Props {
   column: ColumnTypes;
   deleteColumn: (id: string) => void;
   updateColumn: (id: string, title: string, server: boolean) => void;
-  updateTodoTitle: (id: string, title: string) => void;
-  updateTodoDescription: (id: string, description: string) => void;
-  updateTodoDueDate: (id: string, date: string) => void;
+  updateTodo: (todoData: TodoProps) => void;
   deleteTodo: (id: string) => void;
   setPopUpVisible: (value: boolean) => void;
   todos: TodoProps[];
@@ -53,9 +51,7 @@ function ColumnContainer(props: Readonly<Props>) {
     column,
     deleteColumn,
     updateColumn,
-    updateTodoTitle,
-    updateTodoDescription,
-    updateTodoDueDate,
+    updateTodo,
     deleteTodo,
     setPopUpVisible,
     todos,
@@ -168,9 +164,8 @@ function ColumnContainer(props: Readonly<Props>) {
               <Todo
                 key={todo.uniqueId}
                 todo={todo}
-                updateTodoTitle={updateTodoTitle}
-                updateTodoDescription={updateTodoDescription}
-                updateTodoDueDate={updateTodoDueDate}
+                columnId={column.uniqueId}
+                updateTodo={updateTodo}
                 deleteTodo={deleteTodo}
               />
             ))}

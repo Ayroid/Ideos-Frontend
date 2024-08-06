@@ -14,11 +14,13 @@ import {
 } from "@/components/ui/popover";
 
 interface DatePickerProps {
-  selectedDate: Date | undefined;
-  onDateChange: (date: Date | undefined) => void;
+  disabled?: boolean;
+  selectedDate?: Date | undefined;
+  onDateChange?: (date: Date | undefined) => void;
 }
 
 export function DatePicker({
+  disabled,
   selectedDate,
   onDateChange,
 }: Readonly<DatePickerProps>) {
@@ -30,7 +32,7 @@ export function DatePicker({
 
   const handleDateSelect = (date: Date | undefined) => {
     setDate(date);
-    onDateChange(date);
+    onDateChange && onDateChange(date);
   };
 
   return (
@@ -38,6 +40,7 @@ export function DatePicker({
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
+          disabled={disabled}
           className={cn(
             "mt-4 w-fit justify-start text-left font-normal",
             !date && "text-muted-foreground",
