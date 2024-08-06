@@ -11,8 +11,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { redirect } from "next/navigation";
 
 export const Logo = () => {
   return (
@@ -34,7 +35,9 @@ export const LogoIcon = () => {
       href="#"
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
-      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-black dark:bg-white" />
+      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-black dark:bg-white">
+      <img src="/io-logo-color 1.png" alt="Logo"></img>
+      </div>
     </Link>
   );
 };
@@ -42,14 +45,14 @@ export default function SidebarComponent() {
   const links = [
     {
       label: "Dashboard",
-      href: "#",
+      href: "/",
       icon: (
         <IconBrandTabler className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
     {
       label: "Profile",
-      href: "#",
+      href: "/pages/profile",
       icon: (
         <IconUserBolt className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
@@ -96,16 +99,19 @@ export default function SidebarComponent() {
               link={{
                 label: user?.given_name ?? "User",
                 href: "#",
-                icon: (
+                icon: user?.picture ? (
                   <Image
-                    src={
-                      user?.picture ?? "https://assets.aceternity.com/manu.png"
-                    }
+                    src={user?.picture}
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}
                     alt="Avatar"
                   />
+                ) : (
+                  <Avatar>
+                    <AvatarImage />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
                 ),
               }}
             />
