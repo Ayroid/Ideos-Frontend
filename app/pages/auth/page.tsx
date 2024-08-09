@@ -11,7 +11,7 @@ import { ThemeSwitch } from "@/components/ui/theme-switch";
 
 const loginPage = () => {
   return (
-    <div className="flex h-screen w-screen items-center justify-center gap-6">
+    <div className="flex h-full w-full items-center justify-center gap-6">
       <LoginLink>
         <Button>Sign in</Button>
       </LoginLink>

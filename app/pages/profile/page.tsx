@@ -13,7 +13,7 @@ function UserProfile() {
   const user = getUser();
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-4">
+    <div className="flex h-full flex-col items-center justify-center py-4">
       <div className="grid max-w-3xl gap-4 lg:grid-cols-2 lg:gap-6 xl:gap-10">
         <div className="space-y-4 lg:col-span-2">
           <div className="flex items-center space-x-4">

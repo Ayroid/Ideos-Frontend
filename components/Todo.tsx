@@ -68,10 +68,7 @@ const Todo = ({ todo, columnId, updateTodo, deleteTodo }: Props) => {
           <div className="mt-1 flex gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <BsThreeDotsVertical
-                  color="rgb(255 255 255)"
-                  className="cursor-pointer"
-                />
+                <BsThreeDotsVertical className="cursor-pointer" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="mr-24">
                 <DropdownMenuItem
@@ -96,11 +93,11 @@ const Todo = ({ todo, columnId, updateTodo, deleteTodo }: Props) => {
           </div>
         </div>
         <div id="content">
-          <h1 className="my-2 bg-transparent text-xl font-bold text-white">
+          <h1 className="my-2 bg-transparent text-xl font-bold">
             {todo.title}
           </h1>
 
-          <p className="text-wrap break-words text-gray-400">
+          <p className="text-wrap break-words text-muted-foreground">
             {todo.description}
           </p>
         </div>

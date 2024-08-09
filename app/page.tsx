@@ -28,7 +28,7 @@ export default function Home() {
   }, [login]);
 
   return (
-    <main className="flex h-screen items-center justify-center gap-6">
+    <main className="flex h-full items-center justify-center gap-6">
       <Link href="/pages/auth">
         <Button>Auth Page</Button>
       </Link>
