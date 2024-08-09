@@ -316,7 +316,7 @@ const KanbanBoard = () => {
     <div>
       {/* <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10"> */}
       <div>
-        <Breadcrumb>
+        {/* <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink href="/">
@@ -337,7 +337,7 @@ const KanbanBoard = () => {
               <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
-        </Breadcrumb>
+        </Breadcrumb> */}
       </div>
       <div className="mt-10 flex justify-between">
         <Tabs defaultValue="account">

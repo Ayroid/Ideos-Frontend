@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import SidebarComponent from "@/components/SidePanel";
+import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,10 +28,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex h-screen w-screen overflow-hidden">
-            <div >
+            <div>
               <SidebarComponent />
             </div>
-            <main className="box-border h-full w-full p-10 overflow-y-auto">{children}</main>
+            <main className="box-border h-full w-full overflow-y-auto p-10">
+              <RelativeBreadCrumb />
+              {children}
+            </main>
           </div>
         </ThemeProvider>
       </body>
