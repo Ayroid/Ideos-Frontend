@@ -1,10 +1,10 @@
 "use client";
 
 import ColumnContainer from "@/components/ColumnContainer";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DndContext,
   DragEndEvent,
@@ -16,27 +16,16 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
-} from "@/components/ui/breadcrumb";
-
+import TodoForm from "@/components/CreateTodoForm";
+import Popup from "@/components/Popup";
+import { generateUniqueId } from "@/utils/generateId";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
-import { GoPlusCircle } from "react-icons/go";
-import { FiHome } from "react-icons/fi";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoProps } from "../../../types";
-import Popup from "@/components/Popup";
-import TodoForm from "@/components/CreateTodoForm";
-import axios from "axios";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { generateUniqueId } from "@/utils/generateId";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
@@ -49,6 +38,7 @@ const KanbanBoard = () => {
   const [todos, setTodos] = useState<TodoProps[]>([]);
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
+  const [activePage, setActivePage] = useState<string>("board");
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -313,117 +303,119 @@ const KanbanBoard = () => {
   }
 
   return (
-    <div>
-      {/* <div className="m-auto flex h-full min-w-full w-fit flex-col items-start rounded-3xl bg-primary-foreground px-10"> */}
-      <div>
-        {/* <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">
-                <FiHome />
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/components">Components</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbEllipsis />
-              </BreadcrumbItem>
-            </BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb> */}
+    <Tabs
+      defaultValue="board"
+      onValueChange={(value) => {
+        setActivePage(value);
+      }}
+    >
+      <div className="mt-10 flex w-full justify-between">
+        <TabsList className="px-2 py-6">
+          <TabsTrigger value="board" className="text-md">
+            Board
+          </TabsTrigger>
+          <TabsTrigger value="list" className="text-md">
+            List
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="text-md">
+            Timeline
+          </TabsTrigger>
+          <TabsTrigger value="dueTasks" className="text-md">
+            Due Tasks
+          </TabsTrigger>
+        </TabsList>
+        {activePage == "board" && (
+          <Button onClick={createNewColumn}>
+            <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
+          </Button>
+        )}
       </div>
-      <div className="mt-10 flex justify-between">
-        <Tabs defaultValue="account">
-          <TabsList>
-            <TabsTrigger value="Board">Board</TabsTrigger>
-            <TabsTrigger value="List">List</TabsTrigger>
-            <TabsTrigger value="Timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="DueTasks">Due Tasks</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <Button onClick={createNewColumn}>
-          <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
-        </Button>
-      </div>
-      {columnsLoading ? (
-        <div className="mt-10 flex gap-4 overflow-auto">
-          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-          <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-        </div>
-      ) : (
-        <DndContext
-          sensors={sensors}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onDragOver={onDragOver}
-        >
-          <div className="mt-10 flex gap-4 overflow-auto">
-            <SortableContext items={columns.map((col) => col.uniqueId)}>
-              {columns.map((col) => (
-                <ColumnContainer
-                  key={col.uniqueId}
-                  column={col}
-                  deleteColumn={deleteColumn}
-                  updateColumn={updateColumn}
-                  updateTodo={updateTodo}
-                  deleteTodo={deleteTodo}
-                  setPopUpVisible={(value: boolean) => {
-                    setPopUpVisible(value);
-                    setActiveColumnId(col.uniqueId);
-                  }}
-                  todos={todos.filter((t) => t.columnId === col.uniqueId)}
-                />
-              ))}
-            </SortableContext>
-          </div>
-          {isClient &&
-            createPortal(
-              <DragOverlay>
-                {activeColumn && (
-                  <ColumnContainer
-                    column={activeColumn}
-                    deleteColumn={deleteColumn}
-                    updateColumn={updateColumn}
-                    updateTodo={updateTodo}
-                    deleteTodo={deleteTodo}
-                    setPopUpVisible={(value: boolean) => setPopUpVisible(value)}
-                    todos={todos.filter(
-                      (t) => t.columnId === activeColumn.uniqueId,
+      <TabsContent value="board">
+        <div>
+          {columnsLoading ? (
+            <div className="mt-10 flex gap-4 overflow-auto">
+              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+            </div>
+          ) : (
+            <DndContext
+              sensors={sensors}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              onDragOver={onDragOver}
+            >
+              <div className="mt-10 flex gap-4 overflow-auto">
+                <SortableContext items={columns.map((col) => col.uniqueId)}>
+                  {columns.map((col) => (
+                    <ColumnContainer
+                      key={col.uniqueId}
+                      column={col}
+                      deleteColumn={deleteColumn}
+                      updateColumn={updateColumn}
+                      updateTodo={updateTodo}
+                      deleteTodo={deleteTodo}
+                      setPopUpVisible={(value: boolean) => {
+                        setPopUpVisible(value);
+                        setActiveColumnId(col.uniqueId);
+                      }}
+                      todos={todos.filter((t) => t.columnId === col.uniqueId)}
+                    />
+                  ))}
+                </SortableContext>
+              </div>
+              {isClient &&
+                createPortal(
+                  <DragOverlay>
+                    {activeColumn && (
+                      <ColumnContainer
+                        column={activeColumn}
+                        deleteColumn={deleteColumn}
+                        updateColumn={updateColumn}
+                        updateTodo={updateTodo}
+                        deleteTodo={deleteTodo}
+                        setPopUpVisible={(value: boolean) =>
+                          setPopUpVisible(value)
+                        }
+                        todos={todos.filter(
+                          (t) => t.columnId === activeColumn.uniqueId,
+                        )}
+                      />
                     )}
-                  />
+                    {activeTodo && (
+                      <Todo
+                        todo={activeTodo}
+                        updateTodo={updateTodo}
+                        deleteTodo={deleteTodo}
+                      />
+                    )}
+                  </DragOverlay>,
+                  document.body,
                 )}
-                {activeTodo && (
-                  <Todo
-                    todo={activeTodo}
-                    updateTodo={updateTodo}
-                    deleteTodo={deleteTodo}
-                  />
-                )}
-              </DragOverlay>,
-              document.body,
-            )}
-        </DndContext>
-      )}
-      {popUpVisible && (
-        <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
-          <TodoForm
-            createTodo={createTodo}
-            activeColumnId={activeColumnId}
-            onClose={() => setPopUpVisible(false)}
-          />
-        </Popup>
-      )}
-    </div>
-    // </div>
+            </DndContext>
+          )}
+          {popUpVisible && (
+            <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
+              <TodoForm
+                createTodo={createTodo}
+                activeColumnId={activeColumnId}
+                onClose={() => setPopUpVisible(false)}
+              />
+            </Popup>
+          )}
+        </div>
+      </TabsContent>
+      <TabsContent value="list" className="mt-10">
+        List
+      </TabsContent>
+      <TabsContent value="timeline" className="mt-10">
+        Timeline
+      </TabsContent>
+      <TabsContent value="dueTasks" className="mt-10">
+        Due Tasks
+      </TabsContent>
+    </Tabs>
   );
 };
 
