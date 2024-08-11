@@ -226,6 +226,9 @@ const KanbanBoard = () => {
           (todo) => todo.uniqueId === activeId,
         );
         todos[activeIndex].columnId = String(overId);
+
+        updateTodo(todos[activeIndex]);
+
         return arrayMove(todos, activeIndex, activeIndex);
       });
     }
