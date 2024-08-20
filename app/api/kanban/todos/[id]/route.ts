@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { parseRequestBody } from "@/utils/requestparser";
 const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function PUT(req: NextRequest) {
@@ -8,7 +9,8 @@ export async function PUT(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const todoId = url.pathname.split("/").pop();
-    await axios.put(`${process.env.SERVER_URL}/todos/${todoId}`, req.body, {
+    const requestBody = await parseRequestBody(req);
+    await axios.put(`${process.env.SERVER_URL}/todos/${todoId}`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

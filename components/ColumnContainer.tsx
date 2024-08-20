@@ -41,21 +41,11 @@ interface Props {
   column: ColumnTypes;
   deleteColumn: (id: string) => void;
   updateColumn: (id: string, title: string, server: boolean) => void;
-  updateTodo: (todoData: TodoTypes) => void;
-  deleteTodo: (id: string) => void;
   setPopUpVisible: (value: boolean) => void;
   todos: TodoTypes[];
 }
 function ColumnContainer(props: Readonly<Props>) {
-  const {
-    column,
-    deleteColumn,
-    updateColumn,
-    updateTodo,
-    deleteTodo,
-    setPopUpVisible,
-    todos,
-  } = props;
+  const { column, deleteColumn, updateColumn, setPopUpVisible, todos } = props;
   const [editMode, setEditMode] = useState<boolean>(false);
 
   const todoIds = useMemo(() => todos.map((todo) => todo.uniqueId), [todos]);
@@ -165,8 +155,6 @@ function ColumnContainer(props: Readonly<Props>) {
                 key={todo.uniqueId}
                 todo={todo}
                 columnId={column.uniqueId}
-                updateTodo={updateTodo}
-                deleteTodo={deleteTodo}
               />
             ))}
           </SortableContext>

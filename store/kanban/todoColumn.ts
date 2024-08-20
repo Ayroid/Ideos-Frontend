@@ -69,5 +69,5 @@ const useTodoColumnStore = create<ColumnStore>((set) => ({
     })),
 }));
 
-export { useTodoColumnStore };
+export { useTodoColumnStore as useTodoColumn };
 export type { ColumnStore };

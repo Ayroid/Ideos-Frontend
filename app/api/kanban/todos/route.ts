@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { parseRequestBody } from "@/utils/requestparser";
 const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function GET(req: NextRequest) {
@@ -20,7 +21,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    await axios.post(`${process.env.SERVER_URL}/todos`, req.body, {
+    const requestBody = await parseRequestBody(req);
+    await axios.post(`${process.env.SERVER_URL}/todos`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -30,5 +32,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }
 }
-
-

@@ -84,5 +84,5 @@ const useTodoStore = create<TodoStore>((set) => ({
     })),
 }));
 
-export { useTodoStore };
+export { useTodoStore as useTodo };
 export type { TodoStore };

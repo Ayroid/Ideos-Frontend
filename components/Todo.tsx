@@ -14,14 +14,19 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import Popup from "./Popup";
 import UpdateTodoForm from "./UpdateTodoForm";
 
+import { deleteTodo as deleteTodoService } from "@/services/kanban/todo";
+import { useTodo } from "@/store/kanban/todo";
+import { useTodoColumn } from "@/store/kanban/todoColumn";
+
 interface Props {
   todo: TodoTypes;
   columnId?: string;
-  updateTodo: (todoData: TodoTypes) => void;
-  deleteTodo: (id: string) => void;
 }
 
-const Todo = ({ todo, columnId, updateTodo, deleteTodo }: Props) => {
+const Todo = ({ todo, columnId }: Props) => {
+  const { deleteTodos } = useTodo((state) => state);
+  const { deleteTodoIdFromColumn } = useTodoColumn((state) => state);
+
   const {
     attributes,
     listeners,
@@ -83,7 +88,11 @@ const Todo = ({ todo, columnId, updateTodo, deleteTodo }: Props) => {
                 <DropdownMenuItem
                   className="text-red-500 focus:text-red-500"
                   onClick={() => {
-                    deleteTodo(todo.uniqueId);
+                    deleteTodoService(
+                      todo.uniqueId,
+                      deleteTodos,
+                      deleteTodoIdFromColumn,
+                    );
                   }}
                 >
                   Delete
@@ -106,7 +115,6 @@ const Todo = ({ todo, columnId, updateTodo, deleteTodo }: Props) => {
       {popUpVisible && (
         <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
           <UpdateTodoForm
-            updateTodo={updateTodo}
             todo={todo}
             activeColumnId={columnId!}
             onClose={() => setPopUpVisible(false)}

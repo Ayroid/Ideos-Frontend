@@ -12,17 +12,19 @@ import { PlusCircledIcon } from "@radix-ui/react-icons";
 import { IoClose } from "react-icons/io5";
 import { useState } from "react";
 
+import { createTodo as createTodoService } from "@/services/kanban/todo";
+import { useTodo } from "@/store/kanban/todo";
+import { usePopup } from "@/store/popup";
+
 interface TodoFormProps {
-  createTodo: (newTodo: TodoTypes) => void;
   activeColumnId: string | null;
   onClose: () => void;
 }
 
-const CreateTodoForm = ({
-  createTodo,
-  activeColumnId,
-  onClose,
-}: TodoFormProps) => {
+const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
+  const { addTodos } = useTodo((state) => state);
+  const { close: closePopUp } = usePopup((state) => state);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -60,7 +62,7 @@ const CreateTodoForm = ({
         tags,
         columnId: activeColumnId!,
       };
-      createTodo(newTodo);
+      createTodoService(newTodo, addTodos, closePopUp);
       setTitle("");
       setDescription("");
       setDueDate(undefined);

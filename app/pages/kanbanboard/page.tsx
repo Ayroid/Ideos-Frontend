@@ -29,10 +29,9 @@ import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
 // STATE MANAGEMENT IMPORTS
 
-import type { TodoStore } from "@/store/kanban/todo";
-import { useTodoStore } from "@/store/kanban/todo";
-import type { ColumnStore } from "@/store/kanban/todoColumn";
-import { useTodoColumnStore } from "@/store/kanban/todoColumn";
+import { useTodo, TodoStore } from "@/store/kanban/todo";
+import { useTodoColumn, ColumnStore } from "@/store/kanban/todoColumn";
+import { usePopup } from "@/store/popup";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
@@ -46,35 +45,33 @@ const KanbanBoard = () => {
     updateTodoColumnName,
     updateTodoColumnOrder,
     deleteTodoColumn,
-    deleteTodoIdFromColumn,
-  ] = useTodoColumnStore((state: ColumnStore) => [
+  ] = useTodoColumn((state: ColumnStore) => [
     state.columns,
     state.addTodoColumn,
     state.addAllTodoColumns,
     state.updateTodoColumnName,
     state.updateTodoColumnOrder,
     state.deleteTodoColumn,
-    state.deleteTodoIdFromColumn,
   ]);
 
   const [
     todos,
-    addTodos,
     addAllTodos,
-    updateTodos,
     updateTodosOrderOverTodo,
     updateTodosOrderOverColumn,
-    deleteTodos,
     deleteAllColumnTodos,
-  ] = useTodoStore((state: TodoStore) => [
+  ] = useTodo((state: TodoStore) => [
     state.todos,
-    state.addTodos,
     state.addAllTodos,
-    state.updateTodos,
     state.updateTodosOrderOverTodo,
     state.updateTodosOrderOverColumn,
-    state.deleteTodos,
     state.deleteAllColumnTodos,
+  ]);
+
+  const [popUpVisible, openPopUp, closePopUp] = usePopup((state) => [
+    state.isOpen,
+    state.open,
+    state.close,
   ]);
 
   // LOADING STATES
@@ -88,7 +85,6 @@ const KanbanBoard = () => {
 
   // OTHER STATES
   const [isClient, setIsClient] = useState(false);
-  const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -229,45 +225,6 @@ const KanbanBoard = () => {
     }
   }
 
-  async function createTodo(newTodo: TodoTypes) {
-    try {
-      const data: TodoTypes = {
-        uniqueId: generateUniqueId({ obj: "Todo" }),
-        title: newTodo.title,
-        columnId: newTodo.columnId,
-        description: newTodo.description,
-        tags: newTodo.tags,
-        dueDate: newTodo.dueDate,
-      };
-
-      addTodos(data);
-      setPopUpVisible(false);
-      await axios.post("/api/kanban/todos", data);
-    } catch (error) {
-      console.error("Error creating new todo:", error);
-    }
-  }
-
-  async function updateTodo(todoData: TodoTypes) {
-    try {
-      updateTodos(todoData);
-      setPopUpVisible(false);
-      await axios.put(`/api/kanban/todos/${todoData.uniqueId}`, todoData);
-    } catch (error) {
-      console.error("Error updating todo:", error);
-    }
-  }
-
-  async function deleteTodo(todoId: string) {
-    try {
-      deleteTodos(todoId);
-      deleteTodoIdFromColumn(todoId);
-      await axios.delete(`/api/kanban/todos/${todoId}`);
-    } catch (error) {
-      console.error("Error deleting todo:", error);
-    }
-  }
-
   return (
     <Tabs
       defaultValue="board"
@@ -313,17 +270,17 @@ const KanbanBoard = () => {
               onDragOver={onDragOver}
             >
               <div className="mt-10 flex gap-4 overflow-auto">
-                <SortableContext items={columns.map((col) => col.uniqueId)}>
-                  {columns.map((col) => (
+                <SortableContext
+                  items={columns.map((col: ColumnTypes) => col.uniqueId)}
+                >
+                  {columns.map((col: ColumnTypes) => (
                     <ColumnContainer
                       key={col.uniqueId}
                       column={col}
                       deleteColumn={deleteColumn}
                       updateColumn={updateColumn}
-                      updateTodo={updateTodo}
-                      deleteTodo={deleteTodo}
                       setPopUpVisible={(value: boolean) => {
-                        setPopUpVisible(value);
+                        value ? openPopUp() : closePopUp();
                         setActiveColumnId(col.uniqueId);
                       }}
                       todos={todos.filter((t) => t.columnId === col.uniqueId)}
@@ -339,34 +296,25 @@ const KanbanBoard = () => {
                         column={activeColumn}
                         deleteColumn={deleteColumn}
                         updateColumn={updateColumn}
-                        updateTodo={updateTodo}
-                        deleteTodo={deleteTodo}
                         setPopUpVisible={(value: boolean) =>
-                          setPopUpVisible(value)
+                          value ? openPopUp() : closePopUp()
                         }
                         todos={todos.filter(
                           (t) => t.columnId === activeColumn.uniqueId,
                         )}
                       />
                     )}
-                    {activeTodo && (
-                      <Todo
-                        todo={activeTodo}
-                        updateTodo={updateTodo}
-                        deleteTodo={deleteTodo}
-                      />
-                    )}
+                    {activeTodo && <Todo todo={activeTodo} />}
                   </DragOverlay>,
                   document.body,
                 )}
             </DndContext>
           )}
           {popUpVisible && (
-            <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
+            <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
               <TodoForm
-                createTodo={createTodo}
                 activeColumnId={activeColumnId}
-                onClose={() => setPopUpVisible(false)}
+                onClose={() => closePopUp()}
               />
             </Popup>
           )}
