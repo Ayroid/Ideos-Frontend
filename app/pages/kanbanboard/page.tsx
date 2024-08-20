@@ -252,17 +252,17 @@ const KanbanBoard = () => {
     try {
       updateTodos(todoData);
       setPopUpVisible(false);
-      await axios.put(`/api/todos/${todoData.uniqueId}`, todoData);
+      await axios.put(`/api/kanban/todos/${todoData.uniqueId}`, todoData);
     } catch (error) {
       console.error("Error updating todo:", error);
     }
   }
 
-  async function deleteTodo(id: string) {
+  async function deleteTodo(todoId: string) {
     try {
-      deleteTodos(id);
-      deleteTodoIdFromColumn(id);
-      await axios.delete(`/api/todos/${id}`);
+      deleteTodos(todoId);
+      deleteTodoIdFromColumn(todoId);
+      await axios.delete(`/api/kanban/todos/${todoId}`);
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
