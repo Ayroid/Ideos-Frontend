@@ -93,7 +93,7 @@ const KanbanBoard = () => {
   useEffect(() => {
     const fetchColumns = async () => {
       try {
-        const response = await axios.get("/api/todoColumns");
+        const response = await axios.get("/api/kanban/todoColumns");
         const fetchedColumns = response.data;
         const fetchedTodos = fetchedColumns.reduce(
           (acc: TodoTypes[], col: ColumnTypes) => {
@@ -139,7 +139,7 @@ const KanbanBoard = () => {
       };
 
       addTodoColumn(data);
-      await axios.post("/api/todoColumns", data);
+      await axios.post("/api/kanban/todoColumns", data);
     } catch (error) {
       console.error("Error creating new column:", error);
     }
@@ -152,7 +152,7 @@ const KanbanBoard = () => {
   ) {
     try {
       if (serverUpdate) {
-        await axios.put(`/api/todoColumns/${columnId}`, { title });
+        await axios.put(`/api/kanban/todoColumns/${columnId}`, { title });
       } else {
         updateTodoColumnName(columnId, title);
       }
@@ -165,7 +165,7 @@ const KanbanBoard = () => {
     try {
       deleteTodoColumn(columnId);
       deleteAllColumnTodos(columnId);
-      await axios.delete(`/api/todoColumns/${columnId}`);
+      await axios.delete(`/api/kanban/todoColumns/${columnId}`);
     } catch (error) {
       console.error("Error deleting column:", error);
     }
@@ -231,10 +231,8 @@ const KanbanBoard = () => {
 
   async function createTodo(newTodo: TodoTypes) {
     try {
-      const uniqueId = generateUniqueId({ obj: "Todo" });
-
       const data: TodoTypes = {
-        uniqueId,
+        uniqueId: generateUniqueId({ obj: "Todo" }),
         title: newTodo.title,
         columnId: newTodo.columnId,
         description: newTodo.description,
@@ -244,11 +242,7 @@ const KanbanBoard = () => {
 
       addTodos(data);
       setPopUpVisible(false);
-      await axios.post(`http://localhost:5000/api/todos`, data, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axios.post("/api/kanban/todos", data);
     } catch (error) {
       console.error("Error creating new todo:", error);
     }
@@ -258,15 +252,7 @@ const KanbanBoard = () => {
     try {
       updateTodos(todoData);
       setPopUpVisible(false);
-      await axios.put(
-        `http://localhost:5000/api/todos/${todoData.uniqueId}`,
-        todoData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
+      await axios.put(`/api/todos/${todoData.uniqueId}`, todoData);
     } catch (error) {
       console.error("Error updating todo:", error);
     }
@@ -276,11 +262,7 @@ const KanbanBoard = () => {
     try {
       deleteTodos(id);
       deleteTodoIdFromColumn(id);
-      await axios.delete(`http://localhost:5000/api/todos/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axios.delete(`/api/todos/${id}`);
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
