@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TodoProps } from "@/types";
+import { TodoTypes } from "@/types/kanban";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
@@ -15,9 +15,9 @@ import Popup from "./Popup";
 import UpdateTodoForm from "./UpdateTodoForm";
 
 interface Props {
-  todo: TodoProps;
+  todo: TodoTypes;
   columnId?: string;
-  updateTodo: (todoData: TodoProps) => void;
+  updateTodo: (todoData: TodoTypes) => void;
   deleteTodo: (id: string) => void;
 }
 

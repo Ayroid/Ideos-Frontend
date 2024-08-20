@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ColumnTypes, TodoProps } from "@/types";
+import { ColumnTypes, TodoTypes } from "@/types/kanban";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
@@ -41,10 +41,10 @@ interface Props {
   column: ColumnTypes;
   deleteColumn: (id: string) => void;
   updateColumn: (id: string, title: string, server: boolean) => void;
-  updateTodo: (todoData: TodoProps) => void;
+  updateTodo: (todoData: TodoTypes) => void;
   deleteTodo: (id: string) => void;
   setPopUpVisible: (value: boolean) => void;
-  todos: TodoProps[];
+  todos: TodoTypes[];
 }
 function ColumnContainer(props: Readonly<Props>) {
   const {

@@ -25,20 +25,63 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { GoPlusCircle } from "react-icons/go";
-import { ColumnTypes, TodoProps } from "../../../types";
+import { ColumnTypes, TodoTypes } from "../../../types/kanban";
+
+// STATE MANAGEMENT
+
+import { useTodoColumnStore } from "@/store/kanban/todoColumn";
+import type { ColumnStore } from "@/store/kanban/todoColumn";
+import { useTodoStore } from "@/store/kanban/todo";
+import type { TodoStore } from "@/store/kanban/todo";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
   const accessToken = getAccessTokenRaw();
-  const [columns, setColumns] = useState<ColumnTypes[]>([]);
   const [columnsLoading, setColumnsLoading] = useState<boolean>(true);
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
-  const [activeTodo, setActiveTodo] = useState<TodoProps | null>(null);
+  const [activeTodo, setActiveTodo] = useState<TodoTypes | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [todos, setTodos] = useState<TodoProps[]>([]);
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<string>("board");
+
+  const [
+    columns,
+    addTodoColumn,
+    addAllTodoColumns,
+    updateTodoColumnName,
+    updateTodoColumnOrder,
+    deleteTodoColumn,
+    deleteTodoIdFromColumn,
+  ] = useTodoColumnStore((state: ColumnStore) => [
+    state.columns,
+    state.addTodoColumn,
+    state.addAllTodoColumns,
+    state.updateTodoColumnName,
+    state.updateTodoColumnOrder,
+    state.deleteTodoColumn,
+    state.deleteTodoIdFromColumn,
+  ]);
+
+  const [
+    todos,
+    addTodos,
+    addAllTodos,
+    updateTodos,
+    updateTodosOrderOverTodo,
+    updateTodosOrderOverColumn,
+    deleteTodos,
+    deleteAllColumnTodos,
+  ] = useTodoStore((state: TodoStore) => [
+    state.todos,
+    state.addTodos,
+    state.addAllTodos,
+    state.updateTodos,
+    state.updateTodosOrderOverTodo,
+    state.updateTodosOrderOverColumn,
+    state.deleteTodos,
+    state.deleteAllColumnTodos,
+  ]);
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -55,7 +98,7 @@ const KanbanBoard = () => {
         const fetchedColumns = response.data;
 
         const fetchedTodos = fetchedColumns.reduce(
-          (acc: TodoProps[], col: ColumnTypes) => {
+          (acc: TodoTypes[], col: ColumnTypes) => {
             if (col.todoIds && col.todoIds.length > 0) {
               acc.push(...col.todoIds);
             }
@@ -64,8 +107,8 @@ const KanbanBoard = () => {
           [],
         );
 
-        setColumns(fetchedColumns);
-        setTodos(fetchedTodos);
+        addAllTodoColumns(fetchedColumns);
+        addAllTodos(fetchedTodos);
       } catch (error) {
         console.error("Error fetching columns:", error);
       } finally {
@@ -101,7 +144,7 @@ const KanbanBoard = () => {
         todoIds: [],
       };
 
-      setColumns([...columns, data]);
+      addTodoColumn(data);
       await axios.post(`http://localhost:5000/api/todoColumns`, data, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -115,9 +158,7 @@ const KanbanBoard = () => {
   async function updateColumn(id: string, title: string, server: boolean) {
     try {
       if (!server) {
-        setColumns((columns) =>
-          columns.map((col) => (col.uniqueId === id ? { ...col, title } : col)),
-        );
+        updateTodoColumnName(id, title);
       } else {
         await axios.put(
           `http://localhost:5000/api/todoColumns/${id}`,
@@ -134,11 +175,11 @@ const KanbanBoard = () => {
     }
   }
 
-  async function deleteColumn(id: string) {
+  async function deleteColumn(columnId: string) {
     try {
-      setColumns(columns.filter((col) => col.uniqueId !== id));
-      setTodos(todos.filter((todo) => todo.columnId !== id));
-      await axios.delete(`http://localhost:5000/api/todoColumns/${id}`, {
+      deleteTodoColumn(columnId);
+      deleteAllColumnTodos(columnId);
+      await axios.delete(`http://localhost:5000/api/todoColumns/${columnId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -173,17 +214,7 @@ const KanbanBoard = () => {
     if (activeColumnId === overColumnId) {
       return;
     }
-    setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex(
-        (col) => col.uniqueId === activeColumnId,
-      );
-
-      const overColumnIndex = columns.findIndex(
-        (col) => col.uniqueId === overColumnId,
-      );
-
-      return arrayMove(columns, activeColumnIndex, overColumnIndex);
-    });
+    updateTodoColumnOrder(String(activeColumnId), String(overColumnId));
   }
 
   function onDragOver(event: DragOverEvent) {
@@ -206,39 +237,21 @@ const KanbanBoard = () => {
     if (!isActivatingTodo) return;
 
     if (isActivatingTodo && isOverTodo) {
-      setTodos((todos) => {
-        const activeIndex = todos.findIndex(
-          (todo) => todo.uniqueId === activeId,
-        );
-        const overIndex = todos.findIndex((todo) => todo.uniqueId === overId);
-
-        todos[activeIndex].columnId = todos[overIndex].columnId;
-
-        return arrayMove(todos, activeIndex, overIndex);
-      });
+      updateTodosOrderOverTodo(String(activeId), String(overId));
     }
 
     const isOverAColumn = over.data.current?.type === "Column";
 
     if (isActivatingTodo && isOverAColumn) {
-      setTodos((todos) => {
-        const activeIndex = todos.findIndex(
-          (todo) => todo.uniqueId === activeId,
-        );
-        todos[activeIndex].columnId = String(overId);
-
-        updateTodo(todos[activeIndex]);
-
-        return arrayMove(todos, activeIndex, activeIndex);
-      });
+      updateTodosOrderOverColumn(String(activeId), String(overId));
     }
   }
 
-  async function createTodo(newTodo: TodoProps) {
+  async function createTodo(newTodo: TodoTypes) {
     try {
       const uniqueId = generateUniqueId({ obj: "Todo" });
 
-      const data: TodoProps = {
+      const data: TodoTypes = {
         uniqueId,
         title: newTodo.title,
         columnId: newTodo.columnId,
@@ -247,7 +260,7 @@ const KanbanBoard = () => {
         dueDate: newTodo.dueDate,
       };
 
-      setTodos([...todos, data]);
+      addTodos(data);
       setPopUpVisible(false);
       await axios.post(`http://localhost:5000/api/todos`, data, {
         headers: {
@@ -259,16 +272,9 @@ const KanbanBoard = () => {
     }
   }
 
-  async function updateTodo(todoData: TodoProps) {
+  async function updateTodo(todoData: TodoTypes) {
     try {
-      setTodos((todos) =>
-        todos.map((todo) => {
-          if (todo.uniqueId === todoData.uniqueId) {
-            return { ...todoData };
-          }
-          return todo;
-        }),
-      );
+      updateTodos(todoData);
       setPopUpVisible(false);
       await axios.put(
         `http://localhost:5000/api/todos/${todoData.uniqueId}`,
@@ -286,15 +292,8 @@ const KanbanBoard = () => {
 
   async function deleteTodo(id: string) {
     try {
-      setTodos((todos) => todos.filter((todo) => todo.uniqueId !== id));
-
-      setColumns((columns) =>
-        columns.map((col) => ({
-          ...col,
-          todoIds: col.todoIds.filter((todoId) => todoId.uniqueId !== id),
-        })),
-      );
-
+      deleteTodos(id);
+      deleteTodoIdFromColumn(id);
       await axios.delete(`http://localhost:5000/api/todos/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

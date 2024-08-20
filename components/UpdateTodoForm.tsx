@@ -7,15 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FiMinus } from "react-icons/fi";
 
-import { TodoProps } from "@/types";
+import { TodoTypes } from "@/types/kanban";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import { IoClose } from "react-icons/io5";
 import { useState } from "react";
 
 interface TodoFormProps {
-  updateTodo: (todoData: TodoProps) => void;
+  updateTodo: (todoData: TodoTypes) => void;
   onClose: () => void;
-  todo: TodoProps;
+  todo: TodoTypes;
   activeColumnId: string | null;
 }
 
@@ -56,7 +56,7 @@ const UpdateTodoForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title && description && dueDate) {
-      const todoData: TodoProps = {
+      const todoData: TodoTypes = {
         ...todo,
         title,
         description,

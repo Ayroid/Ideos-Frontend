@@ -3,10 +3,10 @@ import { ReactNode } from "react";
 export type ColumnTypes = {
   uniqueId: string;
   title: string;
-  todoIds: TodoProps[];
+  todoIds: TodoTypes[];
 };
 
-export type TodoProps = {
+export type TodoTypes = {
   uniqueId: string;
   title: string;
   columnId: string;
