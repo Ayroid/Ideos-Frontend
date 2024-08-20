@@ -2,7 +2,6 @@ import { TodoTypes } from "@/types/kanban";
 import { generateUniqueId } from "@/utils/generateId";
 import axios from "axios";
 
-// Function to create a todo
 async function createTodo(
   newTodo: TodoTypes,
   addTodos: (todo: TodoTypes) => void,
@@ -26,7 +25,6 @@ async function createTodo(
   }
 }
 
-// Function to update a todo
 async function updateTodo(
   todoData: TodoTypes,
   updateTodos: (todo: TodoTypes) => void,
@@ -41,7 +39,6 @@ async function updateTodo(
   }
 }
 
-// Function to delete a todo
 async function deleteTodo(
   todoId: string,
   deleteTodos: (todoId: string) => void,
