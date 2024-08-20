@@ -93,17 +93,8 @@ const KanbanBoard = () => {
   useEffect(() => {
     const fetchColumns = async () => {
       try {
-        console.log("Sending Request");
-        const response = await axios.get(
-          `http://localhost:5000/api/todoColumns`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
+        const response = await axios.get("/api/todoColumns");
         const fetchedColumns = response.data;
-
         const fetchedTodos = fetchedColumns.reduce(
           (acc: TodoTypes[], col: ColumnTypes) => {
             if (col.todoIds && col.todoIds.length > 0) {
@@ -113,7 +104,6 @@ const KanbanBoard = () => {
           },
           [],
         );
-
         addAllTodoColumns(fetchedColumns);
         addAllTodos(fetchedTodos);
       } catch (error) {
@@ -142,40 +132,29 @@ const KanbanBoard = () => {
 
   async function createNewColumn() {
     try {
-      const uniqueId = generateUniqueId({ obj: "Col" });
-      const title = "New Column";
-
       const data: ColumnTypes = {
-        uniqueId,
-        title,
+        uniqueId: generateUniqueId({ obj: "Col" }),
+        title: "New Column",
         todoIds: [],
       };
 
       addTodoColumn(data);
-      await axios.post(`http://localhost:5000/api/todoColumns`, data, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axios.post("/api/todoColumns", data);
     } catch (error) {
       console.error("Error creating new column:", error);
     }
   }
 
-  async function updateColumn(id: string, title: string, server: boolean) {
+  async function updateColumn(
+    columnId: string,
+    title: string,
+    serverUpdate: boolean,
+  ) {
     try {
-      if (!server) {
-        updateTodoColumnName(id, title);
+      if (serverUpdate) {
+        await axios.put(`/api/todoColumns/${columnId}`, { title });
       } else {
-        await axios.put(
-          `http://localhost:5000/api/todoColumns/${id}`,
-          { title },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
+        updateTodoColumnName(columnId, title);
       }
     } catch (error) {
       console.error("Error updating column:", error);
@@ -186,11 +165,7 @@ const KanbanBoard = () => {
     try {
       deleteTodoColumn(columnId);
       deleteAllColumnTodos(columnId);
-      await axios.delete(`http://localhost:5000/api/todoColumns/${columnId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axios.delete(`/api/todoColumns/${columnId}`);
     } catch (error) {
       console.error("Error deleting column:", error);
     }
