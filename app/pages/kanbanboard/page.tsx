@@ -19,7 +19,7 @@ import {
 import TodoForm from "@/components/CreateTodoForm";
 import Popup from "@/components/Popup";
 import { generateUniqueId } from "@/utils/generateId";
-import { arrayMove, SortableContext } from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -27,24 +27,18 @@ import { createPortal } from "react-dom";
 import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
-// STATE MANAGEMENT
+// STATE MANAGEMENT IMPORTS
 
-import { useTodoColumnStore } from "@/store/kanban/todoColumn";
-import type { ColumnStore } from "@/store/kanban/todoColumn";
-import { useTodoStore } from "@/store/kanban/todo";
 import type { TodoStore } from "@/store/kanban/todo";
+import { useTodoStore } from "@/store/kanban/todo";
+import type { ColumnStore } from "@/store/kanban/todoColumn";
+import { useTodoColumnStore } from "@/store/kanban/todoColumn";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
   const accessToken = getAccessTokenRaw();
-  const [columnsLoading, setColumnsLoading] = useState<boolean>(true);
-  const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
-  const [activeTodo, setActiveTodo] = useState<TodoTypes | null>(null);
-  const [isClient, setIsClient] = useState(false);
-  const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
-  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
-  const [activePage, setActivePage] = useState<string>("board");
 
+  // STATE MANAGEMENT
   const [
     columns,
     addTodoColumn,
@@ -82,6 +76,19 @@ const KanbanBoard = () => {
     state.deleteTodos,
     state.deleteAllColumnTodos,
   ]);
+
+  // LOADING STATES
+  const [columnsLoading, setColumnsLoading] = useState<boolean>(true);
+
+  // ACTIVE STATES
+  const [activeTodo, setActiveTodo] = useState<TodoTypes | null>(null);
+  const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
+  const [activePage, setActivePage] = useState<string>("board");
+
+  // OTHER STATES
+  const [isClient, setIsClient] = useState(false);
+  const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchColumns = async () => {
