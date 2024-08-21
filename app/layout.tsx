@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import SidebarComponent from "@/components/SidePanel";
 import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
