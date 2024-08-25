@@ -27,12 +27,11 @@ import { createPortal } from "react-dom";
 import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
-
-
 // STATE MANAGEMENT IMPORTS
 
-import { useTodo, TodoStore } from "@/store/kanban/todo";
-import { useTodoColumn, ColumnStore } from "@/store/kanban/todoColumn";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TodoStore, useTodo } from "@/store/kanban/todo";
+import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
 
 const KanbanBoard = () => {
@@ -85,6 +84,7 @@ const KanbanBoard = () => {
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<string>("board");
   const [popupType, setPopupType] = useState<"deleteColumn" | "createTodo">();
+  const [columnIdToDelete, setColumnIdToDelete] = useState<string | null>(null);
 
   // OTHER STATES
   const [isClient, setIsClient] = useState(false);
@@ -160,31 +160,26 @@ const KanbanBoard = () => {
     }
   }
 
-  async function deleteColumn(columnId: string) {
-    setPopupType("deleteColumn");
+  async function deleteColumnCheck(columnId: string) {
     try {
-      const currentColumn = columns.filter((col) => col.uniqueId === columnId)[0]
-      console.log(currentColumn);
-      if (currentColumn.todoIds.length > 0){
+      setColumnIdToDelete(columnId);
+      if (todos.filter((t) => t.columnId === columnId).length > 0) {
+        setPopupType("deleteColumn");
         openPopUp();
-        {popUpVisible && popupType === "deleteColumn" && (
-          <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
-            <div className="confirm-box">
-                <h3>Are you sure?</h3>
-                <div className="buttons">
-                  <button onClick={() => closePopUp()}>Confirm</button>
-                  <button onClick={() => closePopUp()}>Cancel</button>
-                </div>
-              </div>
-          </Popup>
-        )}
+      } else {
+        deleteColumn();
       }
-      else{
-        deleteTodoColumn(columnId);
-      deleteAllColumnTodos(columnId);
-      await axios.delete(`/api/kanban/todoColumns/${columnId}`);
-      }
-      
+    } catch (error) {
+      console.error("Error deleting column:", error);
+    }
+  }
+
+  async function deleteColumn() {
+    try {
+      closePopUp();
+      deleteTodoColumn(columnIdToDelete!);
+      deleteAllColumnTodos(columnIdToDelete!);
+      await axios.delete(`/api/kanban/todoColumns/${columnIdToDelete}`);
     } catch (error) {
       console.error("Error deleting column:", error);
     }
@@ -300,10 +295,11 @@ const KanbanBoard = () => {
                     <ColumnContainer
                       key={col.uniqueId}
                       column={col}
-                      deleteColumn={deleteColumn}
+                      deleteColumn={deleteColumnCheck}
                       updateColumn={updateColumn}
                       setPopUpVisible={(value: boolean) => {
                         value ? openPopUp() : closePopUp();
+                        setPopupType("createTodo");
                         setActiveColumnId(col.uniqueId);
                       }}
                       todos={todos.filter((t) => t.columnId === col.uniqueId)}
@@ -317,7 +313,7 @@ const KanbanBoard = () => {
                     {activeColumn && (
                       <ColumnContainer
                         column={activeColumn}
-                        deleteColumn={deleteColumn}
+                        deleteColumn={deleteColumnCheck}
                         updateColumn={updateColumn}
                         setPopUpVisible={(value: boolean) =>
                           value ? openPopUp() : closePopUp()
@@ -333,14 +329,32 @@ const KanbanBoard = () => {
                 )}
             </DndContext>
           )}
-          {popUpVisible && popupType === "createTodo" ? (
+          {popUpVisible && popupType === "createTodo" && (
             <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
               <TodoForm
                 activeColumnId={activeColumnId}
                 onClose={() => closePopUp()}
               />
             </Popup>
-          ): null}
+          )}
+          {popUpVisible && popupType === "deleteColumn" && (
+            <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="w-fit text-xl">Delete Column</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p>Are you sure you want to delete this column?</p>
+                  <div className="mt-4 flex justify-end gap-4">
+                    <Button onClick={closePopUp}>Cancel</Button>
+                    <Button onClick={deleteColumn} variant="destructive">
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </Popup>
+          )}
         </div>
       </TabsContent>
       <TabsContent value="list" className="mt-10">
