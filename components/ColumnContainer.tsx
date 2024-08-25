@@ -4,34 +4,15 @@ import { ColumnTypes, TodoTypes } from "@/types/kanban";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Todo from "./Todo";
 import { Button } from "./ui/button";
 
-// Function to get a random color class
-function getRandomColor() {
-  const colors = [
-    "bg-blue-500",
-    "bg-red-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-purple-500",
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-}
-
-// Separate ColoredBar component to avoid re-render issues
-const ColoredBar = () => {
-  const [colorClass, setColorClass] = useState("");
-
-  useEffect(() => {
-    setColorClass(getRandomColor());
-  }, []);
-
+const ColoredBar = ({ color }: { color: string }) => {
   return (
     <div className="relative flex items-center justify-center rounded-full p-1 px-2 text-sm">
       <div
-        className={`absolute left-0 top-1/2 h-6 w-1 ${colorClass} -translate-y-1/2 transform`}
+        className={`absolute left-0 top-1/2 h-6 w-1 ${color} -translate-y-1/2 transform`}
       ></div>
     </div>
   );
@@ -102,7 +83,7 @@ function ColumnContainer(props: Readonly<Props>) {
               className="flex w-9/12 gap-2"
               onClick={() => setEditMode(true)}
             >
-              <ColoredBar />
+              <ColoredBar color={column.color} />
               {editMode ? (
                 <input
                   value={column.title}

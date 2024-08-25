@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 export type ColumnTypes = {
   uniqueId: string;
+  color: string;
   title: string;
   todoIds: TodoTypes[];
 };

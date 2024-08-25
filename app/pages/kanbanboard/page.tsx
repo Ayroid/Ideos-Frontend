@@ -89,6 +89,17 @@ const KanbanBoard = () => {
   // OTHER STATES
   const [isClient, setIsClient] = useState(false);
 
+  function getRandomColor() {
+    const colors = [
+      "bg-blue-500",
+      "bg-red-500",
+      "bg-green-500",
+      "bg-yellow-500",
+      "bg-purple-500",
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
   useEffect(() => {
     const fetchColumns = async () => {
       try {
@@ -133,6 +144,7 @@ const KanbanBoard = () => {
     try {
       const data: ColumnTypes = {
         uniqueId: generateUniqueId({ obj: "Col" }),
+        color: getRandomColor(),
         title: "New Column",
         todoIds: [],
       };
