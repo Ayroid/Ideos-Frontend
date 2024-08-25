@@ -179,19 +179,20 @@ const KanbanBoard = () => {
         setPopupType("deleteColumn");
         openPopUp();
       } else {
-        deleteColumn();
+        deleteColumn(columnId);
       }
     } catch (error) {
       console.error("Error deleting column:", error);
     }
   }
 
-  async function deleteColumn() {
+  async function deleteColumn(columnId?: string) {
     try {
+      const deleteColumnId = columnId ?? columnIdToDelete;
       closePopUp();
-      deleteTodoColumn(columnIdToDelete!);
-      deleteAllColumnTodos(columnIdToDelete!);
-      await axios.delete(`/api/kanban/todoColumns/${columnIdToDelete}`);
+      deleteTodoColumn(deleteColumnId!);
+      deleteAllColumnTodos(deleteColumnId!);
+      await axios.delete(`/api/kanban/todoColumns/${deleteColumnId}`);
     } catch (error) {
       console.error("Error deleting column:", error);
     }
@@ -359,7 +360,10 @@ const KanbanBoard = () => {
                   <p>Are you sure you want to delete this column?</p>
                   <div className="mt-4 flex justify-end gap-4">
                     <Button onClick={closePopUp}>Cancel</Button>
-                    <Button onClick={deleteColumn} variant="destructive">
+                    <Button
+                      onClick={() => deleteColumn()}
+                      variant="destructive"
+                    >
                       Delete
                     </Button>
                   </div>
