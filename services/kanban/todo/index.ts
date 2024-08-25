@@ -1,6 +1,7 @@
 import { TodoTypes } from "@/types/kanban";
 import { generateUniqueId } from "@/utils/generateId";
 import axios from "axios";
+import { toast } from "sonner"; // Make sure you have `sonner` installed
 
 async function createTodo(
   newTodo: TodoTypes,
@@ -19,11 +20,13 @@ async function createTodo(
     };
 
     addTodos(data);
-    addTodoToColumn(data, data.columnId)
+    addTodoToColumn(data, data.columnId);
     closePopUp();
     await axios.post("/api/kanban/todos", data);
+    toast.success("Todo created successfully");
   } catch (error) {
     console.error("Error creating new todo:", error);
+    toast.error("Error creating new todo");
   }
 }
 
@@ -36,8 +39,10 @@ async function updateTodo(
     updateTodos(todoData);
     closePopUp();
     await axios.put(`/api/kanban/todos/${todoData.uniqueId}`, todoData);
+    toast.success("Todo updated successfully");
   } catch (error) {
     console.error("Error updating todo:", error);
+    toast.error("Error updating todo");
   }
 }
 
@@ -50,10 +55,11 @@ async function deleteTodo(
     deleteTodos(todoId);
     deleteTodoIdFromColumn(todoId);
     await axios.delete(`/api/kanban/todos/${todoId}`);
+    toast.success("Todo deleted successfully");
   } catch (error) {
     console.error("Error deleting todo:", error);
+    toast.error("Error deleting todo");
   }
 }
 
-
-export { createTodo, updateTodo, deleteTodo};
+export { createTodo, updateTodo, deleteTodo };

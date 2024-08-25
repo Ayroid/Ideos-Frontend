@@ -15,7 +15,6 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-
 import TodoForm from "@/components/CreateTodoForm";
 import Popup from "@/components/Popup";
 import { generateUniqueId } from "@/utils/generateId";
@@ -28,11 +27,11 @@ import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
 // STATE MANAGEMENT IMPORTS
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TodoStore, useTodo } from "@/store/kanban/todo";
 import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
+import { toast } from "sonner";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
@@ -118,6 +117,7 @@ const KanbanBoard = () => {
         addAllTodos(fetchedTodos);
       } catch (error) {
         console.error("Error fetching columns:", error);
+        toast.error("Error fetching columns");
       } finally {
         setColumnsLoading(false);
       }
@@ -151,8 +151,10 @@ const KanbanBoard = () => {
 
       addTodoColumn(data);
       await axios.post("/api/kanban/todoColumns", data);
+      toast.success("Column created successfully");
     } catch (error) {
       console.error("Error creating new column:", error);
+      toast.error("Error creating new column");
     }
   }
 
@@ -164,11 +166,13 @@ const KanbanBoard = () => {
     try {
       if (serverUpdate) {
         await axios.put(`/api/kanban/todoColumns/${columnId}`, { title });
+        toast.success("Column updated successfully");
       } else {
         updateTodoColumnName(columnId, title);
       }
     } catch (error) {
       console.error("Error updating column:", error);
+      toast.error("Error updating column");
     }
   }
 
@@ -179,10 +183,11 @@ const KanbanBoard = () => {
         setPopupType("deleteColumn");
         openPopUp();
       } else {
-        deleteColumn(columnId);
+        await deleteColumn(columnId);
       }
     } catch (error) {
-      console.error("Error deleting column:", error);
+      console.error("Error checking column deletion:", error);
+      toast.error("Error checking column deletion");
     }
   }
 
@@ -193,8 +198,10 @@ const KanbanBoard = () => {
       deleteTodoColumn(deleteColumnId!);
       deleteAllColumnTodos(deleteColumnId!);
       await axios.delete(`/api/kanban/todoColumns/${deleteColumnId}`);
+      toast.success("Column deleted successfully");
     } catch (error) {
       console.error("Error deleting column:", error);
+      toast.error("Error deleting column");
     }
   }
 
@@ -255,7 +262,6 @@ const KanbanBoard = () => {
       updateTodosOrderOverColumn(String(activeId), String(overId));
     }
   }
-
   return (
     <Tabs
       defaultValue="board"
@@ -278,7 +284,7 @@ const KanbanBoard = () => {
             Due Tasks
           </TabsTrigger>
         </TabsList>
-        {activePage == "board" && (
+        {activePage === "board" && (
           <Button onClick={createNewColumn}>
             <GoPlusCircle className="mr-2 h-4 w-4" /> Add Column
           </Button>
@@ -361,7 +367,9 @@ const KanbanBoard = () => {
                   <div className="mt-4 flex justify-end gap-4">
                     <Button onClick={closePopUp}>Cancel</Button>
                     <Button
-                      onClick={() => deleteColumn()}
+                      onClick={() => {
+                        deleteColumn();
+                      }}
                       variant="destructive"
                     >
                       Delete
@@ -384,6 +392,5 @@ const KanbanBoard = () => {
       </TabsContent>
     </Tabs>
   );
-};
-
+}
 export default KanbanBoard;

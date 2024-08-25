@@ -4,6 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import SidebarComponent from "@/components/SidePanel";
 import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
+import { Toaster } from "@/components/ui/sonner"
+
+
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -35,6 +38,7 @@ export default function RootLayout({
               <RelativeBreadCrumb />
               {children}
             </main>
+            <Toaster expand visibleToasts={1}/>
           </div>
         </ThemeProvider>
       </body>
