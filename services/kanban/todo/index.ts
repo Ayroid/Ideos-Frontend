@@ -5,6 +5,7 @@ import axios from "axios";
 async function createTodo(
   newTodo: TodoTypes,
   addTodos: (todo: TodoTypes) => void,
+  addTodoToColumn: (todo: TodoTypes, columnId: string) => void,
   closePopUp: () => void,
 ) {
   try {
@@ -18,6 +19,7 @@ async function createTodo(
     };
 
     addTodos(data);
+    addTodoToColumn(data, data.columnId)
     closePopUp();
     await axios.post("/api/kanban/todos", data);
   } catch (error) {
@@ -53,4 +55,5 @@ async function deleteTodo(
   }
 }
 
-export { createTodo, updateTodo, deleteTodo };
+
+export { createTodo, updateTodo, deleteTodo};

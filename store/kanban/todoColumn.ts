@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { ColumnTypes } from "@/types/kanban";
+import { ColumnTypes, TodoTypes } from "@/types/kanban";
 import { arrayMove } from "@dnd-kit/sortable";
+import { Columns } from "lucide-react";
 
 type State = {
   columns: ColumnTypes[];
@@ -9,6 +10,7 @@ type State = {
 type Actions = {
   addTodoColumn: (column: ColumnTypes) => void;
   addAllTodoColumns: (columns: ColumnTypes[]) => void;
+  addTodoToColumn: (todo: TodoTypes, columnId: string) => void;
   updateTodoColumnName: (columnId: string, title: string) => void;
   updateTodoColumnOrder: (activeColumnId: string, overColumnId: string) => void;
   deleteTodoColumn: (columnId: string) => void;
@@ -28,6 +30,15 @@ const useTodoColumnStore = create<ColumnStore>((set) => ({
   addAllTodoColumns: (columns: ColumnTypes[]) =>
     set((state: ColumnStore) => ({
       columns: columns,
+    })),
+
+  addTodoToColumn: (todo: TodoTypes, columnId: string) =>
+    set((state: ColumnStore) => ({
+      columns: state.columns.map((col) =>
+        col.uniqueId === columnId
+          ? { ...col, todoIds: [...col.todoIds, todo] }
+          : col,
+      ),
     })),
 
   updateTodoColumnName: (columnId: string, title: string) =>

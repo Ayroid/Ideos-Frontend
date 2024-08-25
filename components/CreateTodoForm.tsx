@@ -15,6 +15,7 @@ import { useState } from "react";
 import { createTodo as createTodoService } from "@/services/kanban/todo";
 import { useTodo } from "@/store/kanban/todo";
 import { usePopup } from "@/store/popup";
+import {useTodoColumn} from "@/store/kanban/todoColumn";
 
 interface TodoFormProps {
   activeColumnId: string | null;
@@ -23,6 +24,7 @@ interface TodoFormProps {
 
 const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
   const { addTodos } = useTodo((state) => state);
+  const {addTodoToColumn} = useTodoColumn((state) => state);
   const { close: closePopUp } = usePopup((state) => state);
 
   const [title, setTitle] = useState("");
@@ -62,7 +64,7 @@ const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
         tags,
         columnId: activeColumnId!,
       };
-      createTodoService(newTodo, addTodos, closePopUp);
+      createTodoService(newTodo, addTodos, addTodoToColumn, closePopUp);
       setTitle("");
       setDescription("");
       setDueDate(undefined);

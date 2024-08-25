@@ -27,6 +27,8 @@ import { createPortal } from "react-dom";
 import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
+
+
 // STATE MANAGEMENT IMPORTS
 
 import { useTodo, TodoStore } from "@/store/kanban/todo";
@@ -82,6 +84,7 @@ const KanbanBoard = () => {
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<string>("board");
+  const [popupType, setPopupType] = useState<"deleteColumn" | "createTodo">();
 
   // OTHER STATES
   const [isClient, setIsClient] = useState(false);
@@ -158,10 +161,30 @@ const KanbanBoard = () => {
   }
 
   async function deleteColumn(columnId: string) {
+    setPopupType("deleteColumn");
     try {
-      deleteTodoColumn(columnId);
+      const currentColumn = columns.filter((col) => col.uniqueId === columnId)[0]
+      console.log(currentColumn);
+      if (currentColumn.todoIds.length > 0){
+        openPopUp();
+        {popUpVisible && popupType === "deleteColumn" && (
+          <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
+            <div className="confirm-box">
+                <h3>Are you sure?</h3>
+                <div className="buttons">
+                  <button onClick={() => closePopUp()}>Confirm</button>
+                  <button onClick={() => closePopUp()}>Cancel</button>
+                </div>
+              </div>
+          </Popup>
+        )}
+      }
+      else{
+        deleteTodoColumn(columnId);
       deleteAllColumnTodos(columnId);
       await axios.delete(`/api/kanban/todoColumns/${columnId}`);
+      }
+      
     } catch (error) {
       console.error("Error deleting column:", error);
     }
@@ -310,14 +333,14 @@ const KanbanBoard = () => {
                 )}
             </DndContext>
           )}
-          {popUpVisible && (
+          {popUpVisible && popupType === "createTodo" ? (
             <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
               <TodoForm
                 activeColumnId={activeColumnId}
                 onClose={() => closePopUp()}
               />
             </Popup>
-          )}
+          ): null}
         </div>
       </TabsContent>
       <TabsContent value="list" className="mt-10">
