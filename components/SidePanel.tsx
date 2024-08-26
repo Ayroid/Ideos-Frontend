@@ -1,20 +1,20 @@
 "use client";
-import React, { useState } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
+import { cn } from "@/lib/utils";
 import {
   IconArrowLeft,
   IconBrandTabler,
   IconSettings,
   IconUserBolt,
 } from "@tabler/icons-react";
-import { LuKanbanSquare } from "react-icons/lu";
-import Link from "next/link";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import Link from "next/link";
+import { useState } from "react";
+import { LuKanbanSquare } from "react-icons/lu";
+import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUserStore } from "@/store/user";
+import { FaUserAlt } from "react-icons/fa";
 
 export const Logo = () => {
   return (
@@ -47,6 +47,8 @@ export const LogoIcon = () => {
   );
 };
 export default function SidebarComponent() {
+  const [storedUser] = useUserStore((state) => [state.user]);
+
   const links = [
     {
       label: "Dashboard",
@@ -87,9 +89,6 @@ export default function SidebarComponent() {
 
   const [open, setOpen] = useState(false);
 
-  const { getUser } = useKindeBrowserClient();
-  const user = getUser();
-
   return (
     <div
       className={cn(
@@ -111,11 +110,11 @@ export default function SidebarComponent() {
           <div>
             <SidebarLink
               link={{
-                label: user?.given_name ?? "User",
+                label: storedUser?.given_name ?? "User",
                 href: "#",
-                icon: user?.picture ? (
+                icon: storedUser?.picture ? (
                   <Image
-                    src={user?.picture}
+                    src={storedUser?.picture}
                     className="h-7 w-7 flex-shrink-0 rounded-full"
                     width={50}
                     height={50}
@@ -124,7 +123,9 @@ export default function SidebarComponent() {
                 ) : (
                   <Avatar>
                     <AvatarImage />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback>
+                      <FaUserAlt />
+                    </AvatarFallback>
                   </Avatar>
                 ),
               }}
