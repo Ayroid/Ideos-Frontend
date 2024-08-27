@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest) {
     const columnId = url.pathname.split("/").pop();
     const requestBody = await parseRequestBody(req);
     await axios.put(
-      `${process.env.SERVER_URL}/todoColumns/${columnId}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/todoColumns/${columnId}`,
       requestBody,
       {
         headers: {
@@ -30,11 +30,14 @@ export async function DELETE(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const columnId = url.pathname.split("/").pop();
-    await axios.delete(`${process.env.SERVER_URL}/todoColumns/${columnId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    await axios.delete(
+      `${process.env.NEXT_PUBLIC_API_URL}/todoColumns/${columnId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
-    });
+    );
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: "Request failed" }, { status: 500 });

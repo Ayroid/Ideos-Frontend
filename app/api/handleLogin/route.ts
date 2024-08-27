@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     await axios.post(
-      `${process.env.SERVER_URL}/users`,
+      `${process.env.NEXT_PUBLIC_API_URL}/users`,
       {},
       {
         headers: {
