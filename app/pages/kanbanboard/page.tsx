@@ -23,8 +23,10 @@ import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
+
+// ICONS
+import { GoPlusCircle, GoHourglass } from "react-icons/go";
 import { PiKanbanLight } from "react-icons/pi";
 
 // STATE MANAGEMENT IMPORTS
@@ -34,11 +36,9 @@ import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
 import { getRandomColor } from "@/utils/randomColor";
 import { toast } from "sonner";
+import FeatureComingSoon from "@/components/FeatureComingSoon";
 
-const KanbanBoard = () => {
-  const { getAccessTokenRaw } = useKindeBrowserClient();
-  const accessToken = getAccessTokenRaw();
-
+const ViewKanbanBoard = () => {
   // STATE MANAGEMENT
   const [
     columns,
@@ -83,12 +83,26 @@ const KanbanBoard = () => {
   const [activeTodo, setActiveTodo] = useState<TodoTypes | null>(null);
   const [activeColumn, setActiveColumn] = useState<ColumnTypes | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
-  const [activePage, setActivePage] = useState<string>("board");
   const [popupType, setPopupType] = useState<"deleteColumn" | "createTodo">();
   const [columnIdToDelete, setColumnIdToDelete] = useState<string | null>(null);
 
   // OTHER STATES
   const [isClient, setIsClient] = useState(false);
+
+  const { getAccessTokenRaw } = useKindeBrowserClient();
+  const accessToken = getAccessTokenRaw();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 3,
+      },
+    }),
+  );
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -119,37 +133,6 @@ const KanbanBoard = () => {
       fetchColumns();
     }
   }, [accessToken]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 3,
-      },
-    }),
-  );
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  async function createNewColumn() {
-    try {
-      console.log(getRandomColor());
-      const data: ColumnTypes = {
-        uniqueId: generateUniqueId({ obj: "Col" }),
-        color: getRandomColor(),
-        title: "New Column",
-        todoIds: [],
-      };
-
-      addTodoColumn(data);
-      await axios.post("/api/kanban/todoColumns", data);
-      toast.success("Column created successfully");
-    } catch (error) {
-      console.error("Error creating new column:", error);
-      toast.error("Error creating new column");
-    }
-  }
 
   async function updateColumn(
     columnId: string,
@@ -255,6 +238,136 @@ const KanbanBoard = () => {
       updateTodosOrderOverColumn(String(activeId), String(overId));
     }
   }
+
+  return (
+    <>
+      {!columnsLoading && columns.length === 0 && (
+        <div className="flex h-[70dvh] items-center justify-center">
+          <div className="flex flex-col items-center">
+            <PiKanbanLight className="h-36 w-36 text-primary" />
+            <p className="text-2xl font-bold text-primary">
+              Welcome to your Kanban Board
+            </p>
+            <p className="mt-1 text-center text-lg text-primary">
+              Get started by adding a new column
+            </p>
+          </div>
+        </div>
+      )}
+      <div>
+        {columnsLoading ? (
+          <div className="mt-10 flex gap-4 overflow-auto">
+            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            onDragOver={onDragOver}
+          >
+            <div className="mt-10 flex gap-4 overflow-auto">
+              <SortableContext
+                items={columns.map((col: ColumnTypes) => col.uniqueId)}
+              >
+                {columns.map((col: ColumnTypes) => (
+                  <ColumnContainer
+                    key={col.uniqueId}
+                    column={col}
+                    deleteColumn={deleteColumnCheck}
+                    updateColumn={updateColumn}
+                    setPopUpVisible={(value: boolean) => {
+                      value ? openPopUp() : closePopUp();
+                      setPopupType("createTodo");
+                      setActiveColumnId(col.uniqueId);
+                    }}
+                    todos={todos.filter((t) => t.columnId === col.uniqueId)}
+                  />
+                ))}
+              </SortableContext>
+            </div>
+            {isClient &&
+              createPortal(
+                <DragOverlay>
+                  {activeColumn && (
+                    <ColumnContainer
+                      column={activeColumn}
+                      deleteColumn={deleteColumnCheck}
+                      updateColumn={updateColumn}
+                      setPopUpVisible={(value: boolean) =>
+                        value ? openPopUp() : closePopUp()
+                      }
+                      todos={todos.filter(
+                        (t) => t.columnId === activeColumn.uniqueId,
+                      )}
+                    />
+                  )}
+                  {activeTodo && <Todo todo={activeTodo} />}
+                </DragOverlay>,
+                document.body,
+              )}
+          </DndContext>
+        )}
+        {popUpVisible && popupType === "createTodo" && (
+          <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
+            <TodoForm
+              activeColumnId={activeColumnId}
+              onClose={() => closePopUp()}
+            />
+          </Popup>
+        )}
+        {popUpVisible && popupType === "deleteColumn" && (
+          <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
+            <TodoColumnDeleteConfirmation
+              closePopUp={closePopUp}
+              deleteColumn={deleteColumn}
+            />
+          </Popup>
+        )}
+      </div>
+    </>
+  );
+};
+
+const ViewList = () => {
+  return <FeatureComingSoon title="List View" />;
+};
+
+const ViewTimeline = () => {
+  return <FeatureComingSoon title="Timeline View" />;
+};
+
+const ViewDueTasks = () => {
+  return <FeatureComingSoon title="Due Tasks" />;
+};
+
+const KanbanBoard = () => {
+  const [addTodoColumn] = useTodoColumn((state: ColumnStore) => [
+    state.addTodoColumn,
+  ]);
+
+  const [activePage, setActivePage] = useState<string>("board");
+  async function createNewColumn() {
+    try {
+      console.log(getRandomColor());
+      const data: ColumnTypes = {
+        uniqueId: generateUniqueId({ obj: "Col" }),
+        color: getRandomColor(),
+        title: "New Column",
+        todoIds: [],
+      };
+
+      addTodoColumn(data);
+      await axios.post("/api/kanban/todoColumns", data);
+      toast.success("Column created successfully");
+    } catch (error) {
+      console.error("Error creating new column:", error);
+      toast.error("Error creating new column");
+    }
+  }
   return (
     <Tabs
       defaultValue="board"
@@ -284,102 +397,16 @@ const KanbanBoard = () => {
         )}
       </div>
       <TabsContent value="board">
-        {!columnsLoading && columns.length === 0 && (
-          <div className="flex h-[70dvh] items-center justify-center">
-            <div className="flex flex-col items-center">
-              <PiKanbanLight className="h-36 w-36 text-primary" />
-              <p className="text-2xl font-bold text-primary">
-                Welcome to your Kanban Board
-              </p>
-              <p className="mt-1 text-center text-lg text-primary">
-                Get started by adding a new column
-              </p>
-            </div>
-          </div>
-        )}
-        <div>
-          {columnsLoading ? (
-            <div className="mt-10 flex gap-4 overflow-auto">
-              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-              <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-            </div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              onDragStart={onDragStart}
-              onDragEnd={onDragEnd}
-              onDragOver={onDragOver}
-            >
-              <div className="mt-10 flex gap-4 overflow-auto">
-                <SortableContext
-                  items={columns.map((col: ColumnTypes) => col.uniqueId)}
-                >
-                  {columns.map((col: ColumnTypes) => (
-                    <ColumnContainer
-                      key={col.uniqueId}
-                      column={col}
-                      deleteColumn={deleteColumnCheck}
-                      updateColumn={updateColumn}
-                      setPopUpVisible={(value: boolean) => {
-                        value ? openPopUp() : closePopUp();
-                        setPopupType("createTodo");
-                        setActiveColumnId(col.uniqueId);
-                      }}
-                      todos={todos.filter((t) => t.columnId === col.uniqueId)}
-                    />
-                  ))}
-                </SortableContext>
-              </div>
-              {isClient &&
-                createPortal(
-                  <DragOverlay>
-                    {activeColumn && (
-                      <ColumnContainer
-                        column={activeColumn}
-                        deleteColumn={deleteColumnCheck}
-                        updateColumn={updateColumn}
-                        setPopUpVisible={(value: boolean) =>
-                          value ? openPopUp() : closePopUp()
-                        }
-                        todos={todos.filter(
-                          (t) => t.columnId === activeColumn.uniqueId,
-                        )}
-                      />
-                    )}
-                    {activeTodo && <Todo todo={activeTodo} />}
-                  </DragOverlay>,
-                  document.body,
-                )}
-            </DndContext>
-          )}
-          {popUpVisible && popupType === "createTodo" && (
-            <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
-              <TodoForm
-                activeColumnId={activeColumnId}
-                onClose={() => closePopUp()}
-              />
-            </Popup>
-          )}
-          {popUpVisible && popupType === "deleteColumn" && (
-            <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
-              <TodoColumnDeleteConfirmation
-                closePopUp={closePopUp}
-                deleteColumn={deleteColumn}
-              />
-            </Popup>
-          )}
-        </div>
+        <ViewKanbanBoard />
       </TabsContent>
       <TabsContent value="list" className="mt-10">
-        List
+        <ViewList />
       </TabsContent>
       <TabsContent value="timeline" className="mt-10">
-        Timeline
+        <ViewTimeline />
       </TabsContent>
       <TabsContent value="dueTasks" className="mt-10">
-        Due Tasks
+        <ViewDueTasks />
       </TabsContent>
     </Tabs>
   );
