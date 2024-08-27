@@ -26,30 +26,28 @@ import { createPortal } from "react-dom";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
 // ICONS
-import { GoPlusCircle, GoHourglass } from "react-icons/go";
+import { GoPlusCircle } from "react-icons/go";
 import { PiKanbanLight } from "react-icons/pi";
 
 // STATE MANAGEMENT IMPORTS
+import FeatureComingSoon from "@/components/FeatureComingSoon";
 import TodoColumnDeleteConfirmation from "@/components/TodoColumnDeleteConfirmation";
 import { TodoStore, useTodo } from "@/store/kanban/todo";
 import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
 import { getRandomColor } from "@/utils/randomColor";
 import { toast } from "sonner";
-import FeatureComingSoon from "@/components/FeatureComingSoon";
 
 const ViewKanbanBoard = () => {
   // STATE MANAGEMENT
   const [
     columns,
-    addTodoColumn,
     addAllTodoColumns,
     updateTodoColumnName,
     updateTodoColumnOrder,
     deleteTodoColumn,
   ] = useTodoColumn((state: ColumnStore) => [
     state.columns,
-    state.addTodoColumn,
     state.addAllTodoColumns,
     state.updateTodoColumnName,
     state.updateTodoColumnOrder,
@@ -375,7 +373,7 @@ const KanbanBoard = () => {
         setActivePage(value);
       }}
     >
-      <div className="pt-10 box-border flex h-full w-full justify-between">
+      <div className="box-border flex h-full w-full justify-between pt-10">
         <TabsList className="px-2 py-6">
           <TabsTrigger value="board" className="text-md">
             Board
