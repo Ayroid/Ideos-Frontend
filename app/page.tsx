@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const login = searchParams.get("login");
   const router = useRouter();
@@ -20,21 +20,27 @@ export default function Home() {
   }, [login, router]);
 
   return (
+    <main className="flex h-full w-full flex-col items-center justify-center gap-6">
+      <div className="flex items-center justify-center gap-6">
+        <Link href="/pages/auth">
+          <Button>Auth Page</Button>
+        </Link>
+        <Link href="/pages/kanbanboard">
+          <Button>Kanban Board</Button>
+        </Link>
+        <Link href="/pages/protected">
+          <Button>Protected</Button>
+        </Link>
+        <ThemeSwitch />
+      </div>
+    </main>
+  );
+}
+
+export default function Home() {
+  return (
     <Suspense fallback={<div>Loading...</div>}>
-      <main className="flex h-full w-full flex-col items-center justify-center gap-6">
-        <div className="flex items-center justify-center gap-6">
-          <Link href="/pages/auth">
-            <Button>Auth Page</Button>
-          </Link>
-          <Link href="/pages/kanbanboard">
-            <Button>Kanban Board</Button>
-          </Link>
-          <Link href="/pages/protected">
-            <Button>Protected</Button>
-          </Link>
-          <ThemeSwitch />
-        </div>
-      </main>
+      <HomeContent />
     </Suspense>
   );
 }
