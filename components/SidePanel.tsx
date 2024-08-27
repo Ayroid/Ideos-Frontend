@@ -1,16 +1,15 @@
 "use client";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   IconArrowLeft,
   IconBrandTabler,
-  IconSettings
+  IconSettings,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { LuKanbanSquare } from "react-icons/lu";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@/types/user";
 import { FaUserAlt } from "react-icons/fa";
@@ -40,14 +39,23 @@ export const LogoIcon = () => {
           src="/io-logo-color 1.png"
           className="h-6 w-6 rounded-full"
           alt="Logo"
-        ></img>
+        />
       </div>
     </Link>
   );
 };
+
 export default function SidebarComponent() {
-  const user = localStorage.getItem("user");
-  const storedUser: User | null = user ? JSON.parse(user) : null;
+  const [storedUser, setStoredUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      if (user) {
+        setStoredUser(JSON.parse(user));
+      }
+    }
+  }, []);
 
   const links = [
     {

@@ -6,11 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { User } from "@/types/user";
-import { SVGProps } from "react";
+import { SVGProps, useEffect, useState } from "react";
 
 function UserProfile() {
-  const user = localStorage.getItem("user");
-  const storedUser: User | null = user ? JSON.parse(user) : null;
+  const [storedUser, setStoredUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      if (user) {
+        setStoredUser(JSON.parse(user));
+      }
+    }
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center py-4">
@@ -54,7 +62,7 @@ function UserProfile() {
             <CardContent className="space-y-4">
               <div className="space-y-2 py-4">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" value={storedUser?.given_name || ""} />
+                <Input id="name" value={storedUser?.given_name ?? ""} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
