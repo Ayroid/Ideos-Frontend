@@ -12,7 +12,7 @@ const Page = async () => {
   let data;
 
   try {
-    const response = await fetch(`${NEXT_PUBLIC_API_URL}/protected`, {
+    const response = await fetch(`https://api.ideos.live/api/protected`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

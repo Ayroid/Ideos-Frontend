@@ -8,7 +8,7 @@ const { getAccessTokenRaw } = getKindeServerSession();
 export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    const response = await axios.get(`${NEXT_PUBLIC_API_URL}/todos`, {
+    const response = await axios.get(`https://api.ideos.live/api/todos`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     const requestBody = await parseRequestBody(req);
-    await axios.post(`${NEXT_PUBLIC_API_URL}/todos`, requestBody, {
+    await axios.post(`https://api.ideos.live/api/todos`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

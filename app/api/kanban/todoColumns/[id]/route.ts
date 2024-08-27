@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest) {
     const columnId = url.pathname.split("/").pop();
     const requestBody = await parseRequestBody(req);
     await axios.put(
-      `${NEXT_PUBLIC_API_URL}/todoColumns/${columnId}`,
+      `https://api.ideos.live/api/todoColumns/${columnId}`,
       requestBody,
       {
         headers: {
@@ -31,7 +31,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const columnId = url.pathname.split("/").pop();
-    await axios.delete(`${NEXT_PUBLIC_API_URL}/todoColumns/${columnId}`, {
+    await axios.delete(`https://api.ideos.live/api/todoColumns/${columnId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
