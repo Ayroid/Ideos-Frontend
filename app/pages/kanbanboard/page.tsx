@@ -5,6 +5,7 @@ import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Carousel,CarouselItem,CarouselContent,CarouselNext,CarouselPrevious } from "@/components/ui/carousel";
 import {
   DndContext,
   DragEndEvent,
@@ -307,10 +308,29 @@ const KanbanBoard = () => {
               onDragOver={onDragOver}
             >
               <div className="mt-10 flex gap-4 overflow-auto">
+                <Carousel>
+                  <CarouselNext/>
+                  <CarouselPrevious/>
                 <SortableContext
                   items={columns.map((col: ColumnTypes) => col.uniqueId)}
                 >
+                  <CarouselContent className="flex">
                   {columns.map((col: ColumnTypes) => (
+          <CarouselItem
+          key={col.uniqueId}
+          className="
+            flex-shrink-0
+            flex-grow
+            basis-full
+            sm:basis-1/2 
+            md:basis-1/3 
+            lg:basis-1/4
+            xl:basis-1/5
+            max-w-full 
+            transition-all duration-300 ease-in-out
+          "
+        >
+
                     <ColumnContainer
                       key={col.uniqueId}
                       column={col}
@@ -323,8 +343,11 @@ const KanbanBoard = () => {
                       }}
                       todos={todos.filter((t) => t.columnId === col.uniqueId)}
                     />
+                    </CarouselItem>
                   ))}
+                    </CarouselContent>
                 </SortableContext>
+                </Carousel>
               </div>
               {isClient &&
                 createPortal(
