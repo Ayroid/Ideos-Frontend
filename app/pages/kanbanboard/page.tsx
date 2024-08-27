@@ -1,10 +1,13 @@
 "use client";
 
 import ColumnContainer from "@/components/ColumnContainer";
+import TodoForm from "@/components/CreateTodoForm";
+import Popup from "@/components/Popup";
 import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { generateUniqueId } from "@/utils/generateId";
 import {
   DndContext,
   DragEndEvent,
@@ -15,9 +18,6 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import TodoForm from "@/components/CreateTodoForm";
-import Popup from "@/components/Popup";
-import { generateUniqueId } from "@/utils/generateId";
 import { SortableContext } from "@dnd-kit/sortable";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import axios from "axios";
@@ -27,12 +27,12 @@ import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
 
 // STATE MANAGEMENT IMPORTS
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import TodoColumnDeleteConfirmation from "@/components/TodoColumnDeleteConfirmation";
 import { TodoStore, useTodo } from "@/store/kanban/todo";
 import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
-import { toast } from "sonner";
 import { getRandomColor } from "@/utils/randomColor";
+import { toast } from "sonner";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
@@ -94,6 +94,7 @@ const KanbanBoard = () => {
       try {
         const response = await axios.get("/api/kanban/todoColumns");
         const fetchedColumns = response.data;
+        console.log("fetchedColumns", fetchedColumns);
         const fetchedTodos = fetchedColumns.reduce(
           (acc: TodoTypes[], col: ColumnTypes) => {
             if (col.todoIds && col.todoIds.length > 0) {
@@ -132,6 +133,7 @@ const KanbanBoard = () => {
 
   async function createNewColumn() {
     try {
+      console.log(getRandomColor());
       const data: ColumnTypes = {
         uniqueId: generateUniqueId({ obj: "Col" }),
         color: getRandomColor(),
@@ -348,25 +350,10 @@ const KanbanBoard = () => {
           )}
           {popUpVisible && popupType === "deleteColumn" && (
             <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="w-fit text-xl">Delete Column</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>Are you sure you want to delete this column?</p>
-                  <div className="mt-4 flex justify-end gap-4">
-                    <Button onClick={closePopUp}>Cancel</Button>
-                    <Button
-                      onClick={() => {
-                        deleteColumn();
-                      }}
-                      variant="destructive"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <TodoColumnDeleteConfirmation
+                closePopUp={closePopUp}
+                deleteColumn={deleteColumn}
+              />
             </Popup>
           )}
         </div>

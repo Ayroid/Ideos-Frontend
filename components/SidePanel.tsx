@@ -58,13 +58,6 @@ export default function SidebarComponent() {
       ),
     },
     {
-      label: "Profile",
-      href: "/pages/profile",
-      icon: (
-        <IconUserBolt className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
       label: "Kanban Board",
       href: "/pages/kanbanboard",
       icon: (
@@ -111,7 +104,7 @@ export default function SidebarComponent() {
             <SidebarLink
               link={{
                 label: storedUser?.given_name ?? "User",
-                href: "#",
+                href: "/pages/profile",
                 icon: storedUser?.picture ? (
                   <Image
                     src={storedUser?.picture}

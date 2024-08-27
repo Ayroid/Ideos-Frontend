@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ColumnTypes, TodoTypes } from "@/types/kanban";
+import { ColumnColorType, ColumnTypes, TodoTypes } from "@/types/kanban";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
@@ -8,11 +8,13 @@ import { useMemo, useState } from "react";
 import Todo from "./Todo";
 import { Button } from "./ui/button";
 
-const ColoredBar = ({ color }: { color: string }) => {
+const ColoredBar = ({ color }: { color: ColumnColorType }) => {
+  console.log(color);
   return (
     <div className="relative flex items-center justify-center rounded-full p-1 px-2 text-sm">
       <div
-        className={`absolute left-0 top-1/2 h-6 w-1 ${color} -translate-y-1/2 transform`}
+        className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 transform`}
+        style={{ backgroundColor: color }}
       ></div>
     </div>
   );
