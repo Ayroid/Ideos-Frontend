@@ -32,6 +32,7 @@ import { TodoStore, useTodo } from "@/store/kanban/todo";
 import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
 import { toast } from "sonner";
+import { getRandomColor } from "@/utils/randomColor";
 
 const KanbanBoard = () => {
   const { getAccessTokenRaw } = useKindeBrowserClient();
@@ -87,17 +88,6 @@ const KanbanBoard = () => {
 
   // OTHER STATES
   const [isClient, setIsClient] = useState(false);
-
-  function getRandomColor() {
-    const colors = [
-      "bg-blue-500",
-      "bg-red-500",
-      "bg-green-500",
-      "bg-yellow-500",
-      "bg-purple-500",
-    ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  }
 
   useEffect(() => {
     const fetchColumns = async () => {
@@ -392,5 +382,5 @@ const KanbanBoard = () => {
       </TabsContent>
     </Tabs>
   );
-}
+};
 export default KanbanBoard;
