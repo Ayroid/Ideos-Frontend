@@ -92,7 +92,7 @@ export default function SidebarComponent() {
   return (
     <div
       className={cn(
-        "flex h-screen flex-col overflow-hidden rounded-md border-r border-neutral-200 bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800", // Set height to full screen if open
+        "flex h-screen flex-col overflow-hidden border-r border-background bg-secondary",
       )}
     >
       <Sidebar open={open} setOpen={setOpen} animate={true}>
