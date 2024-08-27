@@ -1,6 +1,7 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { redirect } from "next/navigation";
+import { NEXT_PUBLIC_API_URL } from "@/utils/constants";
 
 const Page = async () => {
   const { getAccessTokenRaw, getUser } = getKindeServerSession();
@@ -9,8 +10,6 @@ const Page = async () => {
   const accessToken = await getAccessTokenRaw();
 
   let data;
-
-  console.log(NEXT_PUBLIC_API_URL);
 
   try {
     const response = await fetch(`${NEXT_PUBLIC_API_URL}/protected`, {
