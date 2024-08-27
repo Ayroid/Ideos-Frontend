@@ -254,7 +254,7 @@ const ViewKanbanBoard = () => {
       )}
       <div>
         {columnsLoading ? (
-          <div className="mt-10 flex gap-4 overflow-auto">
+          <div className="flex gap-4 overflow-auto">
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
@@ -373,7 +373,7 @@ const KanbanBoard = () => {
         setActivePage(value);
       }}
     >
-      <div className="box-border flex h-full w-full justify-between pt-10">
+      <div className="box-border flex h-full w-full justify-between">
         <TabsList className="px-2 py-6">
           <TabsTrigger value="board" className="text-md">
             Board
