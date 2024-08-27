@@ -34,15 +34,18 @@ export default function Home() {
 
   useEffect(() => {
     if (login == "true") {
+      console.log("logging in");
       fetch("/api/handleLogin", {
         method: "POST",
       });
     }
     if (logout == "true") {
+      console.log("logging out");
       localStorage.removeItem("user");
       setStoredUser(null);
     }
-    router.push("/");
+    router.replace("/");
+    router.refresh();
   }, [login, logout, router]);
 
   return (

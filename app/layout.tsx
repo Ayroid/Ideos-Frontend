@@ -1,13 +1,11 @@
+import { ProfileAvatar } from "@/components/ProfileAvatar";
+import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
+import SidebarComponent from "@/components/SidePanel";
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import SidebarComponent from "@/components/SidePanel";
-import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
-import { Toaster } from "@/components/ui/sonner"
-
-
-
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,10 +33,13 @@ export default function RootLayout({
               <SidebarComponent />
             </div>
             <main className="box-border h-full w-full overflow-y-auto p-10">
-              <RelativeBreadCrumb />
+              <div className="flex justify-between">
+                <RelativeBreadCrumb />
+                <ProfileAvatar />
+              </div>
               {children}
             </main>
-            <Toaster expand visibleToasts={1}/>
+            <Toaster expand visibleToasts={1} />
           </div>
         </ThemeProvider>
       </body>
