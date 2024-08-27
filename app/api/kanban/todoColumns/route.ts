@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(response.data);
   } catch (error) {
+    console.log("API THREW ERROR", error);
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }
 }
