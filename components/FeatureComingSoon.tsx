@@ -3,11 +3,15 @@ import { GoHourglass } from "react-icons/go";
 
 type FeatureComingSoonProps = {
   title?: string;
+  height?: number;
 };
 
-const FeatureComingSoon = ({ title }: FeatureComingSoonProps) => {
+const FeatureComingSoon = ({ title, height }: FeatureComingSoonProps) => {
   return (
-    <div className="flex h-[50dvh] items-center justify-center">
+    <div
+      className={`flex items-center justify-center`}
+      style={{ height: height ? height + "dvh" : "50dvh" }}
+    >
       <div className="flex flex-col items-center">
         <h1 className="mb-20 text-2xl font-bold text-primary">
           {title ?? "New Feature"}
