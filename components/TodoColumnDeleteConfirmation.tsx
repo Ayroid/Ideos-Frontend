@@ -10,19 +10,21 @@ const TodoColumnDeleteConfirmation = ({
   deleteColumn: () => void;
 }) => {
   return (
-    <Card>
+    <Card className="w-[26rem]">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="w-fit text-xl">Delete Column</CardTitle>
+        <CardTitle className="w-fit text-lg mb-0">Delete Column</CardTitle>
       </CardHeader>
-      <CardContent>
-        <p>Are you sure you want to delete this column?</p>
-        <div className="mt-4 flex justify-end gap-4">
-          <Button onClick={closePopUp}>Cancel</Button>
+      <CardContent className="-mt-6">
+        <p className="text-primary/60 text-sm">Are you sure you want to delete this column?</p>
+        <div className="mt-4 flex justify-end gap-2">
+          <Button onClick={closePopUp} variant="outline" className="w-24">
+            Cancel
+          </Button>
           <Button
             onClick={() => {
               deleteColumn();
             }}
-            variant="destructive"
+            className="w-24"
           >
             Delete
           </Button>
