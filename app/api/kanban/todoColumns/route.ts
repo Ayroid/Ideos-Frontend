@@ -8,7 +8,7 @@ const { getAccessTokenRaw } = getKindeServerSession();
 export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    const response = await axios.get(`https://api.ideos.live/api/todoColumns`, {
+    const response = await axios.get(`https://api.ideos.live/todoColumns`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     const requestBody = await parseRequestBody(req);
-    await axios.post(`https://api.ideos.live/api/todoColumns`, requestBody, {
+    await axios.post(`https://api.ideos.live/todoColumns`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

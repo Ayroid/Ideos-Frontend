@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     await axios.post(
-      `https://api.ideos.live/api/users`,
+      `https://api.ideos.live/users`,
       {},
       {
         headers: {

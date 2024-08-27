@@ -1,1 +1,1 @@
-export const NEXT_PUBLIC_API_URL = "https://api.ideos.live/api"
+export const NEXT_PUBLIC_API_URL = "https://api.ideos.live/"

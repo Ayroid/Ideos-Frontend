@@ -23,7 +23,7 @@ function HomeContent() {
 
   const testRouteCall = async () => {
     try {
-      const response = await axios.get("https://api.ideos.live/api/test");
+      const response = await axios.get("https://api.ideos.live/test");
       console.log("Columns:", response.data);
       toast.success("Test Route Works");
     } catch (error) {
