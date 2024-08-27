@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Separator } from "@/components/ui/separator";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,12 +33,13 @@ export default function RootLayout({
             <div>
               <SidebarComponent />
             </div>
-            <main className="box-border h-full w-full overflow-y-auto p-10">
-              <div className="flex h-7 justify-between">
+            <main className="box-border w-full overflow-y-auto">
+              <div className="flex items-center justify-between px-10 py-6">
                 <RelativeBreadCrumb />
                 <ProfileAvatar />
               </div>
-              <div className="h-[calc(100%-1.75rem)]">{children}</div>
+              <Separator />
+              <div className="h-[calc(100%-5rem)] px-10">{children}</div>
             </main>
             <Toaster expand visibleToasts={1} />
           </div>
