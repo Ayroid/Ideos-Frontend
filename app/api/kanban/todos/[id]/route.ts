@@ -10,15 +10,11 @@ export async function PUT(req: NextRequest) {
     const url = new URL(req.url);
     const todoId = url.pathname.split("/").pop();
     const requestBody = await parseRequestBody(req);
-    await axios.put(
-      `${process.env.NEXT_PUBLIC_API_URL}/todos/${todoId}`,
-      requestBody,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+    await axios.put(`${NEXT_PUBLIC_API_URL}/todos/${todoId}`, requestBody, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
@@ -31,7 +27,7 @@ export async function DELETE(req: NextRequest) {
     const url = new URL(req.url);
     const todoId = url.pathname.split("/").pop();
     console.log(todoId);
-    await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/todos/${todoId}`, {
+    await axios.delete(`${NEXT_PUBLIC_API_URL}/todos/${todoId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

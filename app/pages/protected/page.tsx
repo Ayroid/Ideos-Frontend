@@ -10,17 +10,14 @@ const Page = async () => {
 
   let data;
 
-  console.log(process.env.NEXT_PUBLIC_API_URL);
+  console.log(NEXT_PUBLIC_API_URL);
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/protected`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+    const response = await fetch(`${NEXT_PUBLIC_API_URL}/protected`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+    });
 
     data = await response.json();
   } catch (error) {
