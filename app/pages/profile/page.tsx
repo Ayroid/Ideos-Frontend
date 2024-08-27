@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { SVGProps } from "react";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 function UserProfile() {
   const { user, isLoading } = useKindeBrowserClient();

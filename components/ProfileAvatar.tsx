@@ -1,25 +1,24 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
   SheetTrigger,
-  SheetClose,
 } from "@/components/ui/sheet";
-import { FaUserAlt } from "react-icons/fa";
 import { User } from "@/types/user";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import Link from "next/link";
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { PiSignInBold, PiSignOutBold } from "react-icons/pi";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FaUserAlt } from "react-icons/fa";
+import { PiSignInBold, PiSignOutBold } from "react-icons/pi";
 
 const UserAvatar = ({
   storedUser,
@@ -120,4 +119,5 @@ const ProfileAvatar = () => {
   );
 };
 
-export { UserAvatar, ProfileAvatar };
+export { ProfileAvatar, UserAvatar };
+

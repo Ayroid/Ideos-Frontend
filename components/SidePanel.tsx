@@ -1,15 +1,14 @@
 "use client";
 import { cn } from "@/lib/utils";
 import {
-  IconArrowLeft,
   IconBrandTabler,
-  IconSettings,
+  IconSettings
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
+import { FaUserCheck } from "react-icons/fa";
 import { LuKanbanSquare } from "react-icons/lu";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
-import { FaUserCheck } from "react-icons/fa";
 
 export const Logo = () => {
   return (
