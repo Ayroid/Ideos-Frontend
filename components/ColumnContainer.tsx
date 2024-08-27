@@ -9,7 +9,6 @@ import Todo from "./Todo";
 import { Button } from "./ui/button";
 
 const ColoredBar = ({ color }: { color: ColumnColorType }) => {
-  console.log(color);
   return (
     <div className="relative flex items-center justify-center rounded-full p-1 px-2 text-sm">
       <div

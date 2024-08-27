@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { GoPlusCircle } from "react-icons/go";
 import { ColumnTypes, TodoTypes } from "../../../types/kanban";
+import { PiKanbanLight } from "react-icons/pi";
 
 // STATE MANAGEMENT IMPORTS
 import TodoColumnDeleteConfirmation from "@/components/TodoColumnDeleteConfirmation";
@@ -283,6 +284,19 @@ const KanbanBoard = () => {
         )}
       </div>
       <TabsContent value="board">
+        {!columnsLoading && columns.length === 0 && (
+          <div className="flex h-[70dvh] items-center justify-center">
+            <div className="flex flex-col items-center">
+              <PiKanbanLight className="h-36 w-36 text-primary" />
+              <p className="text-2xl font-bold text-primary">
+                Welcome to your Kanban Board
+              </p>
+              <p className="mt-1 text-center text-lg text-primary">
+                Get started by adding a new column
+              </p>
+            </div>
+          </div>
+        )}
         <div>
           {columnsLoading ? (
             <div className="mt-10 flex gap-4 overflow-auto">

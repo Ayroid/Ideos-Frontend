@@ -1,7 +1,6 @@
-import { create } from "zustand";
 import { ColumnTypes, TodoTypes } from "@/types/kanban";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Columns } from "lucide-react";
+import { create } from "zustand";
 
 type State = {
   columns: ColumnTypes[];
