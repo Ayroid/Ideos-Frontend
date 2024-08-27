@@ -39,7 +39,7 @@ export default function RootLayout({
                 <ProfileAvatar />
               </div>
               <Separator />
-              <div className="h-[calc(100%-5rem)] px-10">{children}</div>
+              <div className="h-[calc(100%-5rem)] p-10">{children}</div>
             </main>
             <Toaster expand visibleToasts={1} />
           </div>
