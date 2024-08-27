@@ -2,6 +2,7 @@ import axios from "axios";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { parseRequestBody } from "@/utils/requestparser";
+import { NEXT_PUBLIC_API_URL } from "@/utils/constants";
 const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function GET(req: NextRequest) {
