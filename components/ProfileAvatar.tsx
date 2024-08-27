@@ -18,26 +18,33 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 import Link from "next/link";
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { PiSignInBold, PiSignOutBold } from "react-icons/pi";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const UserAvatar = ({
   storedUser,
+  loading,
   className: customClasses = "",
 }: {
   storedUser: User | null;
+  loading?: boolean | null;
   className?: string;
 }) => {
   return (
     <Avatar className={`h-7 w-7 ${customClasses}`}>
-      <AvatarImage src={storedUser?.picture ?? undefined} alt="U" />
+      <AvatarImage
+        src={loading ? undefined : (storedUser?.picture ?? undefined)}
+        alt="U"
+      />
       <AvatarFallback>
-        <FaUserAlt />
+        {loading ? <AiOutlineLoading3Quarters className="animate-spin" /> : <FaUserAlt />}
       </AvatarFallback>
     </Avatar>
   );
 };
 
 const ProfileAvatar = () => {
-  const [storedUser, setStoredUser] = useState<User | null>(null);
+  const { user, isLoading } = useKindeBrowserClient();
 
   const sideBarData = [
     {
@@ -47,26 +54,21 @@ const ProfileAvatar = () => {
     },
   ];
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const user = localStorage.getItem("user");
-      if (user) {
-        setStoredUser(JSON.parse(user));
-      }
-    }
-  }, []);
-
   return (
     <Sheet>
       <SheetTrigger>
-        <UserAvatar storedUser={storedUser} />
+        <UserAvatar storedUser={user} loading={isLoading} />
       </SheetTrigger>
       <SheetContent className="w-80 p-4">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-4">
-            <UserAvatar storedUser={storedUser} className="h-10 w-10" />
+            <UserAvatar
+              storedUser={user}
+              className="h-10 w-10"
+              loading={isLoading}
+            />
             <div className="flex flex-col gap-0">
-              <h1>{storedUser?.given_name ?? "User"}</h1>
+              <h1>{user?.given_name ?? "User"}</h1>
               <span className="text-sm font-normal text-muted-foreground">
                 Software Developer
               </span>
@@ -89,7 +91,7 @@ const ProfileAvatar = () => {
                 </SheetClose>
               ))}
               <Separator className="!my-2" />
-              {storedUser ? (
+              {user ? (
                 <LogoutLink>
                   <Button
                     className="flex w-full items-center justify-start gap-2 p-2"

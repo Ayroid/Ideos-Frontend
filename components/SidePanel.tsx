@@ -1,18 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   IconArrowLeft,
   IconBrandTabler,
   IconSettings,
 } from "@tabler/icons-react";
-import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { LuKanbanSquare } from "react-icons/lu";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "@/types/user";
-import { FaUserAlt } from "react-icons/fa";
+import { FaUserCheck } from "react-icons/fa";
 
 export const Logo = () => {
   return (
@@ -46,18 +43,14 @@ export const LogoIcon = () => {
 };
 
 export default function SidebarComponent() {
-  const [storedUser, setStoredUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const user = localStorage.getItem("user");
-      if (user) {
-        setStoredUser(JSON.parse(user));
-      }
-    }
-  }, []);
-
   const links = [
+    {
+      label: "Authentication",
+      href: "/pages/auth",
+      icon: (
+        <FaUserCheck className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
     {
       label: "Dashboard",
       href: "/",
@@ -77,13 +70,6 @@ export default function SidebarComponent() {
       href: "/pages/settings",
       icon: (
         <IconSettings className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: (
-        <IconArrowLeft className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
   ];
@@ -107,30 +93,6 @@ export default function SidebarComponent() {
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
-          </div>
-          <div>
-            <SidebarLink
-              link={{
-                label: storedUser?.given_name ?? "User",
-                href: "/pages/profile",
-                icon: storedUser?.picture ? (
-                  <Image
-                    src={storedUser?.picture}
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ) : (
-                  <Avatar>
-                    <AvatarImage />
-                    <AvatarFallback>
-                      <FaUserAlt />
-                    </AvatarFallback>
-                  </Avatar>
-                ),
-              }}
-            />
           </div>
         </SidebarBody>
       </Sidebar>

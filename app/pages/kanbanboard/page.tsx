@@ -242,7 +242,7 @@ const ViewKanbanBoard = () => {
   return (
     <>
       {!columnsLoading && columns.length === 0 && (
-        <div className="flex h-[70dvh] items-center justify-center">
+        <div className="flex h-[65dvh] items-center justify-center">
           <div className="flex flex-col items-center">
             <PiKanbanLight className="h-36 w-36 text-primary" />
             <p className="text-2xl font-bold text-primary">
@@ -375,7 +375,7 @@ const KanbanBoard = () => {
         setActivePage(value);
       }}
     >
-      <div className="mt-10 flex w-full justify-between">
+      <div className="pt-10 box-border flex h-full w-full justify-between">
         <TabsList className="px-2 py-6">
           <TabsTrigger value="board" className="text-md">
             Board

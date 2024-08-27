@@ -33,11 +33,11 @@ export default function RootLayout({
               <SidebarComponent />
             </div>
             <main className="box-border h-full w-full overflow-y-auto p-10">
-              <div className="flex justify-between">
+              <div className="flex h-7 justify-between">
                 <RelativeBreadCrumb />
                 <ProfileAvatar />
               </div>
-              {children}
+              <div className="h-[calc(100%-1.75rem)]">{children}</div>
             </main>
             <Toaster expand visibleToasts={1} />
           </div>
