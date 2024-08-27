@@ -4,9 +4,9 @@ import { ThemeSwitch } from "@/components/ui/theme-switch";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-import { useUserStore } from "@/store/user";
+import { User } from "@/types/user";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -14,11 +14,7 @@ export default function Home() {
   const logout = searchParams.get("logout");
   const router = useRouter();
 
-  const [storedUser, setStoredUser, clearStoredUser] = useUserStore((state) => [
-    state.user,
-    state.setUser,
-    state.clearUser,
-  ]);
+  const [storedUser, setStoredUser] = useState<User | null>(null);
 
   const { user, isLoading } = useKindeBrowserClient();
 
@@ -44,7 +40,7 @@ export default function Home() {
     }
     if (logout == "true") {
       localStorage.removeItem("user");
-      clearStoredUser();
+      setStoredUser(null);
     }
     router.push("/");
   }, [login, logout, router]);

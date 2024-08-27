@@ -3,8 +3,7 @@ import { cn } from "@/lib/utils";
 import {
   IconArrowLeft,
   IconBrandTabler,
-  IconSettings,
-  IconUserBolt,
+  IconSettings
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,7 +12,7 @@ import { LuKanbanSquare } from "react-icons/lu";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUserStore } from "@/store/user";
+import { User } from "@/types/user";
 import { FaUserAlt } from "react-icons/fa";
 
 export const Logo = () => {
@@ -47,7 +46,8 @@ export const LogoIcon = () => {
   );
 };
 export default function SidebarComponent() {
-  const [storedUser] = useUserStore((state) => [state.user]);
+  const user = localStorage.getItem("user");
+  const storedUser: User | null = user ? JSON.parse(user) : null;
 
   const links = [
     {

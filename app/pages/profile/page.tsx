@@ -1,16 +1,16 @@
 "use client";
 import { Avatar } from "@/components/ui/avatar";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import React, { SVGProps } from "react";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { User } from "@/types/user";
+import { SVGProps } from "react";
 
 function UserProfile() {
-  const { getUser } = useKindeBrowserClient();
-  const user = getUser();
+  const user = localStorage.getItem("user");
+  const storedUser: User | null = user ? JSON.parse(user) : null;
 
   return (
     <div className="flex flex-col items-center justify-center py-4">
@@ -18,9 +18,9 @@ function UserProfile() {
         <div className="space-y-4 lg:col-span-2">
           <div className="flex items-center space-x-4">
             <Avatar className="h-12 w-12">
-              {user?.picture ? (
+              {storedUser?.picture ? (
                 <img
-                  src={user.picture}
+                  src={storedUser.picture}
                   width="96"
                   height="96"
                   alt="Avatar"
@@ -39,7 +39,7 @@ function UserProfile() {
               )}
             </Avatar>
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold">{user?.given_name}</h1>
+              <h1 className="text-2xl font-bold">{storedUser?.given_name}</h1>
               <p className="text-gray-500 dark:text-gray-400">
                 Senior Software Engineer
               </p>
@@ -54,7 +54,7 @@ function UserProfile() {
             <CardContent className="space-y-4">
               <div className="space-y-2 py-4">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" value={user?.given_name || ""} />
+                <Input id="name" value={storedUser?.given_name || ""} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
@@ -128,7 +128,7 @@ function CalendarIcon(props: Readonly<SVGProps<SVGSVGElement>>) {
   );
 }
 
-function MessageCircleIcon(props: SVGProps<SVGSVGElement>) {
+function MessageCircleIcon(props: Readonly<SVGProps<SVGSVGElement>>) {
   return (
     <svg
       {...props}
