@@ -48,7 +48,7 @@ const ProfileAvatar = () => {
   const sideBarData = [
     {
       label: "Profile",
-      href: "/pages/profile",
+      href: "/profile",
       icon: <FaUserAlt />,
     },
   ];

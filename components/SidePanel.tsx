@@ -42,20 +42,6 @@ export const LogoIcon = () => {
 export default function SidebarComponent() {
   const links = [
     {
-      label: "Authentication",
-      href: "/pages/auth",
-      icon: (
-        <FaUserCheck className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
-      label: "Pages",
-      href: "/pages",
-      icon: (
-        <RiPagesLine className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
       label: "Dashboard",
       href: "/",
       icon: (
@@ -63,15 +49,22 @@ export default function SidebarComponent() {
       ),
     },
     {
-      label: "Kanban Board",
-      href: "/pages/kanban",
+      label: "Authentication",
+      href: "/auth",
       icon: (
-        <LuKanbanSquare className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
+        <FaUserCheck className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Tools",
+      href: "/tools",
+      icon: (
+        <RiPagesLine className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
     {
       label: "Settings",
-      href: "/pages/settings",
+      href: "/settings",
       icon: (
         <IconSettings className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
