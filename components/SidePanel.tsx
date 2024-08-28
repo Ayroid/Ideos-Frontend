@@ -1,13 +1,11 @@
 "use client";
 import { cn } from "@/lib/utils";
-import {
-  IconBrandTabler,
-  IconSettings
-} from "@tabler/icons-react";
+import { IconBrandTabler, IconSettings } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
 import { FaUserCheck } from "react-icons/fa";
 import { LuKanbanSquare } from "react-icons/lu";
+import { RiPagesLine } from "react-icons/ri";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 
 export const Logo = () => {
@@ -48,6 +46,13 @@ export default function SidebarComponent() {
       href: "/pages/auth",
       icon: (
         <FaUserCheck className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
+    {
+      label: "Pages",
+      href: "/pages",
+      icon: (
+        <RiPagesLine className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
     {

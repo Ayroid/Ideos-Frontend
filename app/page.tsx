@@ -22,6 +22,9 @@ function HomeContent() {
   return (
     <main className="flex h-full w-full flex-col items-center justify-center gap-6">
       <div className="flex items-center justify-center gap-6">
+        <Link href="/pages">
+          <Button>Pages</Button>
+        </Link>
         <Link href="/pages/auth">
           <Button>Auth Page</Button>
         </Link>
