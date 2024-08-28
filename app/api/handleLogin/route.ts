@@ -1,14 +1,13 @@
-import axios from "axios";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-import { NEXT_PUBLIC_API_URL } from "@/utils/constants";
 
 export async function POST(req: NextRequest) {
   const { getAccessTokenRaw } = getKindeServerSession();
   const accessToken = await getAccessTokenRaw();
   try {
     await axios.post(
-      `https://api.ideos.live/users`,
+      `${process.env.SERVER_URL}/users`,
       {},
       {
         headers: {

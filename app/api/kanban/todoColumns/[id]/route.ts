@@ -1,8 +1,8 @@
-import axios from "axios";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
 import { parseRequestBody } from "@/utils/requestparser";
-import { NEXT_PUBLIC_API_URL } from "@/utils/constants";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
+
 const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function PUT(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest) {
     const columnId = url.pathname.split("/").pop();
     const requestBody = await parseRequestBody(req);
     await axios.put(
-      `https://api.ideos.live/todoColumns/${columnId}`,
+      `${process.env.SERVER_URL}/todoColumns/${columnId}`,
       requestBody,
       {
         headers: {
@@ -31,7 +31,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const columnId = url.pathname.split("/").pop();
-    await axios.delete(`https://api.ideos.live/todoColumns/${columnId}`, {
+    await axios.delete(`${process.env.SERVER_URL}/todoColumns/${columnId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

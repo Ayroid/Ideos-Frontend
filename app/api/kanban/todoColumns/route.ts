@@ -1,14 +1,14 @@
-import axios from "axios";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
 import { parseRequestBody } from "@/utils/requestparser";
-import { NEXT_PUBLIC_API_URL } from "@/utils/constants";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import axios from "axios";
+import { NextRequest, NextResponse } from "next/server";
+
 const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    const response = await axios.get(`https://api.ideos.live/todoColumns`, {
+    const response = await axios.get(`${process.env.SERVER_URL}/todoColumns`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     const requestBody = await parseRequestBody(req);
-    await axios.post(`https://api.ideos.live/todoColumns`, requestBody, {
+    await axios.post(`${process.env.SERVER_URL}/todoColumns`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

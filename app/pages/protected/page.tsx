@@ -1,7 +1,6 @@
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { redirect } from "next/navigation";
-import { NEXT_PUBLIC_API_URL } from "@/utils/constants";
 
 const Page = async () => {
   const { getAccessTokenRaw, getUser } = getKindeServerSession();
@@ -12,7 +11,7 @@ const Page = async () => {
   let data;
 
   try {
-    const response = await fetch(`https://api.ideos.live//protected`, {
+    const response = await fetch(`${process.env.SERVER_URL}/protected`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
