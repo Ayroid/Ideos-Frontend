@@ -1,37 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ColumnTypes, TodoProps } from "@/types";
+import { ColumnColorType, ColumnTypes, TodoTypes } from "@/types/kanban";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Todo from "./Todo";
 import { Button } from "./ui/button";
 
-// Function to get a random color class
-function getRandomColor() {
-  const colors = [
-    "bg-blue-500",
-    "bg-red-500",
-    "bg-green-500",
-    "bg-yellow-500",
-    "bg-purple-500",
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-}
-
-// Separate ColoredBar component to avoid re-render issues
-const ColoredBar = () => {
-  const [colorClass, setColorClass] = useState("");
-
-  useEffect(() => {
-    setColorClass(getRandomColor());
-  }, []);
-
+const ColoredBar = ({ color }: { color: ColumnColorType }) => {
   return (
     <div className="relative flex items-center justify-center rounded-full p-1 px-2 text-sm">
       <div
-        className={`absolute left-0 top-1/2 h-6 w-1 ${colorClass} -translate-y-1/2 transform`}
+        className={`absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 transform`}
+        style={{ backgroundColor: color }}
       ></div>
     </div>
   );
@@ -41,21 +23,11 @@ interface Props {
   column: ColumnTypes;
   deleteColumn: (id: string) => void;
   updateColumn: (id: string, title: string, server: boolean) => void;
-  updateTodo: (todoData: TodoProps) => void;
-  deleteTodo: (id: string) => void;
   setPopUpVisible: (value: boolean) => void;
-  todos: TodoProps[];
+  todos: TodoTypes[];
 }
 function ColumnContainer(props: Readonly<Props>) {
-  const {
-    column,
-    deleteColumn,
-    updateColumn,
-    updateTodo,
-    deleteTodo,
-    setPopUpVisible,
-    todos,
-  } = props;
+  const { column, deleteColumn, updateColumn, setPopUpVisible, todos } = props;
   const [editMode, setEditMode] = useState<boolean>(false);
 
   const todoIds = useMemo(() => todos.map((todo) => todo.uniqueId), [todos]);
@@ -112,7 +84,7 @@ function ColumnContainer(props: Readonly<Props>) {
               className="flex w-9/12 gap-2"
               onClick={() => setEditMode(true)}
             >
-              <ColoredBar />
+              <ColoredBar color={column.color} />
               {editMode ? (
                 <input
                   value={column.title}
@@ -165,8 +137,6 @@ function ColumnContainer(props: Readonly<Props>) {
                 key={todo.uniqueId}
                 todo={todo}
                 columnId={column.uniqueId}
-                updateTodo={updateTodo}
-                deleteTodo={deleteTodo}
               />
             ))}
           </SortableContext>

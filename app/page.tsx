@@ -1,44 +1,46 @@
 "use client";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitch } from "@/components/ui/theme-switch";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const login = searchParams.get("login");
   const router = useRouter();
 
   useEffect(() => {
-    if (login) {
-      const handleLogin = async () => {
-        try {
-          await fetch("/api/handleLogin", {
-            method: "POST",
-          });
-          console.log("Sending Request");
-        } catch (error) {
-          console.error("Login request failed", error);
-        }
-      };
-      handleLogin();
+    if (login === "true") {
+      fetch("/api/handleLogin", {
+        method: "POST",
+      });
       router.push("/");
     }
-  }, [login]);
+  }, [login, router]);
 
   return (
-    <main className="flex items-center justify-center gap-6">
-      <Link href="/pages/auth">
-        <Button>Auth Page</Button>
-      </Link>
-      <Link href="/pages/kanbanboard">
-        <Button>Kanban Board</Button>
-      </Link>
-      <Link href="/pages/protected">
-        <Button>Protected</Button>
-      </Link>
-      <ThemeSwitch />
+    <main className="flex h-full w-full flex-col items-center justify-center gap-6">
+      <div className="flex items-center justify-center gap-6">
+        <Link href="/pages/auth">
+          <Button>Auth Page</Button>
+        </Link>
+        <Link href="/pages/kanbanboard">
+          <Button>Kanban Board</Button>
+        </Link>
+        <Link href="/pages/protected">
+          <Button>Protected</Button>
+        </Link>
+        <ThemeSwitch />
+      </div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

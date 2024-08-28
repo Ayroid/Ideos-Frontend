@@ -1,5 +1,5 @@
-import axios from "axios";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

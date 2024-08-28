@@ -7,24 +7,25 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FiMinus } from "react-icons/fi";
 
-import { TodoProps } from "@/types";
+import { TodoTypes } from "@/types/kanban";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
 import { IoClose } from "react-icons/io5";
 import { useState } from "react";
 
+import { updateTodo as updateTodoService } from "@/services/kanban/todo";
+import { useTodo } from "@/store/kanban/todo";
+import { usePopup } from "@/store/popup";
+
 interface TodoFormProps {
-  updateTodo: (todoData: TodoProps) => void;
   onClose: () => void;
-  todo: TodoProps;
+  todo: TodoTypes;
   activeColumnId: string | null;
 }
 
-const UpdateTodoForm = ({
-  updateTodo,
-  onClose,
-  todo,
-  activeColumnId,
-}: TodoFormProps) => {
+const UpdateTodoForm = ({ onClose, todo, activeColumnId }: TodoFormProps) => {
+  const { updateTodos } = useTodo((state) => state);
+  const { close: closePopUp } = usePopup((state) => state);
+
   const [title, setTitle] = useState(todo.title);
   const [description, setDescription] = useState(todo.description);
   const [dueDate, setDueDate] = useState<Date | undefined>(
@@ -56,7 +57,7 @@ const UpdateTodoForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title && description && dueDate) {
-      const todoData: TodoProps = {
+      const todoData: TodoTypes = {
         ...todo,
         title,
         description,
@@ -64,7 +65,7 @@ const UpdateTodoForm = ({
         tags,
         columnId: activeColumnId!,
       };
-      updateTodo(todoData);
+      updateTodoService(todoData, updateTodos, closePopUp);
       onClose();
     }
   };

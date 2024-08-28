@@ -1,20 +1,14 @@
 "use client";
-import React, { useState } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
-import {
-  IconArrowLeft,
-  IconBrandTabler,
-  IconSettings,
-  IconUserBolt,
-} from "@tabler/icons-react";
-import { LuKanbanSquare } from "react-icons/lu";
-import Link from "next/link";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  IconBrandTabler,
+  IconSettings
+} from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
+import { FaUserCheck } from "react-icons/fa";
+import { LuKanbanSquare } from "react-icons/lu";
+import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
 
 export const Logo = () => {
   return (
@@ -41,25 +35,26 @@ export const LogoIcon = () => {
           src="/io-logo-color 1.png"
           className="h-6 w-6 rounded-full"
           alt="Logo"
-        ></img>
+        />
       </div>
     </Link>
   );
 };
+
 export default function SidebarComponent() {
   const links = [
+    {
+      label: "Authentication",
+      href: "/pages/auth",
+      icon: (
+        <FaUserCheck className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
+      ),
+    },
     {
       label: "Dashboard",
       href: "/",
       icon: (
         <IconBrandTabler className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
-      label: "Profile",
-      href: "/pages/profile",
-      icon: (
-        <IconUserBolt className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
     {
@@ -71,29 +66,19 @@ export default function SidebarComponent() {
     },
     {
       label: "Settings",
-      href: "#",
+      href: "/pages/settings",
       icon: (
         <IconSettings className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: (
-        <IconArrowLeft className="h-5 w-5 flex-shrink-0 text-neutral-700 dark:text-neutral-200" />
       ),
     },
   ];
 
   const [open, setOpen] = useState(false);
 
-  const { getUser } = useKindeBrowserClient();
-  const user = getUser();
-
   return (
     <div
       className={cn(
-        "flex h-screen flex-col overflow-hidden rounded-md border-r border-neutral-200 bg-gray-100 dark:border-neutral-700 dark:bg-neutral-800", // Set height to full screen if open
+        "flex h-screen flex-col overflow-hidden border-r border-background bg-secondary",
       )}
     >
       <Sidebar open={open} setOpen={setOpen} animate={true}>
@@ -107,28 +92,6 @@ export default function SidebarComponent() {
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
-          </div>
-          <div>
-            <SidebarLink
-              link={{
-                label: user?.given_name ?? "User",
-                href: "#",
-                icon: user?.picture ? (
-                  <Image
-                    src={user?.picture}
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ) : (
-                  <Avatar>
-                    <AvatarImage />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                ),
-              }}
-            />
           </div>
         </SidebarBody>
       </Sidebar>

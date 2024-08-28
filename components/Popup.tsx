@@ -1,4 +1,4 @@
-import { PopupProps } from "@/types";
+import { PopupProps } from "@/types/kanban";
 import "./Popup.css";
 
 const Popup = ({ children, isOpen, onClose, container }: PopupProps) => {

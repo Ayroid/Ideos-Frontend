@@ -10,8 +10,6 @@ const Page = async () => {
 
   let data;
 
-  console.log(process.env.SERVER_URL);
-
   try {
     const response = await fetch(`${process.env.SERVER_URL}/protected`, {
       headers: {
