@@ -105,6 +105,7 @@ const ViewKanbanBoard = () => {
   useEffect(() => {
     const fetchColumns = async () => {
       try {
+        console.log("/api/kanban/todoColumns");
         const response = await axios.get("/api/kanban/todoColumns");
         const fetchedColumns = response.data;
         console.log("fetchedColumns", fetchedColumns);

@@ -8,6 +8,7 @@ const { getAccessTokenRaw } = getKindeServerSession();
 export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
+    console.log(process.env.SERVER_URL + "/todoColumns");
     const response = await axios.get(`${process.env.SERVER_URL}/todoColumns`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
