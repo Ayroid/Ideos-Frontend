@@ -69,9 +69,11 @@ function ColumnContainer(props: Readonly<Props>) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={"flex min-h-[500px] min-w-[350px] flex-col"}
+      className={
+        "flex max-h-[75dvh] min-h-[500px] min-w-[350px] flex-col"
+      }
     >
-      <CardHeader className="p-0">
+      <CardHeader className="bg-secondary p-0 dark:bg-inherit">
         <CardTitle>
           <div
             {...attributes}
@@ -129,7 +131,7 @@ function ColumnContainer(props: Readonly<Props>) {
         </CardTitle>
       </CardHeader>
       <Separator />
-      <CardContent className="p-3">
+      <CardContent className="overflow-y-auto p-3">
         <div className="flex flex-grow flex-col gap-3 overflow-y-auto">
           <SortableContext items={todoIds}>
             {todos.map((todo) => (
