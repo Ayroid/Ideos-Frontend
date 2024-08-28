@@ -255,7 +255,7 @@ const ViewKanbanBoard = () => {
       )}
       <div>
         {columnsLoading ? (
-          <div className="flex gap-4 overflow-auto">
+          <div className="mt-10 flex gap-4 overflow-auto">
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
