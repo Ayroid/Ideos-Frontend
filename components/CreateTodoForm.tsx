@@ -15,7 +15,7 @@ import { useState } from "react";
 import { createTodo as createTodoService } from "@/services/kanban/todo";
 import { useTodo } from "@/store/kanban/todo";
 import { usePopup } from "@/store/popup";
-import {useTodoColumn} from "@/store/kanban/todoColumn";
+import { useTodoColumn } from "@/store/kanban/todoColumn";
 
 interface TodoFormProps {
   activeColumnId: string | null;
@@ -24,7 +24,7 @@ interface TodoFormProps {
 
 const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
   const { addTodos } = useTodo((state) => state);
-  const {addTodoToColumn} = useTodoColumn((state) => state);
+  const { addTodoToColumn } = useTodoColumn((state) => state);
   const { close: closePopUp } = usePopup((state) => state);
 
   const [title, setTitle] = useState("");
@@ -93,7 +93,7 @@ const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-2 w-full rounded-md p-2 text-white"
+              className="mt-2 w-full rounded-md p-2"
               required
             />
           </div>
@@ -103,12 +103,12 @@ const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
               id="todoFormDescription"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-2 w-full rounded-md p-2 text-white"
+              className="mt-2 w-full rounded-md p-2"
               required
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="todoFormDate" className="block text-white">
+            <label htmlFor="todoFormDate" className="block">
               Due Date
             </label>
             <DatePicker
@@ -137,8 +137,7 @@ const CreateTodoForm = ({ activeColumnId, onClose }: TodoFormProps) => {
                   onChange={(e) =>
                     handleTagChange(index, "title", e.target.value)
                   }
-                  style={{ backgroundColor: tag.color }}
-                  className="rounded-md p-2 font-bold text-white"
+                  className="rounded-md p-2 font-bold"
                 />
                 <Input
                   type="color"

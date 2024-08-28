@@ -1,5 +1,4 @@
 "use client";
-import React, { Fragment } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,13 +7,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { FiHome } from "react-icons/fi";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Fragment } from "react";
+import { GoHomeFill } from "react-icons/go";
 
 const RelativeBreadCrumb = () => {
   const paths = usePathname();
-  const pathNames = paths.split("/").filter(path => path);
+  const pathNames = paths.split("/").filter((path) => path);
 
   return (
     <Breadcrumb>
@@ -22,7 +22,7 @@ const RelativeBreadCrumb = () => {
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link href="/">
-              <FiHome />
+              <GoHomeFill />
             </Link>
           </BreadcrumbLink>
         </BreadcrumbItem>

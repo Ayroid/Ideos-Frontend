@@ -1,14 +1,10 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeSwitch } from "@/components/ui/theme-switch";
-import { IconSettings } from "@tabler/icons-react";
-import { Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { FaUserAlt, FaUserCheck } from "react-icons/fa";
-import { LiaToolsSolid } from "react-icons/lia";
+import { FaTools, FaUserCheck } from "react-icons/fa";
+import { RiSettings4Fill } from "react-icons/ri";
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -34,13 +30,13 @@ function HomeContent() {
     {
       id: 2,
       title: "Tools",
-      icon: <LiaToolsSolid size={96} />,
+      icon: <FaTools size={80} />,
       link: "/tools",
     },
     {
       id: 3,
       title: "Settings",
-      icon: <IconSettings size={96} />,
+      icon: <RiSettings4Fill size={96} />,
       link: "/settings",
     },
   ];

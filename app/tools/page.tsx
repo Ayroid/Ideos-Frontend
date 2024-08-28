@@ -1,29 +1,29 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { FaRegNoteSticky } from "react-icons/fa6";
-import { GoHourglass } from "react-icons/go";
-import { LuKanbanSquare } from "react-icons/lu";
+import { AiFillHourglass } from "react-icons/ai";
+import { BsKanbanFill } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa";
+import { FaNoteSticky } from "react-icons/fa6";
 
 const pagesData = [
   {
     id: 1,
     title: "Kanban",
-    icon: <LuKanbanSquare size={96} />,
+    icon: <BsKanbanFill size={96} />,
     status: true,
     link: "/tools/kanban",
   },
   {
     id: 2,
     title: "Pomodoro",
-    icon: <GoHourglass size={96} />,
+    icon: <AiFillHourglass size={96} />,
     status: false,
     link: "/tools/pomodoro",
   },
   {
     id: 3,
     title: "Notes",
-    icon: <FaRegNoteSticky size={96} />,
+    icon: <FaNoteSticky size={96} />,
     status: false,
     link: "/tools/notes",
   },
