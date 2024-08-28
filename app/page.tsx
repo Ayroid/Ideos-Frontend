@@ -25,7 +25,7 @@ function HomeContent() {
         <Link href="/pages/auth">
           <Button>Auth Page</Button>
         </Link>
-        <Link href="/pages/kanbanboard">
+        <Link href="/pages/kanban">
           <Button>Kanban Board</Button>
         </Link>
         <Link href="/pages/protected">

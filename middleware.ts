@@ -4,5 +4,5 @@ export default function middleware(req: NextRequest) {
   return withAuth(req);
 }
 export const config = {
-  matcher: ["/pages/kanbanboard", "/pages/profile"],
+  matcher: ["/pages/kanban", "/pages/profile"],
 };
