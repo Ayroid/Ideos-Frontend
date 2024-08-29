@@ -29,7 +29,7 @@ export const LogoIcon = () => {
     >
       <div className="flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm">
         <img
-          src="/io-logo-color 1.png"
+          src="/ideos.png"
           className="h-6 w-6 rounded-full"
           alt="Logo"
         />
