@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { AiFillHourglass } from "react-icons/ai";
 import { BsKanbanFill } from "react-icons/bs";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaRobot } from "react-icons/fa";
 import { FaNoteSticky } from "react-icons/fa6";
 
 const pagesData = [
@@ -26,6 +26,13 @@ const pagesData = [
     icon: <FaNoteSticky size={96} />,
     status: false,
     link: "/tools/notes",
+  },
+  {
+    id: 4,
+    title: "IDOe Assist",
+    icon: <FaRobot size={96} />,
+    status: false,
+    link: "/tools/idoe",
   },
 ];
 
