@@ -6,9 +6,8 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import SidebarComponent from "@/components/SidePanel";
-import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
+
+import { Separator } from "@/components/ui/separator";
 
 const inter = Inter({ subsets: ["latin"] });
 
