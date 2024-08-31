@@ -7,6 +7,7 @@ import { FaArrowRotateRight } from "react-icons/fa6";
 import { RiSettings4Fill } from "react-icons/ri";
 import PomodoroSettings from "./pomodoroSettings";
 import { TbFocus } from "react-icons/tb";
+import { useFocusMode } from "@/store/pomodoro/focusMode";
 
 export const PomodoroTimer = () => {
   const [hours, setHours] = useState(0);
@@ -22,6 +23,10 @@ export const PomodoroTimer = () => {
     state.open,
     state.close,
   ]);
+
+  const [focusModeEnabled, enableFocusMode, disableFocusMode] = useFocusMode(
+    (state) => [state.isEnabled, state.enableFocusMode, state.disableFocusMode],
+  );
 
   const toggleStartPause = () => {
     isActive ? handlePause() : handleStart();
@@ -88,7 +93,7 @@ export const PomodoroTimer = () => {
   ];
 
   return (
-<div className="flex h-full flex-col items-center justify-center gap-10 bg-[url('/pomodoro/image.png')] bg-black bg-opacity-30 bg-blend-overlay">
+    <div className="flex h-full flex-col items-center justify-center gap-10 bg-black bg-opacity-30 bg-[url('/pomodoro/image.png')] bg-blend-overlay">
       <div className="flex gap-5">
         {pomodoroModes.map((mode) => (
           <Button
@@ -133,6 +138,9 @@ export const PomodoroTimer = () => {
       <TbFocus
         size={46}
         className={`cursor-pointer transition-all duration-200 ease-in ${isActive ? "opacity-100" : "opacity-0"}`}
+        onClick={() => {
+          focusModeEnabled ? disableFocusMode() : enableFocusMode();
+        }}
       />
       {popUpVisible && (
         <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>

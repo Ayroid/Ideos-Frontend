@@ -42,7 +42,7 @@ function HomeContent() {
   ];
 
   return (
-    <main className="h-full w-full p-10">
+    <main className="w-full p-10">
       <div className="flex flex-wrap gap-6">
         {pagesData.map((page) => (
           <Link

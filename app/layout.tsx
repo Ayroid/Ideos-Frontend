@@ -1,5 +1,4 @@
-import { ProfileAvatar } from "@/components/ProfileAvatar";
-import RelativeBreadCrumb from "@/components/RelativeBreadCrumb";
+import Navbar from "@/components/Navbar";
 import SidebarComponent from "@/components/SidePanel";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -7,7 +6,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Separator } from "@/components/ui/separator";
-import { ThemeSwitch } from "@/components/ui/theme-switch";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,15 +36,9 @@ export default function RootLayout({
               <SidebarComponent />
             </div>
             <main className="box-border w-full overflow-y-auto">
-              <div className="flex items-center justify-between px-10 py-6">
-                <RelativeBreadCrumb />
-                <div className="flex items-center gap-8">
-                  <ThemeSwitch />
-                  <ProfileAvatar />
-                </div>
-              </div>
+              <Navbar />
               <Separator />
-              <div className="h-[calc(100%-5.5rem)]">{children}</div>
+              {children}
             </main>
             <Toaster expand visibleToasts={1} />
           </div>
