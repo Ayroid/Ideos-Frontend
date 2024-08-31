@@ -1,9 +1,9 @@
 "use client";
 
-import ColumnContainer from "@/components/ColumnContainer";
-import TodoForm from "@/components/CreateTodoForm";
+import ColumnContainer from "@/components/kanban/ColumnContainer";
+import TodoForm from "@/components/kanban/CreateTodoForm";
 import Popup from "@/components/Popup";
-import Todo from "@/components/Todo";
+import Todo from "@/components/kanban/Todo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,7 +31,7 @@ import { PiKanbanLight } from "react-icons/pi";
 
 // STATE MANAGEMENT IMPORTS
 import FeatureComingSoon from "@/components/FeatureComingSoon";
-import TodoColumnDeleteConfirmation from "@/components/TodoColumnDeleteConfirmation";
+import TodoColumnDeleteConfirmation from "@/components/kanban/TodoColumnDeleteConfirmation";
 import { TodoStore, useTodo } from "@/store/kanban/todo";
 import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
@@ -241,7 +241,7 @@ const ViewKanbanBoard = () => {
   return (
     <>
       {!columnsLoading && columns.length === 0 && (
-        <div className="flex h-[65dvh] items-center justify-center">
+        <div className="flex h-[65dvh] items-center justify-center p-10">
           <div className="flex flex-col items-center">
             <PiKanbanLight className="h-36 w-36 text-primary" />
             <p className="text-2xl font-bold text-primary">
@@ -373,6 +373,7 @@ const KanbanBoard = () => {
       onValueChange={(value) => {
         setActivePage(value);
       }}
+      className="p-10"
     >
       <div className="box-border flex h-full w-full justify-between">
         <TabsList className="px-2 py-6">

@@ -4,7 +4,7 @@ import "./Popup.css";
 const Popup = ({ children, isOpen, onClose, container }: PopupProps) => {
   return (
     <div
-      className={`fixed left-0 top-0 z-50 flex h-screen w-screen items-center justify-center bg-[#20202056]`}
+      className={`fixed left-0 top-0 z-50 flex h-screen w-screen items-center justify-center bg-black/50`}
       onClick={onClose}
     >
       <div

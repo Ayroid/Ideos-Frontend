@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { PlusCircledIcon, TrashIcon } from "@radix-ui/react-icons";
 import { useMemo, useState } from "react";
 import Todo from "./Todo";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 
 const ColoredBar = ({ color }: { color: ColumnColorType }) => {
   return (
@@ -69,9 +69,7 @@ function ColumnContainer(props: Readonly<Props>) {
     <Card
       ref={setNodeRef}
       style={style}
-      className={
-        "flex max-h-[75dvh] min-h-[500px] min-w-[350px] flex-col"
-      }
+      className={"flex max-h-[75dvh] min-h-[500px] min-w-[350px] flex-col"}
     >
       <CardHeader className="bg-secondary p-0 dark:bg-inherit">
         <CardTitle>

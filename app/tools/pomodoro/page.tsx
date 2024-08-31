@@ -1,8 +1,8 @@
-import FeatureComingSoon from "@/components/FeatureComingSoon";
+import { PomodoroTimer } from "@/components/pomodoro/timer";
 import React from "react";
 
 const PomodoroPage = () => {
-  return <FeatureComingSoon title="Pomodoro" height={78} />;
+  return <PomodoroTimer />;
 };
 
 export default PomodoroPage;

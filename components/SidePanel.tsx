@@ -6,6 +6,7 @@ import { FaTools, FaUserCheck } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import { RiSettings4Fill } from "react-icons/ri";
 import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
+import { useFocusMode } from "@/store/pomodoro/focusMode";
 
 export const Logo = () => {
   return (
@@ -28,11 +29,7 @@ export const LogoIcon = () => {
       className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
     >
       <div className="flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm">
-        <img
-          src="/ideos.png"
-          className="h-6 w-6 rounded-full"
-          alt="Logo"
-        />
+        <img src="/ideos.png" className="h-6 w-6 rounded-full" alt="Logo" />
       </div>
     </Link>
   );
@@ -71,11 +68,14 @@ export default function SidebarComponent() {
   ];
 
   const [open, setOpen] = useState(false);
+  const [focusModeEnabled] = useFocusMode(
+    (state) => [state.isEnabled, state.enableFocusMode, state.disableFocusMode],
+  );
 
   return (
     <div
       className={cn(
-        "flex h-screen flex-col overflow-hidden border-r border-background bg-secondary",
+        `flex h-screen flex-col overflow-hidden border-r border-background bg-secondary ${focusModeEnabled && "hidden"}`,
       )}
     >
       <Sidebar open={open} setOpen={setOpen} animate={true}>

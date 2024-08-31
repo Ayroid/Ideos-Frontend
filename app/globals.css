@@ -79,3 +79,13 @@
 ::-webkit-scrollbar-thumb {
   @apply rounded-xl bg-slate-700;
 }
+
+@keyframes spinFaster {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-faster {
+  animation: spinFaster 0.5s linear infinite;
+}
