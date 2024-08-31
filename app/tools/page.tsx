@@ -31,7 +31,7 @@ const pagesData = [
 
 const Pages = () => {
   return (
-    <div className="flex w-full gap-4">
+    <div className="flex w-full gap-4 p-10">
       {pagesData.map((page) => (
         <Link
           key={page.id}

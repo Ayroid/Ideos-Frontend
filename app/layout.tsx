@@ -46,7 +46,7 @@ export default function RootLayout({
                 </div>
               </div>
               <Separator />
-              <div className="h-[calc(100%-5.5rem)] p-10">{children}</div>
+              <div className="h-[calc(100%-5.5rem)]">{children}</div>
             </main>
             <Toaster expand visibleToasts={1} />
           </div>

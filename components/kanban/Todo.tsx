@@ -11,7 +11,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import Popup from "./Popup";
+import Popup from "../Popup";
 import UpdateTodoForm from "./UpdateTodoForm";
 
 import { deleteTodo as deleteTodoService } from "@/services/kanban/todo";

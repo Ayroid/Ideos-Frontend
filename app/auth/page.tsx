@@ -56,7 +56,7 @@ const actionsData = [
 
 const LoginPage = () => {
   return (
-    <div className="flex w-full items-center gap-4">
+    <div className="flex w-full items-center gap-4 p-10">
       {actionsData.map((action) => (
         <div
           key={action.id}
