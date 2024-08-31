@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaRobot, FaMicrophone, FaPaperPlane, FaUser } from 'react-icons/fa'; // Import FaUser for user icon
+import { FaRobot, FaMicrophone, FaPaperPlane, FaUser } from 'react-icons/fa';
 import { TypewriterEffect } from '@/components/ui/typewriter-effect';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { BellRing, Snowflake, Network, Ticket } from "lucide-react"; // Import icons
+import { BellRing, Snowflake, Network, Ticket } from "lucide-react";
 
 const cardItems = [
   {
@@ -93,13 +93,13 @@ const Ido = () => {
 
       // Clear textarea and switch to chat view
       setTextareaValue('');
-      setShowChat(true); // Ensure chat interface is shown
+      setShowChat(true); // Show chat interface only after sending a message
     }
   };
 
   const handleCardClick = (prompt: string) => {
     setTextareaValue(prompt); // Update textarea value with the card's prompt
-    setShowChat(true); // Ensure chat interface is shown when card is clicked
+    // Do not set `showChat` to true here. Just update the prompt text.
   };
 
   const Words = [
@@ -109,7 +109,7 @@ const Ido = () => {
   ];
 
   return (
-    <div className="relative h-full flex flex-col">
+    <div className="relative h-[calc(100%-5.5rem)] flex flex-col">
       {/* Header Section */}
       <div className="flex items-center gap-3 p-4">
         <h1 className="text-2xl font-bold text-primary">IDOe</h1>
@@ -119,7 +119,7 @@ const Ido = () => {
       {/* Main Content */}
       <div className="flex-grow flex flex-col items-center overflow-hidden">
         {/* Initial View (Greeting and Cards or Typewriter) */}
-        {!showChat && (
+        {!showChat ? (
           <>
             {/* Typewriter Effect Centered */}
             {!showGreeting && (
@@ -149,7 +149,7 @@ const Ido = () => {
                     <Card
                       key={index}
                       onClick={() => handleCardClick(item.prompt)} // Add onClick handler
-                      className="w-[200px] h-[250px] flex flex-col items-center justify-between p-6 rounded-lg shadow-lg bg-white dark:bg-neutral-800 transform hover:scale-105 transition-transform duration-200 ease-out cursor-pointer" // Added cursor-pointer class for better UX
+                      className="w-[200px] h-[250px] flex flex-col items-center justify-between p-6 rounded-lg shadow-lg bg-white dark:bg-neutral-800 transform hover:scale-105 transition-transform duration-200 ease-out cursor-pointer"
                     >
                       <CardContent className="flex flex-col items-center text-center space-y-2">
                         <div className="flex items-center mb-2 text-blue-500">
@@ -172,10 +172,8 @@ const Ido = () => {
               </div>
             )}
           </>
-        )}
-
-        {/* Chat Interface */}
-        {showChat && (
+        ) : (
+          /* Chat Interface */
           <div className="flex flex-col items-center w-full max-w-4xl mt-10 p-4 overflow-y-auto flex-grow">
             <div className="w-full flex flex-col gap-4">
               {chatMessages.map((message, index) => (
@@ -208,15 +206,15 @@ const Ido = () => {
 
       {/* Fixed Bottom Textarea */}
       <div className="relative w-full flex justify-center">
-        <div className="relative w-full max-w-4xl"> {/* Container with max width */}
+        <div className="relative w-full max-w-4xl">
           <div className="relative flex items-center">
             <Textarea
               ref={textareaRef}
-              value={textareaValue} // Bind textarea value to state
-              onChange={handleInput} // Update state on change
+              value={textareaValue}
+              onChange={handleInput}
               placeholder="Enter Prompt Here ..."
-              onKeyDown={handleKeyDown} // Handle Enter key press
-              className="resize-none overflow-auto w-full min-h-[30px] max-h-[160px] pr-16" // Add padding on the right
+              onKeyDown={handleKeyDown}
+              className="resize-none overflow-auto w-full min-h-[30px] max-h-[160px] pr-16"
             />
             <div className="absolute right-2 bottom-3 flex items-center space-x-2">
               <button
