@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { RiSettings4Fill } from "react-icons/ri";
 import PomodoroSettings from "./pomodoroSettings";
+import { TbFocus } from "react-icons/tb";
 
 export const PomodoroTimer = () => {
   const [hours, setHours] = useState(0);
@@ -43,7 +44,7 @@ export const PomodoroTimer = () => {
     setIsActive(false);
     setIsPaused(false);
     setHours(0);
-    setMinutes(0);
+    setMinutes(25);
     setSeconds(0);
     setIsSpinning(true);
     setTimeout(() => setIsSpinning(false), 500);
@@ -99,7 +100,7 @@ export const PomodoroTimer = () => {
           </Button>
         ))}
       </div>
-      <div className="mb-4 flex items-center justify-center space-x-2 text-center text-8xl font-bold">
+      <div className="flex items-center justify-center space-x-2 text-center text-8xl font-bold">
         <div className={hours === 0 ? "hidden" : "block"}>
           {hours < 10 ? "0" + hours : hours}:
         </div>
@@ -109,7 +110,7 @@ export const PomodoroTimer = () => {
       <div className="flex items-center justify-center gap-4">
         <Button
           className={
-            "h-12 w-32 rounded-3xl border-2 border-white bg-white text-2xl text-black duration-150 ease-in hover:bg-transparent hover:text-white"
+            "h-12 w-32 cursor-pointer rounded-3xl border-2 border-white bg-white text-2xl text-black duration-150 ease-in hover:bg-transparent hover:text-white"
           }
           onClick={() => toggleStartPause()}
         >
@@ -118,16 +119,21 @@ export const PomodoroTimer = () => {
         <FaArrowRotateRight
           onClick={() => handleReset()}
           size={42}
-          className={`transition-transform duration-1000 ${isSpinning ? "animate-spin-faster" : ""}`}
+          className={`cursor-pointer ${isSpinning ? "animate-spin-faster" : ""}`}
         />
 
         <RiSettings4Fill
           size={46}
+          className="cursor-pointer"
           onClick={() => {
             openPopUp();
           }}
         />
       </div>
+      <TbFocus
+        size={46}
+        className={`cursor-pointer transition-all duration-200 ease-in ${isActive ? "opacity-100" : "opacity-0"}`}
+      />
       {popUpVisible && (
         <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
           <PomodoroSettings />
