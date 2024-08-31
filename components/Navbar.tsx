@@ -1,10 +1,8 @@
 "use client";
-import { Separator } from "@radix-ui/react-separator";
-import React from "react";
+import { useFocusMode } from "@/store/pomodoro/focusMode";
 import { ProfileAvatar } from "./ProfileAvatar";
 import RelativeBreadCrumb from "./RelativeBreadCrumb";
 import { ThemeSwitch } from "./ui/theme-switch";
-import { useFocusMode } from "@/store/pomodoro/focusMode";
 
 const Navbar = () => {
   const [focusModeEnabled] = useFocusMode((state) => [

@@ -77,6 +77,20 @@ export const PomodoroTimer = () => {
     return () => clearInterval(interval);
   }, [isActive, isPaused, hours, minutes, seconds]);
 
+  // Listen for fullscreen change to disable focus mode when exiting fullscreen
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        disableFocusMode();
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, [disableFocusMode]);
+
   const pomodoroModes = [
     {
       name: "Pomodoro",
@@ -93,12 +107,20 @@ export const PomodoroTimer = () => {
   ];
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-10 bg-black bg-opacity-30 bg-[url('/pomodoro/image.png')] bg-blend-overlay">
+    <div
+      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-black bg-opacity-30 bg-[url('/pomodoro/image.png')] bg-blend-overlay ${
+        focusModeEnabled ? "h-[99%]" : "min-h-[calc(100%-5.5rem)]"
+      }`}
+    >
       <div className="flex gap-5">
         {pomodoroModes.map((mode) => (
           <Button
             key={mode.value}
-            className={`w-34 h-10 rounded-3xl border-2 border-white text-lg font-semibold duration-150 ease-in ${activeMode === mode.value ? "bg-white text-black hover:bg-white hover:text-black" : "bg-transparent text-white hover:bg-white hover:text-black"}`}
+            className={`w-34 h-10 rounded-3xl border-2 border-white text-lg font-semibold duration-150 ease-in ${
+              activeMode === mode.value
+                ? "bg-white text-black hover:bg-white hover:text-black"
+                : "bg-transparent text-white hover:bg-white hover:text-black"
+            }`}
             onClick={() => setActiveMode(mode.value)}
           >
             {mode.name}
@@ -126,7 +148,6 @@ export const PomodoroTimer = () => {
           size={42}
           className={`cursor-pointer ${isSpinning ? "animate-spin-faster" : ""}`}
         />
-
         <RiSettings4Fill
           size={46}
           className="cursor-pointer"
@@ -137,9 +158,18 @@ export const PomodoroTimer = () => {
       </div>
       <TbFocus
         size={46}
-        className={`cursor-pointer transition-all duration-200 ease-in ${isActive ? "opacity-100" : "opacity-0"}`}
+        className={`cursor-pointer transition-all duration-200 ease-in ${
+          isActive ? "opacity-100" : "opacity-0"
+        }`}
         onClick={() => {
-          focusModeEnabled ? disableFocusMode() : enableFocusMode();
+          if (focusModeEnabled) {
+            disableFocusMode();
+            document.exitFullscreen();
+          } else {
+            enableFocusMode();
+            document.fullscreenEnabled &&
+              document.documentElement.requestFullscreen();
+          }
         }}
       />
       {popUpVisible && (
