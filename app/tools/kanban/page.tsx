@@ -1,7 +1,7 @@
 "use client";
 
 import ColumnContainer from "@/components/ColumnContainer";
-import TodoForm from "@/components/CreateTodoForm";
+import TodoForm from "@/components/kanban/CreateTodoForm";
 import Popup from "@/components/Popup";
 import Todo from "@/components/Todo";
 import { Button } from "@/components/ui/button";
