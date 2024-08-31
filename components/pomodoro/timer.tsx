@@ -88,7 +88,7 @@ export const PomodoroTimer = () => {
   ];
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-10 bg-[url('/pomodoro/image.png')]">
+<div className="flex h-full flex-col items-center justify-center gap-10 bg-[url('/pomodoro/image.png')] bg-black bg-opacity-30 bg-blend-overlay">
       <div className="flex gap-5">
         {pomodoroModes.map((mode) => (
           <Button
