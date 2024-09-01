@@ -108,7 +108,7 @@ export const PomodoroTimer = () => {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-black bg-opacity-30 bg-[url('/pomodoro/image.png')] bg-blend-overlay ${
+      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-opacity-30 bg-[url('/pomodoro/image.png')] bg-blend-overlay ${
         focusModeEnabled ? "h-[99%]" : "min-h-[calc(100%-5.5rem)]"
       }`}
     >
