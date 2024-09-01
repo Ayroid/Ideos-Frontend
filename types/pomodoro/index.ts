@@ -1,7 +1,8 @@
 export type PomodoroTemplate = {
-  id: string;
-  name: string;
+  _id: string;
+  templateName: string;
   pomodoroDuration: number;
   shortBreakDuration: number;
   longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
 };

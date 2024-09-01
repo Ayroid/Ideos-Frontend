@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   const { getAccessTokenRaw } = getKindeServerSession();
   const accessToken = await getAccessTokenRaw();
   try {
-    await axios.post(
+    const response = await axios.post(
       `${process.env.SERVER_URL}/users`,
       {},
       {
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         },
       },
     );
-    return NextResponse.json({ success: true });
+    return NextResponse.json(response.data, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }

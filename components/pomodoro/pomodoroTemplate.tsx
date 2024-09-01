@@ -11,9 +11,11 @@ import {
   PomodoroTemplateStore,
   usePomodoroTemplate,
 } from "@/store/pomodoro/pomodoroTemplates";
+import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { FaCheck } from "react-icons/fa";
+import axios from "axios";
 
 const PomodoroTemplates = () => {
   const [
@@ -44,36 +46,40 @@ const PomodoroTemplates = () => {
     state.deleteTemplate,
   ]);
 
-  useEffect(() => {
-    addAllTemplates([
-      {
-        id: "1",
-        name: "Power Focus",
-        pomodoroDuration: 50,
-        shortBreakDuration: 10,
-        longBreakDuration: 30,
-      },
-      {
-        id: "2",
-        name: "Creative Sprint",
-        pomodoroDuration: 30,
-        shortBreakDuration: 5,
-        longBreakDuration: 20,
-      },
-      {
-        id: "3",
-        name: "Quick Task",
-        pomodoroDuration: 25,
-        shortBreakDuration: 5,
-        longBreakDuration: 15,
-      },
+  const [setPomodoroDuration, setShortBreakDuration, setLongBreakDuration] =
+    usePomodoroTimer((state) => [
+      state.setPomodoroDuration,
+      state.setShortBreakDuration,
+      state.setLongBreakDuration,
     ]);
-    setActiveTemplateId("1");
+
+  useEffect(() => {
+    async function fetchTemplates() {
+      const response = await axios.get("/api/pomodoro/settings");
+      addAllTemplates(response.data.userPomodoroTemplateIds);
+      setActiveTemplateId(response.data.activePomodoroTemplateId);
+    }
+
+    fetchTemplates();
   }, []);
+
+  useEffect(() => {
+    function handleTemplateChange() {
+      const selectedTemplate = templates.find(
+        (template) => template._id === activeTemplateId,
+      );
+      if (selectedTemplate) {
+        setPomodoroDuration(selectedTemplate.pomodoroDuration);
+        setShortBreakDuration(selectedTemplate.shortBreakDuration);
+        setLongBreakDuration(selectedTemplate.longBreakDuration);
+      }
+    }
+    handleTemplateChange();
+  }, [activeTemplateId]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "name") {
+    if (name === "templateName") {
       updateTemplate({ ...editFormData, [name]: value });
     } else {
       updateTemplate({ ...editFormData, [name]: Number(value) });
@@ -92,7 +98,7 @@ const PomodoroTemplates = () => {
               <input
                 type="text"
                 name="name"
-                value={editFormData.name}
+                value={editFormData.templateName}
                 onChange={handleFormChange}
                 className="rounded-md p-2 text-xl font-semibold"
               />
@@ -138,20 +144,22 @@ const PomodoroTemplates = () => {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-semibold">{template.name}</h2>
+              <h2 className="text-xl font-semibold">{template.templateName}</h2>
               <div className="flex text-sm text-primary/50">
                 {template.pomodoroDuration} | {template.shortBreakDuration} |{" "}
                 {template.longBreakDuration}
               </div>
               <div className="absolute right-4 top-4 mt-1 flex gap-1">
-                {activeTemplateId === template?.id && <FaCheck />}
+                {activeTemplateId === template?._id && <FaCheck />}
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
                     <BsThreeDotsVertical className="cursor-pointer" />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="mr-24">
                     <DropdownMenuItem
-                      onClick={() => setActiveTemplateId(template.id)}
+                      onClick={() => {
+                        setActiveTemplateId(template._id);
+                      }}
                     >
                       Select
                     </DropdownMenuItem>
@@ -183,11 +191,12 @@ const PomodoroTemplates = () => {
             className="flex w-full items-center gap-2 rounded-md bg-primary-foreground p-2 text-center"
             onClick={() => {
               addTemplate({
-                id: String(templates.length + 1),
-                name: "New Template",
+                _id: String(templates.length + 1),
+                templateName: "New Template",
                 pomodoroDuration: 25,
                 shortBreakDuration: 5,
                 longBreakDuration: 15,
+                sessionsBeforeLongBreak: 4,
               });
               editTemplate(templates.length);
             }}

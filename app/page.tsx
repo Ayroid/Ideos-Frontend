@@ -12,11 +12,15 @@ function HomeContent() {
   const router = useRouter();
 
   useEffect(() => {
-    if (login === "true") {
-      fetch("/api/handleLogin", {
-        method: "POST",
-      });
-      router.push("/");
+    try {
+      if (login === "true") {
+        fetch("/api/handleLogin", {
+          method: "POST",
+        });
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Failed to handle login:", error);
     }
   }, [login, router]);
 

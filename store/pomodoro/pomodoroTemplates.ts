@@ -26,11 +26,12 @@ const usePomodoroTemplateStore = create<PomodoroTemplateStore>((set) => ({
   activeTemplateId: null,
   editingIndex: null,
   editFormData: {
-    id: "",
-    name: "",
+    _id: "",
+    templateName: "",
     pomodoroDuration: 25,
     shortBreakDuration: 5,
     longBreakDuration: 15,
+    sessionsBeforeLongBreak: 4,
   },
 
   setActiveTemplateId: (templateId: string) =>

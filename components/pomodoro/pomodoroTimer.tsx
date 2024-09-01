@@ -8,15 +8,23 @@ import { RiSettings4Fill } from "react-icons/ri";
 import PomodoroSettings from "./pomodoroSettings";
 import { TbFocus } from "react-icons/tb";
 import { useFocusMode } from "@/store/pomodoro/focusMode";
+import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
 
 export const PomodoroTimer = () => {
   const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(25);
+  const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeMode, setActiveMode] = useState("pomodoro");
   const [isSpinning, setIsSpinning] = useState(false);
+
+  const [pomodoroDuration, shortBreakDuration, longBreakDuration] =
+    usePomodoroTimer((state) => [
+      state.pomodoroDuration,
+      state.shortBreakDuration,
+      state.longBreakDuration,
+    ]);
 
   const [popUpVisible, openPopUp, closePopUp] = usePopup((state) => [
     state.isOpen,
@@ -48,12 +56,36 @@ export const PomodoroTimer = () => {
   const handleReset = () => {
     setIsActive(false);
     setIsPaused(false);
-    setHours(0);
-    setMinutes(25);
-    setSeconds(0);
+    handleModeChange(activeMode);
     setIsSpinning(true);
     setTimeout(() => setIsSpinning(false), 500);
   };
+
+  const handleModeChange = (mode: string) => {
+    setActiveMode(mode);
+    switch (mode) {
+      case "pomodoro":
+        setHours(Math.floor(pomodoroDuration / 60));
+        setMinutes(Math.floor(pomodoroDuration % 60));
+        setSeconds(0);
+        break;
+      case "short":
+        setHours(Math.floor(shortBreakDuration / 60));
+        setMinutes(Math.floor(shortBreakDuration % 60));
+        setSeconds(0);
+        break;
+      case "long":
+        setHours(Math.floor(longBreakDuration / 60));
+        setMinutes(Math.floor(longBreakDuration % 60));
+        setSeconds(0);
+        break;
+    }
+  };
+
+  useEffect(() => {
+    handleModeChange("pomodoro");
+    setIsActive(false);
+  }, [pomodoroDuration, shortBreakDuration, longBreakDuration]);
 
   const tick = () => {
     if (isPaused || !isActive) return;
@@ -116,12 +148,12 @@ export const PomodoroTimer = () => {
         {pomodoroModes.map((mode) => (
           <Button
             key={mode.value}
-            className={`w-34 h-10 rounded-3xl border-2 border-white text-lg font-semibold duration-150 ease-in ${
+            className={`w-34 h-10 rounded-md border-2 border-white text-lg font-semibold duration-150 ease-in ${
               activeMode === mode.value
                 ? "bg-white text-black hover:bg-white hover:text-black"
                 : "bg-transparent text-white hover:bg-white hover:text-black"
             }`}
-            onClick={() => setActiveMode(mode.value)}
+            onClick={() => handleModeChange(mode.value)}
           >
             {mode.name}
           </Button>
@@ -137,7 +169,7 @@ export const PomodoroTimer = () => {
       <div className="flex items-center justify-center gap-4">
         <Button
           className={
-            "h-12 w-32 cursor-pointer rounded-3xl border-2 border-white bg-white text-2xl text-black duration-150 ease-in hover:bg-transparent hover:text-white"
+            "h-12 w-32 cursor-pointer rounded-md border-2 border-white bg-white text-2xl text-black duration-150 ease-in hover:bg-transparent hover:text-white"
           }
           onClick={() => toggleStartPause()}
         >
