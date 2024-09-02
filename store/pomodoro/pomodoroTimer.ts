@@ -41,7 +41,7 @@ const usePomodoroTimerStore = create<PomodoroTimerStore>((set) => ({
   pomodorosCompleted: 0,
   shortBreaksCompleted: 0,
   longBreaksCompleted: 0,
-  pomodoroDuration: 20,
+  pomodoroDuration: 25,
   shortBreakDuration: 5,
   longBreakDuration: 15,
 

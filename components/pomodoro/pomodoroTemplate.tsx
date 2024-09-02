@@ -51,9 +51,16 @@ const PomodoroTemplates = () => {
     }
   };
 
-  const handleTemplateChange = (template_id: string) => {
+  const handleTemplateChange = async (template_id: string) => {
     setActiveTemplateId(template_id);
-    axios.post("/api/pomodoro/settings/activeTemplate", { template_id });
+    const response = await axios.post("/api/pomodoro/settings/activeTemplate", {
+      template_id,
+    });
+    if (response.status === 200) {
+      toast.success("Template changed!");
+    } else {
+      toast.error("Failed to change template");
+    }
   };
 
   return (
