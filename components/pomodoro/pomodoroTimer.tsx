@@ -1,14 +1,14 @@
 "use client";
 import Popup from "@/components/Popup";
 import { Button } from "@/components/ui/button";
+import { useFocusMode } from "@/store/pomodoro/focusMode";
+import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
 import { usePopup } from "@/store/popup";
 import { useEffect, useState } from "react";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { RiSettings4Fill } from "react-icons/ri";
-import PomodoroSettings from "./pomodoroSettings";
 import { TbFocus } from "react-icons/tb";
-import { useFocusMode } from "@/store/pomodoro/focusMode";
-import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
+import PomodoroSettings from "./pomodoroSettings";
 
 export const PomodoroTimer = () => {
   const [hours, setHours] = useState(0);

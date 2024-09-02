@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import {
   DropdownMenu,
@@ -11,10 +10,9 @@ import {
   PomodoroTemplateStore,
   usePomodoroTemplate,
 } from "@/store/pomodoro/pomodoroTemplates";
-import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
-import { Button } from "../ui/button";
-import { toast } from "sonner";
 import { FaCheck } from "react-icons/fa";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
 import axios from "axios";
 
 const PomodoroTemplates = () => {
@@ -25,7 +23,6 @@ const PomodoroTemplates = () => {
     editFormData,
     setActiveTemplateId,
     addTemplate,
-    addAllTemplates,
     editTemplate,
     updateTemplate,
     cancelEdit,
@@ -38,44 +35,12 @@ const PomodoroTemplates = () => {
     state.editFormData,
     state.setActiveTemplateId,
     state.addTemplate,
-    state.addAllTemplates,
     state.editTemplate,
     state.updateTemplate,
     state.cancelEdit,
     state.saveEdit,
     state.deleteTemplate,
   ]);
-
-  const [setPomodoroDuration, setShortBreakDuration, setLongBreakDuration] =
-    usePomodoroTimer((state) => [
-      state.setPomodoroDuration,
-      state.setShortBreakDuration,
-      state.setLongBreakDuration,
-    ]);
-
-  useEffect(() => {
-    async function fetchTemplates() {
-      const response = await axios.get("/api/pomodoro/settings");
-      addAllTemplates(response.data.userPomodoroTemplateIds);
-      setActiveTemplateId(response.data.activePomodoroTemplateId);
-    }
-
-    fetchTemplates();
-  }, []);
-
-  useEffect(() => {
-    function handleTemplateChange() {
-      const selectedTemplate = templates.find(
-        (template) => template._id === activeTemplateId,
-      );
-      if (selectedTemplate) {
-        setPomodoroDuration(selectedTemplate.pomodoroDuration);
-        setShortBreakDuration(selectedTemplate.shortBreakDuration);
-        setLongBreakDuration(selectedTemplate.longBreakDuration);
-      }
-    }
-    handleTemplateChange();
-  }, [activeTemplateId]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -84,6 +49,11 @@ const PomodoroTemplates = () => {
     } else {
       updateTemplate({ ...editFormData, [name]: Number(value) });
     }
+  };
+
+  const handleTemplateChange = (template_id: string) => {
+    setActiveTemplateId(template_id);
+    axios.post("/api/pomodoro/settings/activeTemplate", { template_id });
   };
 
   return (
@@ -158,7 +128,7 @@ const PomodoroTemplates = () => {
                   <DropdownMenuContent className="mr-24">
                     <DropdownMenuItem
                       onClick={() => {
-                        setActiveTemplateId(template._id);
+                        handleTemplateChange(template._id);
                       }}
                     >
                       Select

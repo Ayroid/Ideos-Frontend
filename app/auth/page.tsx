@@ -4,9 +4,7 @@ import {
   LogoutLink,
   RegisterLink,
 } from "@kinde-oss/kinde-auth-nextjs/components";
-import Link from "next/link";
 import { FaSignInAlt, FaSignOutAlt, FaUserPlus } from "react-icons/fa";
-import { MdSpaceDashboard } from "react-icons/md";
 
 const actionsData = [
   {
