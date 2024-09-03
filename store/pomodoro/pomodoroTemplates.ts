@@ -14,6 +14,7 @@ type Actions = {
   addAllTemplates: (templates: PomodoroTemplate[]) => void;
   editTemplate: (index: number) => void;
   updateTemplate: (template: PomodoroTemplate) => void;
+  updateTemplateId: (previousId: string, templateId: string) => void;
   cancelEdit: () => void;
   saveEdit: () => void;
   deleteTemplate: (index: number) => void;
@@ -58,6 +59,15 @@ const usePomodoroTemplateStore = create<PomodoroTemplateStore>((set) => ({
   updateTemplate: (template: PomodoroTemplate) =>
     set((state: PomodoroTemplateStore) => ({
       editFormData: { ...state.editFormData, ...template },
+    })),
+
+  updateTemplateId: (previousId: string, templateId: string) =>
+    set((state: PomodoroTemplateStore) => ({
+      templates: state.templates.map((template) =>
+        template._id === previousId
+          ? { ...template, _id: templateId }
+          : template,
+      ),
     })),
 
   cancelEdit: () =>

@@ -11,9 +11,11 @@ import {
   usePomodoroTemplate,
 } from "@/store/pomodoro/pomodoroTemplates";
 import { FaCheck } from "react-icons/fa";
+import { RxCross2 } from "react-icons/rx";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import axios from "axios";
+import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
 
 const PomodoroTemplates = () => {
   const [
@@ -25,6 +27,7 @@ const PomodoroTemplates = () => {
     addTemplate,
     editTemplate,
     updateTemplate,
+    updateTemplateId,
     cancelEdit,
     saveEdit,
     deleteTemplate,
@@ -37,10 +40,18 @@ const PomodoroTemplates = () => {
     state.addTemplate,
     state.editTemplate,
     state.updateTemplate,
+    state.updateTemplateId,
     state.cancelEdit,
     state.saveEdit,
     state.deleteTemplate,
   ]);
+
+  const [setPomodoroDuration, setShortBreakDuration, setLongBreakDuration] =
+    usePomodoroTimer((state) => [
+      state.setPomodoroDuration,
+      state.setShortBreakDuration,
+      state.setLongBreakDuration,
+    ]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -63,6 +74,62 @@ const PomodoroTemplates = () => {
     }
   };
 
+  const handleTemplateUpdate = async (template_id: string) => {
+    saveEdit();
+    setPomodoroDuration(editFormData.pomodoroDuration);
+    setShortBreakDuration(editFormData.shortBreakDuration);
+    setLongBreakDuration(editFormData.longBreakDuration);
+    const previousId = editFormData._id;
+    if (parseInt(template_id) <= 5) {
+      const response = await axios.post("/api/pomodoro/templates", {
+        ...editFormData,
+      });
+      if (response.status === 200) {
+        updateTemplateId(previousId, response.data._id);
+        toast.success("Template created!");
+      } else {
+        toast.error("Failed to create template");
+      }
+    } else {
+      const response = await axios.put(
+        `/api/pomodoro/templates/${template_id}`,
+        {
+          ...editFormData,
+        },
+      );
+      if (response.status === 200) {
+        toast.success("Template updated!");
+      } else {
+        toast.error("Failed to update template");
+      }
+    }
+  };
+
+  const handleDeleteTemplate =
+    (template_id: string, index: number) => async () => {
+      console.log("activeTemplateId", activeTemplateId);
+
+      if (activeTemplateId === template_id) {
+        toast.error("Cannot delete active template");
+        return;
+      }
+
+      if (templates.length <= 1) {
+        toast.error("Cannot delete last template");
+        return;
+      }
+
+      deleteTemplate(index);
+      const response = await axios.delete(
+        `/api/pomodoro/templates/${template_id}`,
+      );
+      if (response.status === 200) {
+        toast.success("Template deleted!");
+      } else {
+        toast.error("Failed to delete template");
+      }
+    };
+
   return (
     <div className="flex flex-col gap-4 pt-4">
       {templates.map((template, index) => (
@@ -74,7 +141,7 @@ const PomodoroTemplates = () => {
             <div className="flex flex-col gap-4">
               <input
                 type="text"
-                name="name"
+                name="templateName"
                 value={editFormData.templateName}
                 onChange={handleFormChange}
                 className="rounded-md p-2 text-xl font-semibold"
@@ -86,7 +153,7 @@ const PomodoroTemplates = () => {
                     name="pomodoroDuration"
                     value={editFormData.pomodoroDuration}
                     onChange={handleFormChange}
-                    className="mr-2 w-12 rounded-md p-2 font-semibold"
+                    className="no-spinner mr-2 w-10 rounded-md p-2 text-center font-semibold"
                   />
                   |
                   <input
@@ -94,7 +161,7 @@ const PomodoroTemplates = () => {
                     name="shortBreakDuration"
                     value={editFormData.shortBreakDuration}
                     onChange={handleFormChange}
-                    className="mx-2 w-12 rounded-md p-2 font-semibold"
+                    className="no-spinner mx-2 w-10 rounded-md p-2 text-center font-semibold"
                   />
                   |
                   <input
@@ -102,7 +169,15 @@ const PomodoroTemplates = () => {
                     name="longBreakDuration"
                     value={editFormData.longBreakDuration}
                     onChange={handleFormChange}
-                    className="ml-2 w-12 rounded-md p-2 font-semibold"
+                    className="no-spinner mx-2 w-10 rounded-md p-2 text-center font-semibold"
+                  />
+                  |
+                  <input
+                    type="number"
+                    name="sessionsBeforeLongBreak"
+                    value={editFormData.sessionsBeforeLongBreak}
+                    onChange={handleFormChange}
+                    className="no-spinner ml-2 w-10 rounded-md p-2 text-center font-semibold"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -111,10 +186,13 @@ const PomodoroTemplates = () => {
                     className="rounded-md px-4"
                     onClick={cancelEdit}
                   >
-                    Cancel
+                    <RxCross2 />
                   </Button>
-                  <Button className="rounded-md px-4" onClick={saveEdit}>
-                    Save
+                  <Button
+                    className="rounded-md px-4"
+                    onClick={() => handleTemplateUpdate(template._id)}
+                  >
+                    <FaCheck />
                   </Button>
                 </div>
               </div>
@@ -123,8 +201,14 @@ const PomodoroTemplates = () => {
             <>
               <h2 className="text-xl font-semibold">{template.templateName}</h2>
               <div className="flex text-sm text-primary/50">
-                {template.pomodoroDuration} | {template.shortBreakDuration} |{" "}
-                {template.longBreakDuration}
+                Session = ({template.pomodoroDuration} +{" "}
+                {template.shortBreakDuration}) x{" "}
+                {template.sessionsBeforeLongBreak - 1}
+              </div>
+              <div className="flex text-sm text-primary/50">
+                Mega Session = Session x {template.sessionsBeforeLongBreak - 1}{" "}
+                + ({template.pomodoroDuration} + {template.longBreakDuration}) x
+                1
               </div>
               <div className="absolute right-4 top-4 mt-1 flex gap-1">
                 {activeTemplateId === template?._id && <FaCheck />}
@@ -140,18 +224,16 @@ const PomodoroTemplates = () => {
                     >
                       Select
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => editTemplate(index)}>
+                    <DropdownMenuItem
+                      onClick={() => editTemplate(index)}
+                      disabled={parseInt(template._id) <= 5}
+                    >
                       Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-red-500 focus:text-red-500"
-                      onClick={() => {
-                        if (templates.length == 1) {
-                          toast.error("You must have at least one template");
-                        } else {
-                          deleteTemplate(index);
-                        }
-                      }}
+                      onClick={handleDeleteTemplate(template._id, index)}
+                      disabled={parseInt(template._id) <= 5}
                     >
                       Delete
                     </DropdownMenuItem>
