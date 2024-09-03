@@ -76,9 +76,6 @@ const PomodoroTemplates = () => {
 
   const handleTemplateUpdate = async (template_id: string) => {
     saveEdit();
-    setPomodoroDuration(editFormData.pomodoroDuration);
-    setShortBreakDuration(editFormData.shortBreakDuration);
-    setLongBreakDuration(editFormData.longBreakDuration);
     const previousId = editFormData._id;
     if (parseInt(template_id) <= 5) {
       const response = await axios.post("/api/pomodoro/templates", {
@@ -91,6 +88,9 @@ const PomodoroTemplates = () => {
         toast.error("Failed to create template");
       }
     } else {
+      setPomodoroDuration(editFormData.pomodoroDuration);
+      setShortBreakDuration(editFormData.shortBreakDuration);
+      setLongBreakDuration(editFormData.longBreakDuration);
       const response = await axios.put(
         `/api/pomodoro/templates/${template_id}`,
         {
