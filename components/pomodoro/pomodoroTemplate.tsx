@@ -202,8 +202,7 @@ const PomodoroTemplates = () => {
               <h2 className="text-xl font-semibold">{template.templateName}</h2>
               <div className="flex text-sm text-primary/50">
                 Session = ({template.pomodoroDuration} +{" "}
-                {template.shortBreakDuration}) x{" "}
-                {template.sessionsBeforeLongBreak - 1}
+                {template.shortBreakDuration}) x 1
               </div>
               <div className="flex text-sm text-primary/50">
                 Mega Session = Session x {template.sessionsBeforeLongBreak - 1}{" "}
