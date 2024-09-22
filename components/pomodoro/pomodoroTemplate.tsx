@@ -181,7 +181,7 @@ const PomodoroTemplates = () => {
                   |
                   <input
                     type="number"
-                    name="pomodoroBeforeLongBreak"
+                    name="sessionsBeforeLongBreak"
                     value={editFormData.sessionsBeforeLongBreak}
                     onChange={handleFormChange}
                     className="no-spinner ml-2 w-10 rounded-md p-2 text-center font-semibold"
