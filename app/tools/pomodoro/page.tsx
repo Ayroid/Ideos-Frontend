@@ -22,12 +22,12 @@ const PomodoroPage = () => {
     setPomodoroDuration,
     setShortBreakDuration,
     setLongBreakDuration,
-    setPomodoroBeforeLongBreak,
+    setSessionsBeforeLongBreak,
   ] = usePomodoroTimer((state) => [
     state.setPomodoroDuration,
     state.setShortBreakDuration,
     state.setLongBreakDuration,
-    state.setPomodoroBeforeLongBreak,
+    state.setSessionsBeforeLongBreak,
   ]);
 
   const [pomodoroSetupReady, setPomodoroSetupReady] = useState(false);
@@ -74,7 +74,7 @@ const PomodoroPage = () => {
         setPomodoroDuration(selectedTemplate.pomodoroDuration);
         setShortBreakDuration(selectedTemplate.shortBreakDuration);
         setLongBreakDuration(selectedTemplate.longBreakDuration);
-        setPomodoroBeforeLongBreak(selectedTemplate.pomodoroBeforeLongBreak);
+        setSessionsBeforeLongBreak(selectedTemplate.sessionsBeforeLongBreak);
       }
     }
     handleTemplateChange();

@@ -17,7 +17,7 @@ type State = {
   pomodoroDuration: number;
   shortBreakDuration: number;
   longBreakDuration: number;
-  pomodoroBeforeLongBreak: number;
+  sessionsBeforeLongBreak: number;
 };
 
 type Actions = {
@@ -39,7 +39,7 @@ type Actions = {
   setPomodoroDuration: (duration: number) => void;
   setShortBreakDuration: (duration: number) => void;
   setLongBreakDuration: (duration: number) => void;
-  setPomodoroBeforeLongBreak: (pomodoroBeforeLongBreak: number) => void;
+  setSessionsBeforeLongBreak: (sessionsBeforeLongBreak: number) => void;
 };
 
 type PomodoroTimerStore = State & Actions;
@@ -61,7 +61,7 @@ const usePomodoroTimerStore = create<PomodoroTimerStore>((set) => ({
   pomodoroDuration: 25,
   shortBreakDuration: 5,
   longBreakDuration: 15,
-  pomodoroBeforeLongBreak: 4,
+  sessionsBeforeLongBreak: 4,
 
   startTimer: () =>
     set((state: PomodoroTimerStore) => ({
@@ -135,13 +135,13 @@ const usePomodoroTimerStore = create<PomodoroTimerStore>((set) => ({
 
   updateTimerMode: () =>
     set((state: PomodoroTimerStore) => {
-      const { currentMode, pomodorosCompleted, pomodoroBeforeLongBreak } =
+      const { currentMode, pomodorosCompleted, sessionsBeforeLongBreak } =
         state;
 
       let nextPhase;
       nextPhase =
         currentMode === "pomodoro"
-          ? pomodoroBeforeLongBreak - pomodorosCompleted === 0
+          ? sessionsBeforeLongBreak - pomodorosCompleted === 0
             ? "longBreak"
             : "shortBreak"
           : "pomodoro";
@@ -232,9 +232,9 @@ const usePomodoroTimerStore = create<PomodoroTimerStore>((set) => ({
       longBreakDuration: duration,
     })),
 
-  setPomodoroBeforeLongBreak: (pomodoroBeforeLongBreak: number) =>
+  setSessionsBeforeLongBreak: (sessionsBeforeLongBreak: number) =>
     set((state: PomodoroTimerStore) => ({
-      pomodoroBeforeLongBreak,
+      sessionsBeforeLongBreak,
     })),
 }));
 

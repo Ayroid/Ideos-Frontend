@@ -50,12 +50,12 @@ const PomodoroTemplates = () => {
     setPomodoroDuration,
     setShortBreakDuration,
     setLongBreakDuration,
-    setPomodoroBeforeLongBreak,
+    setSessionsBeforeLongBreak,
   ] = usePomodoroTimer((state) => [
     state.setPomodoroDuration,
     state.setShortBreakDuration,
     state.setLongBreakDuration,
-    state.setPomodoroBeforeLongBreak,
+    state.setSessionsBeforeLongBreak,
   ]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +97,7 @@ const PomodoroTemplates = () => {
       setPomodoroDuration(editFormData.pomodoroDuration);
       setShortBreakDuration(editFormData.shortBreakDuration);
       setLongBreakDuration(editFormData.longBreakDuration);
-      setPomodoroBeforeLongBreak(editFormData.pomodoroBeforeLongBreak);
+      setSessionsBeforeLongBreak(editFormData.sessionsBeforeLongBreak);
       const response = await axios.put(
         `/api/pomodoro/templates/${template_id}`,
         {
@@ -182,7 +182,7 @@ const PomodoroTemplates = () => {
                   <input
                     type="number"
                     name="pomodoroBeforeLongBreak"
-                    value={editFormData.pomodoroBeforeLongBreak}
+                    value={editFormData.sessionsBeforeLongBreak}
                     onChange={handleFormChange}
                     className="no-spinner ml-2 w-10 rounded-md p-2 text-center font-semibold"
                   />
@@ -212,7 +212,7 @@ const PomodoroTemplates = () => {
                 {template.shortBreakDuration}) x 1
               </div>
               <div className="flex text-sm text-primary/50">
-                Mega Session = Session x {template.pomodoroBeforeLongBreak - 1}{" "}
+                Mega Session = Session x {template.sessionsBeforeLongBreak}{" "}
                 + ({template.pomodoroDuration} + {template.longBreakDuration}) x
                 1
               </div>
@@ -261,7 +261,7 @@ const PomodoroTemplates = () => {
                 pomodoroDuration: 25,
                 shortBreakDuration: 5,
                 longBreakDuration: 15,
-                pomodoroBeforeLongBreak: 4,
+                sessionsBeforeLongBreak: 4,
               });
               editTemplate(templates.length);
             }}
