@@ -1,2 +1,2 @@
-export { default as ColumnContainer } from "./ColumnContainer";
-export { default as Todo } from "./Todo";
+export { default as ColumnContainer } from "./kanban/ColumnContainer";
+export { default as Todo } from "./kanban/Todo";

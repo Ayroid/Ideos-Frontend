@@ -32,7 +32,7 @@ const usePomodoroTemplateStore = create<PomodoroTemplateStore>((set) => ({
     pomodoroDuration: 25,
     shortBreakDuration: 5,
     longBreakDuration: 15,
-    sessionsBeforeLongBreak: 4,
+    pomodoroBeforeLongBreak: 4,
   },
 
   setActiveTemplateId: (templateId: string) =>

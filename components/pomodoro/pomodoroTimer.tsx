@@ -11,20 +11,33 @@ import { TbFocus } from "react-icons/tb";
 import PomodoroSettings from "./pomodoroSettings";
 
 export const PomodoroTimer = () => {
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [activeMode, setActiveMode] = useState("pomodoro");
   const [isSpinning, setIsSpinning] = useState(false);
 
-  const [pomodoroDuration, shortBreakDuration, longBreakDuration] =
-    usePomodoroTimer((state) => [
-      state.pomodoroDuration,
-      state.shortBreakDuration,
-      state.longBreakDuration,
-    ]);
+  const [
+    timer,
+    currentMode,
+    pomodoroDuration,
+    shortBreakDuration,
+    longBreakDuration,
+    setTimerMode,
+    updateTimerMode,
+    setTimerHours,
+    setTimerMinutes,
+    setTimerSeconds,
+  ] = usePomodoroTimer((state) => [
+    state.timer,
+    state.currentMode,
+    state.pomodoroDuration,
+    state.shortBreakDuration,
+    state.longBreakDuration,
+    state.setTimerMode,
+    state.updateTimerMode,
+    state.setTimerHours,
+    state.setTimerMinutes,
+    state.setTimerSeconds,
+  ]);
 
   const [popUpVisible, openPopUp, closePopUp] = usePopup((state) => [
     state.isOpen,
@@ -41,7 +54,7 @@ export const PomodoroTimer = () => {
   };
 
   const handleStart = () => {
-    if (hours === 0 && minutes === 0 && seconds === 0) {
+    if (timer.hours === 0 && timer.minutes === 0 && timer.seconds === 0) {
       return;
     }
     setIsActive(true);
@@ -53,61 +66,50 @@ export const PomodoroTimer = () => {
     setIsActive(false);
   };
 
+  const sessionCompleted = () => {
+    console.log("Session completed");
+    updateTimerMode();
+  };
+
+  const megaSessionCompleted = () => {
+    console.log("Mega session completed");
+    updateTimerMode();
+  };
+
   const handleReset = () => {
     setIsActive(false);
     setIsPaused(false);
-    handleModeChange(activeMode);
+    setTimerMode(currentMode);
     setIsSpinning(true);
     setTimeout(() => setIsSpinning(false), 500);
   };
 
-  const handleModeChange = (mode: string) => {
-    setActiveMode(mode);
-    switch (mode) {
-      case "pomodoro":
-        setHours(Math.floor(pomodoroDuration / 60));
-        setMinutes(Math.floor(pomodoroDuration % 60));
-        setSeconds(0);
-        break;
-      case "short":
-        setHours(Math.floor(shortBreakDuration / 60));
-        setMinutes(Math.floor(shortBreakDuration % 60));
-        setSeconds(0);
-        break;
-      case "long":
-        setHours(Math.floor(longBreakDuration / 60));
-        setMinutes(Math.floor(longBreakDuration % 60));
-        setSeconds(0);
-        break;
-    }
-  };
-
   useEffect(() => {
-    handleModeChange("pomodoro");
+    setTimerMode("pomodoro");
     setIsActive(false);
   }, [pomodoroDuration, shortBreakDuration, longBreakDuration]);
 
-  const tick = () => {
+  const timerHandler = () => {
     if (isPaused || !isActive) return;
 
-    if (hours === 0 && minutes === 0 && seconds === 0) {
-      handleReset();
-    } else if (minutes === 0 && seconds === 0) {
-      setHours(hours - 1);
-      setMinutes(59);
-      setSeconds(59);
-    } else if (seconds === 0) {
-      setMinutes(minutes - 1);
-      setSeconds(59);
+    if (timer.hours === 0 && timer.minutes === 0 && timer.seconds === 0) {
+      updateTimerMode();
+    } else if (timer.minutes === 0 && timer.seconds === 0) {
+      setTimerHours(timer.hours - 1);
+      setTimerMinutes(59);
+      setTimerSeconds(59);
+    } else if (timer.seconds === 0) {
+      setTimerMinutes(timer.minutes - 1);
+      setTimerSeconds(59);
     } else {
-      setSeconds(seconds - 1);
+      setTimerSeconds(timer.seconds - 1);
     }
   };
 
   useEffect(() => {
-    const interval = setInterval(() => tick(), 1000);
+    const interval = setInterval(() => timerHandler(), 1000);
     return () => clearInterval(interval);
-  }, [isActive, isPaused, hours, minutes, seconds]);
+  }, [isActive, isPaused, timer.hours, timer.minutes, timer.seconds]);
 
   // Listen for fullscreen change to disable focus mode when exiting fullscreen
   useEffect(() => {
@@ -130,11 +132,11 @@ export const PomodoroTimer = () => {
     },
     {
       name: "Short Break",
-      value: "short",
+      value: "shortBreak",
     },
     {
       name: "Long Break",
-      value: "long",
+      value: "longBreak",
     },
   ];
 
@@ -149,22 +151,22 @@ export const PomodoroTimer = () => {
           <Button
             key={mode.value}
             className={`w-34 h-10 rounded-md border-2 border-white text-lg font-semibold duration-150 ease-in ${
-              activeMode === mode.value
+              currentMode === mode.value
                 ? "bg-white text-black hover:bg-white hover:text-black"
                 : "bg-transparent text-white hover:bg-white hover:text-black"
             }`}
-            onClick={() => handleModeChange(mode.value)}
+            onClick={() => setTimerMode(mode.value)}
           >
             {mode.name}
           </Button>
         ))}
       </div>
       <div className="flex items-center justify-center space-x-2 text-center text-8xl font-bold">
-        <div className={hours === 0 ? "hidden" : "block"}>
-          {hours < 10 ? "0" + hours : hours}:
+        <div className={timer.hours === 0 ? "hidden" : "block"}>
+          {timer.hours < 10 ? "0" + timer.hours : timer.hours}:
         </div>
-        <div>{minutes < 10 ? "0" + minutes : minutes}:</div>
-        <div>{seconds < 10 ? "0" + seconds : seconds}</div>
+        <div>{timer.minutes < 10 ? "0" + timer.minutes : timer.minutes}:</div>
+        <div>{timer.seconds < 10 ? "0" + timer.seconds : timer.seconds}</div>
       </div>
       <div className="flex items-center justify-center gap-4">
         <Button

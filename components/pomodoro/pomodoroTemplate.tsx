@@ -46,15 +46,21 @@ const PomodoroTemplates = () => {
     state.deleteTemplate,
   ]);
 
-  const [setPomodoroDuration, setShortBreakDuration, setLongBreakDuration] =
-    usePomodoroTimer((state) => [
-      state.setPomodoroDuration,
-      state.setShortBreakDuration,
-      state.setLongBreakDuration,
-    ]);
+  const [
+    setPomodoroDuration,
+    setShortBreakDuration,
+    setLongBreakDuration,
+    setPomodoroBeforeLongBreak,
+  ] = usePomodoroTimer((state) => [
+    state.setPomodoroDuration,
+    state.setShortBreakDuration,
+    state.setLongBreakDuration,
+    state.setPomodoroBeforeLongBreak,
+  ]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    console.log("handleFormChange", name, value);
     if (name === "templateName") {
       updateTemplate({ ...editFormData, [name]: value });
     } else {
@@ -91,6 +97,7 @@ const PomodoroTemplates = () => {
       setPomodoroDuration(editFormData.pomodoroDuration);
       setShortBreakDuration(editFormData.shortBreakDuration);
       setLongBreakDuration(editFormData.longBreakDuration);
+      setPomodoroBeforeLongBreak(editFormData.pomodoroBeforeLongBreak);
       const response = await axios.put(
         `/api/pomodoro/templates/${template_id}`,
         {
@@ -174,8 +181,8 @@ const PomodoroTemplates = () => {
                   |
                   <input
                     type="number"
-                    name="sessionsBeforeLongBreak"
-                    value={editFormData.sessionsBeforeLongBreak}
+                    name="pomodoroBeforeLongBreak"
+                    value={editFormData.pomodoroBeforeLongBreak}
                     onChange={handleFormChange}
                     className="no-spinner ml-2 w-10 rounded-md p-2 text-center font-semibold"
                   />
@@ -205,7 +212,7 @@ const PomodoroTemplates = () => {
                 {template.shortBreakDuration}) x 1
               </div>
               <div className="flex text-sm text-primary/50">
-                Mega Session = Session x {template.sessionsBeforeLongBreak - 1}{" "}
+                Mega Session = Session x {template.pomodoroBeforeLongBreak - 1}{" "}
                 + ({template.pomodoroDuration} + {template.longBreakDuration}) x
                 1
               </div>
@@ -254,7 +261,7 @@ const PomodoroTemplates = () => {
                 pomodoroDuration: 25,
                 shortBreakDuration: 5,
                 longBreakDuration: 15,
-                sessionsBeforeLongBreak: 4,
+                pomodoroBeforeLongBreak: 4,
               });
               editTemplate(templates.length);
             }}

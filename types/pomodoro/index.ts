@@ -4,5 +4,5 @@ export type PomodoroTemplate = {
   pomodoroDuration: number;
   shortBreakDuration: number;
   longBreakDuration: number;
-  sessionsBeforeLongBreak: number;
+  pomodoroBeforeLongBreak: number;
 };
