@@ -2,24 +2,20 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { IncomingForm, Fields, Files } from 'formidable';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 
-// Initialize Cloudinary with your credentials
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Disable the default body parser in Next.js since formidable will handle the parsing
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-// Type definition for the handler function
 type Handler = (req: NextApiRequest, res: NextApiResponse) => void | Promise<void>;
 
-// Upload function
 const uploadFileToCloudinary = async (file: formidable.File): Promise<UploadApiResponse | undefined> => {
   try {
     const result = await cloudinary.uploader.upload(file.filepath, {
@@ -33,7 +29,6 @@ const uploadFileToCloudinary = async (file: formidable.File): Promise<UploadApiR
   }
 };
 
-// Handler function for the API route
 const handler: Handler = async (req, res) => {
   const form = new IncomingForm();
 
@@ -45,7 +40,6 @@ const handler: Handler = async (req, res) => {
 
     const fileArray = files.logo as formidable.File[] | formidable.File;
 
-    // Handle the case where files.logo might be an array or a single file
     const file = Array.isArray(fileArray) ? fileArray[0] : fileArray;
 
     if (!file) {

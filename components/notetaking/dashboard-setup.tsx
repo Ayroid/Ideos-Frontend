@@ -22,7 +22,7 @@ const DashboardSetup: React.FC = () => {
     addWorkspace: state.addWorkspace,
   }));
   const [selectedEmoji, setSelectedEmoji] = useState("💼");
-  const router = useRouter(); // Use useRouter from 'next/navigation'
+  const router = useRouter(); 
 
   const {
     register,
@@ -88,7 +88,6 @@ const DashboardSetup: React.FC = () => {
         throw new Error("Failed to create workspace");
       }
 
-      // Add the new workspace to Zustand store
       addWorkspace(newWorkspace);
 
       toast.success("Workspace Created");

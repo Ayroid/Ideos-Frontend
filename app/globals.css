@@ -63,21 +63,23 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-}
 
-::-webkit-scrollbar {
-  width: 4px;
-}
+  /* Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
 
-::-webkit-scrollbar-horizontal {
-  height: 8px;
-}
+  ::-webkit-scrollbar-horizontal {
+    height: 8px;
+  }
 
-::-webkit-scrollbar-thumb {
-  @apply rounded-xl bg-slate-700;
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-xl bg-slate-700;
+  }
 }
 
 @keyframes spinFaster {
@@ -89,3 +91,46 @@
 .animate-spin-faster {
   animation: spinFaster 0.5s linear infinite;
 }
+
+/* Quill Editor Styles */
+.ql-container {
+  font-size: 16px !important;
+  height: calc(100% - 42px) !important;
+}
+
+.ql-toolbar.ql-snow {
+  @apply bg-muted border-border rounded-t-md;
+}
+
+.ql-container.ql-snow {
+  @apply bg-card border-border rounded-b-md;
+}
+
+.ql-snow .ql-stroke {
+  @apply stroke-foreground;
+}
+
+.ql-snow .ql-fill {
+  @apply fill-foreground;
+}
+
+.ql-snow .ql-picker {
+  @apply text-foreground;
+}
+
+.ql-snow .ql-picker-options {
+  @apply bg-card border-border;
+}
+
+.ql-snow .ql-tooltip {
+  @apply bg-card text-foreground border-border shadow-lg;
+}
+
+.ql-editor {
+  @apply text-foreground min-h-[200px];
+}
+
+.ql-editor.ql-blank::before {
+  @apply text-muted-foreground;
+}
+

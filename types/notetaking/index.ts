@@ -21,6 +21,7 @@ export type File = {
   id: string;
   name: string;
   size: number;
+  content?: string;
   type: string;
   url: string; // URL to access the file
   createdAt: string; // Add createdAt if needed
