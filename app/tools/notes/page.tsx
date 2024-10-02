@@ -3,9 +3,10 @@ import React from "react";
 
 const NotesPage = () => {
   return (
-    <div className="bg-background h-max w-max flex justify-center items-center">
-      <DashboardSetup></DashboardSetup>
+    <div className="bg-background flex justify-center items-center">
+      <DashboardSetup />
     </div>
-)};
+  );
+};
 
 export default NotesPage;

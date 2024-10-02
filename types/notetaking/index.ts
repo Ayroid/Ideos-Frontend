@@ -27,16 +27,7 @@ export type File = {
   createdAt: string; // Add createdAt if needed
 };
 
-// Type for Folder
-export type Folder = {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  files: File[]; // Array of files within the folder
-};
 
-// Type for Workspace
 export type Workspace = {
   id: string;
   title: string;
@@ -60,3 +51,15 @@ export type WorkspaceStoreState = {
 };
 
 
+export interface Note {
+  id: string
+  title: string
+  content: string
+  folderId: string | null
+  isMarkup: boolean
+}
+
+export interface Folder {
+  id: string
+  name: string
+}

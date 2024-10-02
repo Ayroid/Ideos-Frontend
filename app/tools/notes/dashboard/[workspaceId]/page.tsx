@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import QuillEditor from "@/components/notetaking/quill-editor/quill-editor";
+import NoteTakingApp from "@/components/notetaking/editor/page";
 import React from "react";
 
 const Workspace = ({ params }: { params: { workspaceId: string } }) => {
   return (
     <div className="relative">
-      <QuillEditor />
+    <NoteTakingApp />
     </div>
   );
 };

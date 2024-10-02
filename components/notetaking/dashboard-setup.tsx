@@ -103,7 +103,7 @@ const DashboardSetup: React.FC = () => {
   };
 
   return (
-    <Card className="h-screen w-[800px] sm:h-auto">
+    <Card>
       <CardHeader>
         <CardTitle>Create A Workspace</CardTitle>
         <CardDescription>
