@@ -55,8 +55,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
+import Editor, { loader } from "@monaco-editor/react"
+import { useTheme } from "next-themes"
+
+// Load Monaco Editor's themes
+loader.init().then(monaco => {
+  monaco.editor.defineTheme('myCustomTheme', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [],
+    colors: {
+      'editor.background': '#1f2937',
+    },
+  })
+})
 
 export default function NoteTakingApp() {
   const [notes, setNotes] = useState<Note[]>([])
@@ -70,6 +82,15 @@ export default function NoteTakingApp() {
   const [debouncedContent] = useDebounce(currentNote?.content, 1000)
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
+  const { theme } = useTheme()
+
+  useEffect(() => {
+    // Load notes and folders from localStorage or API
+    const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]")
+    const savedFolders = JSON.parse(localStorage.getItem("folders") || "[]")
+    setNotes(savedNotes)
+    setFolders(savedFolders)
+  }, [])
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -322,6 +343,12 @@ export default function NoteTakingApp() {
     setCurrentNote(null)
   }
 
+  const handleEditorChange = (value: string | undefined) => {
+    if (value !== undefined && currentNote) {
+      setCurrentNote({ ...currentNote, content: value })
+    }
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <aside className="w-64 border-r">
@@ -410,7 +437,7 @@ export default function NoteTakingApp() {
         <header className="flex h-16 items-center justify-between border-b px-4">
           <div className="flex items-center space-x-4">
             <h2 className="text-lg font-semibold">
-              {currentWorkspace ? currentWorkspace.name : "My Workspace"}
+              {currentWorkspace ? currentWorkspace.title : "My Workspace"}
             </h2>
             <Dialog>
               <DialogTrigger asChild>
@@ -443,7 +470,7 @@ export default function NoteTakingApp() {
                     <div className="space-y-2">
                       {workspaces.map((workspace) => (
                         <div key={workspace.id} className="flex items-center justify-between rounded-lg border p-2">
-                          <span>{workspace.name}</span>
+                          <span>{workspace.title}</span>
                           <Button variant="ghost" size="sm" onClick={() => switchWorkspace(workspace)}>
                             Switch
                           </Button>
@@ -630,15 +657,32 @@ export default function NoteTakingApp() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <ScrollArea className="flex-1">
+                  <div className="flex-1 overflow-hidden">
                     {currentNote.isMarkup ? (
-                      <SyntaxHighlighter
-                        language="markdown"
-                        style={tomorrow}
-                        className="min-h-full"
-                      >
-                        {currentNote.content}
-                      </SyntaxHighlighter>
+                      <div className="h-full border-t border-border">
+                        <Editor
+                          height="100%"
+                          defaultLanguage="markdown"
+                          value={currentNote.content}
+                          onChange={handleEditorChange}
+                          theme={theme === 'dark' ? 'myCustomTheme' : 'light'}
+                          options={{
+                            minimap: { enabled: false },
+                            wordWrap: "on",
+                            wrappingIndent: "indent",
+                            lineNumbers: "off",
+                            folding: false,
+                            lineDecorationsWidth: 0,
+                            lineNumbersMinChars: 0,
+                            glyphMargin: false,
+                            padding: { top: 16, bottom: 16 },
+                            scrollBeyondLastLine: false,
+                            overviewRulerLanes: 0,
+                            overviewRulerBorder: false,
+                          }}
+                          className="markdown-editor"
+                        />
+                      </div>
                     ) : (
                       <div
                         ref={editorRef}
@@ -658,7 +702,7 @@ export default function NoteTakingApp() {
                         className="min-h-full w-full resize-none overflow-auto p-4 focus:outline-none"
                       />
                     )}
-                  </ScrollArea>
+                  </div>
                 </div>
               )}
             </div>

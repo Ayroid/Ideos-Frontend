@@ -94,3 +94,22 @@
 
 
 
+.markdown-editor .monaco-editor {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.markdown-editor .monaco-editor {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.markdown-editor .monaco-editor,
+.markdown-editor .monaco-editor .margin,
+.markdown-editor .monaco-editor .monaco-editor-background {
+  background-color: transparent !important;
+}
+
+.markdown-editor .monaco-editor .view-overlays .current-line {
+  border: none !important;
+}
