@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Toggle } from "@/components/ui/toggle";
+import React, { useState, useEffect, useCallback, useRef } from "react"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Toggle } from "@/components/ui/toggle"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/ui/tooltip"
 import {
   Folder,
   FileText,
@@ -32,23 +32,31 @@ import {
   Quote,
   Search,
   Loader2,
-} from "lucide-react";
-import { useDebounce } from "use-debounce";
-import { NoteItem } from "./NoteItem";
-import { FolderItem } from "./FolderItem";
-import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions";
-import { Note, Folder as FolderType } from "@/types/notetaking/index";
+  ChevronDown,
+  MoreVertical,
+} from "lucide-react"
+import { useDebounce } from "use-debounce"
+import { NoteItem } from "./NoteItem"
+import { FolderItem } from "./FolderItem"
+import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions"
+import { Note, Folder as FolderType } from "@/types/notetaking/index"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function NoteTakingApp() {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [folders, setFolders] = useState<FolderType[]>([]);
-  const [currentNote, setCurrentNote] = useState<Note | null>(null);
-  const [isPreview, setIsPreview] = useState(false);
-  const [renderedContent, setRenderedContent] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const [debouncedContent] = useDebounce(currentNote?.content, 1000);
+  const [notes, setNotes] = useState<Note[]>([])
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [currentNote, setCurrentNote] = useState<Note | null>(null)
+  const [isPreview, setIsPreview] = useState(false)
+  const [renderedContent, setRenderedContent] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const [debouncedContent] = useDebounce(currentNote?.content, 1000)
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -285,293 +293,312 @@ export default function NoteTakingApp() {
   };
 
   return (
-    <div className="flex h-screen bg-muted text-foreground">
-      <ScrollArea className="h-screen w-64 bg-secondary">
-        <div className="space-y-4 p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Notes</h2>
-            <div className="flex space-x-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={createNewNote}>
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>New Note</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+    <div className="flex h-screen bg-background">
+      <aside className="w-64 border-r">
+        <div className="flex h-16 items-center justify-between border-b px-4">
+          <h1 className="text-lg font-semibold">Notes</h1>
+          <div className="flex space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={createNewNote}>
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>New Note</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={createNewFolder}>
+                    <FolderPlus className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>New Folder</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+        <div className="p-4">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search notes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </div>
+        <ScrollArea className="h-[calc(100vh-8rem)]">
+          <div className="space-y-4 p-4">
+            {folders.map((folder) => (
+              <FolderItem
+                key={folder.id}
+                folder={folder}
+                notes={notes}
+                currentNote={currentNote}
+                folders={folders}
+                onSelectNote={selectNote}
+                onRenameNote={renameNote}
+                onDeleteNote={deleteNote}
+                onMoveNote={moveNote}
+                onRename={renameFolder}
+                onDelete={deleteFolder}
+              />
+            ))}
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Folder className="mr-2 h-4 w-4" />
+                <span className="font-medium">Uncategorized</span>
+              </div>
+              <ul className="space-y-1">
+                {notes
+                  .filter((note) => note.folderId === null)
+                  .filter((note) =>
+                    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((note) => (
+                    <NoteItem
+                      key={note.id}
+                      note={note}
+                      currentNote={currentNote}
+                      folders={folders}
+                      onSelect={selectNote}
+                      onRename={renameNote}
+                      onDelete={deleteNote}
+                      onMove={moveNote}
+                    />
+                  ))}
+              </ul>
+            </div>
+          </div>
+        </ScrollArea>
+      </aside>
+      <main className="flex flex-1 flex-col">
+        {currentNote ? (
+          <>
+            <header className="flex h-16 items-center justify-between border-b px-4">
+              <Input
+                value={currentNote.title}
+                onChange={(e) =>
+                  setCurrentNote({ ...currentNote, title: e.target.value })
+                }
+                className="w-64 border-none bg-transparent text-xl font-bold focus-visible:ring-0"
+                placeholder="Untitled Note"
+              />
+              <div className="flex items-center space-x-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() =>
+                          document.getElementById("image-upload")?.click()
+                        }
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload Image</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Toggle
+                        pressed={currentNote.isMarkup}
+                        onPressedChange={toggleMarkup}
+                        aria-label="Toggle Markup"
+                      >
+                        <Code className="h-4 w-4" />
+                      </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>Toggle Markup</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Toggle
+                        pressed={isPreview}
+                        onPressedChange={setIsPreview}
+                        aria-label="Toggle Preview"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>Toggle Preview</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <Button onClick={saveNote} variant="default" disabled={isSaving}>
+                  {isSaving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            </header>
+            <div className="flex-1 overflow-hidden">
+              {isPreview ? (
+                <ScrollArea className="h-full">
+                  <div className="prose dark:prose-invert max-w-none p-4">
+                    <div dangerouslySetInnerHTML={{ __html: renderedContent }} />
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="flex h-full flex-col">
+                  <div className="flex space-x-1 border-b bg-muted/40 p-1">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 px-2">
+                          Paragraph
+                          <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onSelect={() => applyFormatting("h1")}>
+                          Heading 1
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => applyFormatting("h2")}>
+                          Heading 2
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => applyFormatting("h3")}>
+                          Heading 3
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <Separator orientation="vertical" className="h-8" />
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={createNewFolder}
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("bold")}
                     >
-                      <FolderPlus className="h-4 w-4" />
+                      <Bold className="h-4 w-4" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>New Folder</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-          <Input
-            placeholder="Search notes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="mb-4"
-          />
-          <Separator />
-          {folders.map((folder) => (
-            <FolderItem
-              key={folder.id}
-              folder={folder}
-              notes={notes}
-              currentNote={currentNote} // Pass currentNote
-              folders={folders} // Pass the list of folders
-              onSelectNote={selectNote} // Function to select a note
-              onRenameNote={renameNote} // Function to rename a note
-              onDeleteNote={deleteNote} // Function to delete a note
-              onMoveNote={moveNote} // Function to move a note to a different folder
-              onRename={renameFolder} // Already passed, renaming the folder
-              onDelete={deleteFolder} // Already passed, deleting the folder
-            />
-          ))}
-
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <Folder className="mr-2 h-4 w-4" />
-              <span className="font-medium">Uncategorized</span>
-            </div>
-            <ul className="ml-6 space-y-1">
-              {notes
-                .filter((note) => note.folderId === null)
-                .filter((note) =>
-                  note.title.toLowerCase().includes(searchTerm.toLowerCase()),
-                )
-                .map((note) => (
-                  <NoteItem
-                    key={note.id}
-                    note={note}
-                    currentNote={currentNote}
-                    folders={folders}
-                    onSelect={selectNote}
-                    onRename={renameNote}
-                    onDelete={deleteNote}
-                    onMove={moveNote}
-                  />
-                ))}
-            </ul>
-          </div>
-        </div>
-      </ScrollArea>
-      {currentNote ? (
-        <div className="flex flex-1 flex-col">
-          <div className="flex items-center justify-between bg-secondary p-4">
-            <Input
-              value={currentNote.title}
-              onChange={(e) =>
-                setCurrentNote({ ...currentNote, title: e.target.value })
-              }
-              className="border-none bg-transparent text-xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder="Untitled Note"
-            />
-            <div className="flex items-center space-x-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="icon"
-                      onClick={() =>
-                        document.getElementById("image-upload")?.click()
-                      }
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("italic")}
                     >
-                      <ImageIcon className="h-4 w-4" />
+                      <Italic className="h-4 w-4" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Upload Image</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Toggle
-                      pressed={currentNote.isMarkup}
-                      onPressedChange={toggleMarkup}
-                      aria-label="Toggle Markup"
-                    >
-                      <Code className="h-4 w-4" />
-                    </Toggle>
-                  </TooltipTrigger>
-                  <TooltipContent>Toggle Markup</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Toggle
-                      pressed={isPreview}
-                      onPressedChange={setIsPreview}
-                      aria-label="Toggle Preview"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Toggle>
-                  </TooltipTrigger>
-                  <TooltipContent>Toggle Preview</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
                     <Button
-                      onClick={saveNote}
-                      variant="default"
-                      disabled={isSaving}
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("underline")}
                     >
-                      {isSaving ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="mr-2 h-4 w-4" />
-                      )}
-                      {isSaving ? "Saving..." : "Save"}
+                      <Underline className="h-4 w-4" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Save Note</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                    <Separator orientation="vertical" className="h-8" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("insertUnorderedList")}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("insertOrderedList")}
+                    >
+                      <ListOrdered className="h-4 w-4" />
+                    </Button>
+                    <Separator orientation="vertical" className="h-8" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("formatBlock")}
+                    >
+                      <Quote className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => applyFormatting("createLink")}
+                    >
+                      <Link className="h-4 w-4" />
+                    </Button>
+                    <div className="flex-1" />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>Find and Replace</DropdownMenuItem>
+                        <DropdownMenuItem>Word Count</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <ScrollArea className="flex-1">
+                    {currentNote.isMarkup ? (
+                      <textarea
+                        id="note-content"
+                        value={currentNote.content}
+                        onChange={(e) => handleContentChange(e.target.value)}
+                        className="min-h-full w-full resize-none bg-background p-4 font-mono focus:outline-none"
+                        placeholder="Start writing your note here..."
+                      />
+                    ) : (
+                      <div
+                        ref={editorRef}
+                        id="note-content"
+                        contentEditable
+                        dangerouslySetInnerHTML={{ __html: currentNote.content }}
+                        onInput={(e) => {
+                          const target = e.target as HTMLDivElement
+                          const selection = window.getSelection()
+                          const range = selection?.getRangeAt(0)
+                          handleContentChange(target.innerHTML)
+                          if (selection && range) {
+                            selection.removeAllRanges()
+                            selection.addRange(range)
+                          }
+                        }}
+                        className="min-h-full w-full resize-none overflow-auto p-4 focus:outline-none"
+                      />
+                    )}
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-center">
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h2 className="mt-2 text-xl font-semibold">No Note Selected</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Select a note or create a new one to get started
+              </p>
+              <Button className="mt-4" onClick={createNewNote}>
+                Create New Note
+              </Button>
             </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            {isPreview ? (
-              <div className="h-full overflow-auto p-4">
-                <div
-                  className="prose dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: renderedContent }}
-                />
-              </div>
-            ) : (
-              <div className="flex h-full flex-col">
-                <div className="flex space-x-2 bg-secondary p-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("bold")}
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("italic")}
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("underline")}
-                  >
-                    <Underline className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("h1")}
-                  >
-                    <Heading1 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("h2")}
-                  >
-                    <Heading2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("h3")}
-                  >
-                    <Heading3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("insertUnorderedList")}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("insertOrderedList")}
-                  >
-                    <ListOrdered className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("formatBlock")}
-                  >
-                    <Quote className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => applyFormatting("createLink")}
-                  >
-                    <Link className="h-4 w-4" />
-                  </Button>
-                </div>
-                {currentNote.isMarkup ? (
-                  <textarea
-                    id="note-content"
-                    value={currentNote.content}
-                    onChange={(e) => handleContentChange(e.target.value)}
-                    className="w-full flex-1 resize-none bg-background p-4 font-mono focus:outline-none "
-                    placeholder="Start writing your note here..."
-                  />
-                ) : (
-                  <div
-                    ref={editorRef}
-                    id="note-content"
-                    contentEditable
-                    dangerouslySetInnerHTML={{ __html: currentNote.content }}
-                    onInput={(e) => {
-                      const target = e.target as HTMLDivElement;
-                      const selection = window.getSelection();
-                      const range = selection?.getRangeAt(0);
-                      handleContentChange(target.innerHTML);
-                      if (selection && range) {
-                        selection.removeAllRanges();
-                        selection.addRange(range);
-                      }
-                    }}
-                    className="w-full flex-1 resize-none overflow-auto p-4 focus:outline-none"
-                    style={{ minHeight: "1em" }}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-xl text-muted-foreground">
-            Select a note or create a new one to get started
-          </p>
-        </div>
-      )}
+        )}
+      </main>
     </div>
-  );
+  )
 }

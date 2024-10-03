@@ -1,171 +1,225 @@
-"use client";
-import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { v4 } from "uuid";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { toast } from "sonner";
-import EmojiPicker from "../notetaking/emoji-picker";
-import axios from "axios";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { useRouter } from "next/navigation"; 
-import { useWorkspaceStore } from "../../store/notetaking/workspace";
+"use client"
+
+import React, { useState, useCallback } from "react"
+import { useForm, SubmitHandler } from "react-hook-form"
+import { useRouter } from "next/navigation"
+import { v4 as uuidv4 } from "uuid"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
+import { Loader2, Plus, Briefcase, Palette, FileText } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ErrorBoundary } from "react-error-boundary"
 
 interface CreateWorkspaceFormData {
-  logo?: FileList;
-  workspaceName: string;
+  logo?: FileList
+  workspaceName: string
+  description: string
+  theme: string
 }
 
-const DashboardSetup: React.FC = () => {
-  const { addWorkspace } = useWorkspaceStore((state) => ({
-    addWorkspace: state.addWorkspace,
-  }));
-  const [selectedEmoji, setSelectedEmoji] = useState("💼");
-  const router = useRouter(); 
+interface Workspace {
+  id: string
+  title: string
+  logo: string | null
+  createdAt: string
+  description: string
+  theme: string
+}
+
+const colorThemes = [
+  { value: "slate", label: "Slate" },
+  { value: "red", label: "Red" },
+  { value: "blue", label: "Blue" },
+  { value: "green", label: "Green" },
+  { value: "purple", label: "Purple" },
+]
+
+export default function WorkspaceCreation() {
+  const router = useRouter()
+  const [previousWorkspaces, setPreviousWorkspaces] = useState<Workspace[]>([])
+  const [isCreating, setIsCreating] = useState(false)
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { isSubmitting: isLoading, errors },
+    formState: { errors },
   } = useForm<CreateWorkspaceFormData>({
     mode: "onChange",
     defaultValues: {
       logo: undefined,
       workspaceName: "",
+      description: "",
+      theme: "slate",
     },
-  });
+  })
 
-  const onSubmit: SubmitHandler<CreateWorkspaceFormData> = async (value) => {
-    const file = value.logo?.[0];
-    let filePath = null;
-    const workspaceUUID = v4();
-
-    if (file) {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "default-preset");
-        formData.append("public_id", workspaceUUID);
-
-        const uploadResponse = await axios.post(
-          `https://api.cloudinary.com/v1_1/dkp2xdsdu/image/upload`, 
-          formData
-        );
-
-        filePath = uploadResponse.data.secure_url;
-      } catch (error) {
-        console.error("Error uploading workspace logo:", error);
-        toast.error("Error! Could not upload your workspace logo");
-      }
-    }
+  const createWorkspace = useCallback(async (data: CreateWorkspaceFormData) => {
+    setIsCreating(true)
+    const workspaceId = uuidv4()
 
     try {
-      const newWorkspace = {
-        data: null,
-        createdAt: new Date().toISOString(),
-        iconId: selectedEmoji,
-        id: workspaceUUID,
-        inTrash: false,
-        title: value.workspaceName,
-        workspaceOwner: "user-id",
-        logo: filePath || null,
-        bannerUrl: "",
-        folders: [],
-      };
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-      const response = await axios.post(
-        `/api/notetaking`, 
-        newWorkspace,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.status !== 200) {
-        throw new Error("Failed to create workspace");
+      const newWorkspace: Workspace = {
+        id: workspaceId,
+        title: data.workspaceName,
+        description: data.description,
+        theme: data.theme,
+        logo: null, // For simplicity, we're not handling file upload in this example
+        createdAt: new Date().toISOString(),
       }
 
-      addWorkspace(newWorkspace);
-
-      toast.success("Workspace Created");
-      router.replace(`/tools/notes/dashboard/${newWorkspace.id}`);
+      setPreviousWorkspaces(prev => [...prev, newWorkspace])
+      toast.success("Workspace Created")
+      router.push(`/tools/notes/dashboard/${workspaceId}`)
     } catch (error) {
-      console.error("Error creating workspace:", error);
-      toast.error(
-        "Oops! Something went wrong, and we couldn't create your workspace. Try again or come back later."
-      );
+      console.error("Error creating workspace:", error)
+      toast.error("Failed to create workspace. Please try again.")
     } finally {
-      reset();
+      setIsCreating(false)
+      reset()
     }
-  };
+  }, [router, reset])
+
+  const onSubmit: SubmitHandler<CreateWorkspaceFormData> = (data) => {
+    createWorkspace(data)
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create A Workspace</CardTitle>
-        <CardDescription>
-          Let's create a private workspace to get you started. You can add collaborators later from the workspace settings tab.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <div className="text-5xl">
-                <EmojiPicker getValue={(emoji) => setSelectedEmoji(emoji)}>
-                  {selectedEmoji}
-                </EmojiPicker>
-              </div>
-              <div className="w-full">
-                <Label
-                  htmlFor="workspaceName"
-                  className="text-sm text-muted-foreground"
+    <ErrorBoundary fallback={<div>Something went wrong. Please try again.</div>}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-center mb-8">Create Your Workspace</h1>
+          <div className="grid gap-8 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Briefcase className="w-5 h-5 mr-2" />
+                  New Workspace
+                </CardTitle>
+                <CardDescription>
+                  Set up your new workspace with a name, description, and theme.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="workspaceName">Workspace Name</Label>
+                    <Input
+                      id="workspaceName"
+                      placeholder="Enter workspace name"
+                      {...register("workspaceName", { required: "Workspace name is required" })}
+                    />
+                    {errors.workspaceName && (
+                      <p className="text-sm text-red-500">{errors.workspaceName.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Describe your workspace"
+                      {...register("description")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="theme">Color Theme</Label>
+                    <Select defaultValue="slate" {...register("theme")}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a color theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {colorThemes.map((theme) => (
+                          <SelectItem key={theme.value} value={theme.value}>
+                            {theme.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </form>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={handleSubmit(onSubmit)} 
+                  disabled={isCreating}
+                  className="w-full"
                 >
-                  Name
-                </Label>
-                <Input
-                  id="workspaceName"
-                  type="text"
-                  placeholder="Workspace Name"
-                  disabled={isLoading}
-                  {...register("workspaceName", {
-                    required: "Workspace name is required",
-                  })}
-                />
-                <small className="text-red-600">
-                  {errors?.workspaceName?.message?.toString()}
-                </small>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="logo" className="text-sm text-muted-foreground">
-                Workspace Logo
-              </Label>
-              <Input
-                id="logo"
-                type="file"
-                accept="image/*"
-                placeholder="Workspace Logo"
-                disabled={isLoading}
-                {...register("logo")}
-              />
-              <small className="text-red-600">
-                {errors?.logo?.message?.toString()}
-              </small>
-            </div>
-            <div className="self-end">
-              <Button disabled={isLoading} type="submit">
-                {!isLoading ? "Create Workspace" : "Loading..."}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  );
-};
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Workspace
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
 
-export default DashboardSetup;
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="w-5 h-5 mr-2" />
+                  Previous Workspaces
+                </CardTitle>
+                <CardDescription>
+                  Quick access to your recently created workspaces.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px] pr-4">
+                  {previousWorkspaces.length > 0 ? (
+                    <ul className="space-y-4">
+                      {previousWorkspaces.map((workspace) => (
+                        <li key={workspace.id} className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarImage src={workspace.logo || undefined} alt={workspace.title} />
+                            <AvatarFallback>
+                              {workspace.title.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="space-y-1 flex-1">
+                            <p className="text-sm font-medium leading-none">{workspace.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Created on {new Date(workspace.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto"
+                            onClick={() => router.push(`/tools/notes/dashboard/${workspace.id}`)}
+                          >
+                            Open
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="text-center text-muted-foreground flex flex-col items-center justify-center h-full">
+                      <Briefcase className="w-12 h-12 mb-4 opacity-50" />
+                      <p>No workspaces created yet.</p>
+                      <p className="text-sm mt-2">Create your first workspace to get started!</p>
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </ErrorBoundary>
+  )
+}
