@@ -13,6 +13,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
   Folder,
   FileText,
   FolderPlus,
@@ -34,18 +42,21 @@ import {
   Loader2,
   ChevronDown,
   MoreVertical,
+  Layout,
 } from "lucide-react"
 import { useDebounce } from "use-debounce"
 import { NoteItem } from "./NoteItem"
 import { FolderItem } from "./FolderItem"
 import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions"
-import { Note, Folder as FolderType } from "@/types/notetaking/index"
+import { Note, Folder as FolderType, Workspace } from "@/types/notetaking/index"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
+import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
 
 export default function NoteTakingApp() {
   const [notes, setNotes] = useState<Note[]>([])
@@ -57,6 +68,8 @@ export default function NoteTakingApp() {
   const [isSaving, setIsSaving] = useState(false)
   const editorRef = useRef<HTMLDivElement>(null)
   const [debouncedContent] = useDebounce(currentNote?.content, 1000)
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -292,6 +305,23 @@ export default function NoteTakingApp() {
     }
   };
 
+  const createNewWorkspace = (name: string) => {
+    const newWorkspace: Workspace = {
+      id: Date.now().toString(),
+      name,
+      createdAt: new Date().toISOString(),
+    }
+    setWorkspaces([...workspaces, newWorkspace])
+    setCurrentWorkspace(newWorkspace)
+  }
+
+  const switchWorkspace = (workspace: Workspace) => {
+    setCurrentWorkspace(workspace)
+    // Here you would typically load the notes and folders for the selected workspace
+    // For this example, we'll just clear the current note
+    setCurrentNote(null)
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <aside className="w-64 border-r">
@@ -377,88 +407,137 @@ export default function NoteTakingApp() {
         </ScrollArea>
       </aside>
       <main className="flex flex-1 flex-col">
+        <header className="flex h-16 items-center justify-between border-b px-4">
+          <div className="flex items-center space-x-4">
+            <h2 className="text-lg font-semibold">
+              {currentWorkspace ? currentWorkspace.name : "My Workspace"}
+            </h2>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Layout className="mr-2 h-4 w-4" />
+                  Workspaces
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Manage Workspaces</DialogTitle>
+                  <DialogDescription>
+                    View all workspaces or create a new one.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 space-y-4">
+                  <div className="flex space-x-2">
+                    <Input placeholder="New workspace name" id="new-workspace-name" />
+                    <Button onClick={() => {
+                      const input = document.getElementById("new-workspace-name") as HTMLInputElement
+                      if (input.value) {
+                        createNewWorkspace(input.value)
+                        input.value = ""
+                      }
+                    }}>
+                      Create
+                    </Button>
+                  </div>
+                  <ScrollArea className="h-[200px]">
+                    <div className="space-y-2">
+                      {workspaces.map((workspace) => (
+                        <div key={workspace.id} className="flex items-center justify-between rounded-lg border p-2">
+                          <span>{workspace.name}</span>
+                          <Button variant="ghost" size="sm" onClick={() => switchWorkspace(workspace)}>
+                            Switch
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          {currentNote && (
+            <div className="flex items-center space-x-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        document.getElementById("image-upload")?.click()
+                      }
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Upload Image</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Toggle
+                      pressed={currentNote.isMarkup}
+                      onPressedChange={toggleMarkup}
+                      aria-label="Toggle Markup"
+                    >
+                      <Code className="h-4 w-4" />
+                    </Toggle>
+                  </TooltipTrigger>
+                  <TooltipContent>Toggle Markup</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Toggle
+                      pressed={isPreview}
+                      onPressedChange={setIsPreview}
+                      aria-label="Toggle Preview"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Toggle>
+                  </TooltipTrigger>
+                  <TooltipContent>Toggle Preview</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button onClick={saveNote} variant="default" disabled={isSaving}>
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          )}
+        </header>
         {currentNote ? (
-          <>
-            <header className="flex h-16 items-center justify-between border-b px-4">
+          <div className="flex-1 overflow-hidden">
+            <div className="flex h-full flex-col">
               <Input
                 value={currentNote.title}
                 onChange={(e) =>
                   setCurrentNote({ ...currentNote, title: e.target.value })
                 }
-                className="w-64 border-none bg-transparent text-xl font-bold focus-visible:ring-0"
+                className="border-none bg-transparent text-xl font-bold focus-visible:ring-0"
                 placeholder="Untitled Note"
               />
-              <div className="flex items-center space-x-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          document.getElementById("image-upload")?.click()
-                        }
-                      >
-                        <ImageIcon className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Upload Image</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Toggle
-                        pressed={currentNote.isMarkup}
-                        onPressedChange={toggleMarkup}
-                        aria-label="Toggle Markup"
-                      >
-                        <Code className="h-4 w-4" />
-                      </Toggle>
-                    </TooltipTrigger>
-                    <TooltipContent>Toggle Markup</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Toggle
-                        pressed={isPreview}
-                        onPressedChange={setIsPreview}
-                        aria-label="Toggle Preview"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Toggle>
-                    </TooltipTrigger>
-                    <TooltipContent>Toggle Preview</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <Button onClick={saveNote} variant="default" disabled={isSaving}>
-                  {isSaving ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="mr-2 h-4 w-4" />
-                  )}
-                  {isSaving ? "Saving..." : "Save"}
-                </Button>
-              </div>
-            </header>
-            <div className="flex-1 overflow-hidden">
               {isPreview ? (
-                <ScrollArea className="h-full">
-                  <div className="prose dark:prose-invert max-w-none p-4">
+                <ScrollArea className="flex-1">
+                  <div className="prose dark:prose-invert max-w-none p-8">
                     <div dangerouslySetInnerHTML={{ __html: renderedContent }} />
                   </div>
                 </ScrollArea>
               ) : (
-                <div className="flex h-full flex-col">
+                <div className="flex flex-1 flex-col">
                   <div className="flex space-x-1 border-b bg-muted/40 p-1">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -553,13 +632,13 @@ export default function NoteTakingApp() {
                   </div>
                   <ScrollArea className="flex-1">
                     {currentNote.isMarkup ? (
-                      <textarea
-                        id="note-content"
-                        value={currentNote.content}
-                        onChange={(e) => handleContentChange(e.target.value)}
-                        className="min-h-full w-full resize-none bg-background p-4 font-mono focus:outline-none"
-                        placeholder="Start writing your note here..."
-                      />
+                      <SyntaxHighlighter
+                        language="markdown"
+                        style={tomorrow}
+                        className="min-h-full"
+                      >
+                        {currentNote.content}
+                      </SyntaxHighlighter>
                     ) : (
                       <div
                         ref={editorRef}
@@ -583,7 +662,7 @@ export default function NoteTakingApp() {
                 </div>
               )}
             </div>
-          </>
+          </div>
         ) : (
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
