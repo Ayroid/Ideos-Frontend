@@ -63,21 +63,23 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-}
 
-::-webkit-scrollbar {
-  width: 4px;
-}
+  /* Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
 
-::-webkit-scrollbar-horizontal {
-  height: 8px;
-}
+  ::-webkit-scrollbar-horizontal {
+    height: 8px;
+  }
 
-::-webkit-scrollbar-thumb {
-  @apply rounded-xl bg-slate-700;
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-xl bg-slate-700;
+  }
 }
 
 @keyframes spinFaster {

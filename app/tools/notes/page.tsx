@@ -1,8 +1,12 @@
-import FeatureComingSoon from "@/components/FeatureComingSoon";
+import DashboardSetup from "@/components/notetaking/dashboard-setup";
 import React from "react";
 
 const NotesPage = () => {
-  return <FeatureComingSoon title="Notes" height={78} />;
+  return (
+    <div className="bg-background flex justify-center items-center">
+      <DashboardSetup />
+    </div>
+  );
 };
 
 export default NotesPage;
