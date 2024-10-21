@@ -11,14 +11,15 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Loader2, Plus, Briefcase, Palette, FileText } from "lucide-react"
+import { Loader2, Plus, Briefcase, FileText } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ErrorBoundary } from "react-error-boundary"
+import axios from "axios"
 
 interface CreateWorkspaceFormData {
   logo?: FileList
-  workspaceName: string
+  title: string
   description: string
   theme: string
 }
@@ -50,44 +51,63 @@ export default function WorkspaceCreation() {
     handleSubmit,
     reset,
     formState: { errors },
+    setValue,
+    watch,
   } = useForm<CreateWorkspaceFormData>({
     mode: "onChange",
     defaultValues: {
       logo: undefined,
-      workspaceName: "",
+      title: "",
       description: "",
       theme: "slate",
     },
   })
 
+  // Watch the current theme value
+  const theme = watch("theme")
+
+  // Function to update theme value
+  const handleThemeChange = (value: string) => {
+    setValue("theme", value)
+  }
+
   const createWorkspace = useCallback(async (data: CreateWorkspaceFormData) => {
-    setIsCreating(true)
-    const workspaceId = uuidv4()
+    setIsCreating(true);
+    const workspaceId = uuidv4();
+
+    console.log("Form data:", data); // Debug form data
 
     try {
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      const newWorkspace: Workspace = {
-        id: workspaceId,
-        title: data.workspaceName,
+      const response = await axios.post(`/api/notetaking/${workspaceId}`, {
+        title: data.title,
         description: data.description,
         theme: data.theme,
-        logo: null, // For simplicity, we're not handling file upload in this example
-        createdAt: new Date().toISOString(),
-      }
+        logo: null, // Update with actual logo handling if necessary
+      });
 
-      setPreviousWorkspaces(prev => [...prev, newWorkspace])
-      toast.success("Workspace Created")
-      router.push(`/tools/notes/dashboard/${workspaceId}`)
+      console.log("Workspace Created Response:", response.data); // Debug backend response
+
+      const workspaceCreated = response.data;
+
+      if (workspaceCreated) {
+        setPreviousWorkspaces((prev) => [...prev, workspaceCreated]);
+        toast.success("Workspace Created");
+        router.push(`/tools/notes/dashboard/${workspaceCreated._id}`);
+      } else {
+        toast.error("Failed to create workspace. Please try again.");
+      }
     } catch (error) {
-      console.error("Error creating workspace:", error)
-      toast.error("Failed to create workspace. Please try again.")
+      if (axios.isAxiosError(error)) {
+        console.error("Error creating workspace:", error.response?.data || error.message);
+      } else {
+        console.error("Error creating workspace:", error);
+      }
+      toast.error("Failed to create workspace. Please try again.");
     } finally {
-      setIsCreating(false)
-      reset()
+      setIsCreating(false);
+      reset();
     }
-  }, [router, reset])
+  }, [router, reset]);
 
   const onSubmit: SubmitHandler<CreateWorkspaceFormData> = (data) => {
     createWorkspace(data)
@@ -116,10 +136,10 @@ export default function WorkspaceCreation() {
                     <Input
                       id="workspaceName"
                       placeholder="Enter workspace name"
-                      {...register("workspaceName", { required: "Workspace name is required" })}
+                      {...register("title", { required: "Workspace name is required" })}
                     />
-                    {errors.workspaceName && (
-                      <p className="text-sm text-red-500">{errors.workspaceName.message}</p>
+                    {errors.title && (
+                      <p className="text-sm text-red-500">{errors.title.message}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -132,7 +152,7 @@ export default function WorkspaceCreation() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="theme">Color Theme</Label>
-                    <Select defaultValue="slate" {...register("theme")}>
+                    <Select defaultValue="slate" onValueChange={handleThemeChange}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a color theme" />
                       </SelectTrigger>

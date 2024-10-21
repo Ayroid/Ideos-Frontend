@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Toggle } from "@/components/ui/toggle"
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Toggle } from "@/components/ui/toggle";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Folder,
   FileText,
@@ -43,54 +43,60 @@ import {
   ChevronDown,
   MoreVertical,
   Layout,
-} from "lucide-react"
-import { useDebounce } from "use-debounce"
-import { NoteItem } from "./NoteItem"
-import { FolderItem } from "./FolderItem"
-import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions"
-import { Note, Folder as FolderType, Workspace } from "@/types/notetaking/index"
+} from "lucide-react";
+import { useDebounce } from "use-debounce";
+import { NoteItem } from "./NoteItem";
+import { FolderItem } from "./FolderItem";
+import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions";
+import {
+  Note,
+  Folder as FolderType,
+  Workspace,
+} from "@/types/notetaking/index";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import Editor, { loader } from "@monaco-editor/react"
-import { useTheme } from "next-themes"
+} from "@/components/ui/dropdown-menu";
+import Editor, { loader } from "@monaco-editor/react";
+import { useTheme } from "next-themes";
 
 // Load Monaco Editor's themes
-loader.init().then(monaco => {
-  monaco.editor.defineTheme('myCustomTheme', {
-    base: 'vs-dark',
+loader.init().then((monaco) => {
+  monaco.editor.defineTheme("myCustomTheme", {
+    base: "vs-dark",
     inherit: true,
     rules: [],
     colors: {
-      'editor.background': '#1f2937',
+      "editor.background": "#1f2937",
     },
-  })
-})
+  });
+});
 
 export default function NoteTakingApp() {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [folders, setFolders] = useState<FolderType[]>([])
-  const [currentNote, setCurrentNote] = useState<Note | null>(null)
-  const [isPreview, setIsPreview] = useState(false)
-  const [renderedContent, setRenderedContent] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [debouncedContent] = useDebounce(currentNote?.content, 1000)
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
-  const { theme } = useTheme()
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [folders, setFolders] = useState<FolderType[]>([]);
+  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [isPreview, setIsPreview] = useState(false);
+  const [renderedContent, setRenderedContent] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [debouncedContent] = useDebounce(currentNote?.content, 1000);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
+    null,
+  );
+  const { theme } = useTheme();
 
   useEffect(() => {
     // Load notes and folders from localStorage or API
-    const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]")
-    const savedFolders = JSON.parse(localStorage.getItem("folders") || "[]")
-    setNotes(savedNotes)
-    setFolders(savedFolders)
-  }, [])
+    const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
+    const savedFolders = JSON.parse(localStorage.getItem("folders") || "[]");
+    setNotes(savedNotes);
+    setFolders(savedFolders);
+  }, []);
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -331,23 +337,23 @@ export default function NoteTakingApp() {
       id: Date.now().toString(),
       name,
       createdAt: new Date().toISOString(),
-    }
-    setWorkspaces([...workspaces, newWorkspace])
-    setCurrentWorkspace(newWorkspace)
-  }
+    };
+    setWorkspaces([...workspaces, newWorkspace]);
+    setCurrentWorkspace(newWorkspace);
+  };
 
   const switchWorkspace = (workspace: Workspace) => {
-    setCurrentWorkspace(workspace)
+    setCurrentWorkspace(workspace);
     // Here you would typically load the notes and folders for the selected workspace
     // For this example, we'll just clear the current note
-    setCurrentNote(null)
-  }
+    setCurrentNote(null);
+  };
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined && currentNote) {
-      setCurrentNote({ ...currentNote, content: value })
+      setCurrentNote({ ...currentNote, content: value });
     }
-  }
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -414,7 +420,7 @@ export default function NoteTakingApp() {
                 {notes
                   .filter((note) => note.folderId === null)
                   .filter((note) =>
-                    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+                    note.title.toLowerCase().includes(searchTerm.toLowerCase()),
                   )
                   .map((note) => (
                     <NoteItem
@@ -455,23 +461,37 @@ export default function NoteTakingApp() {
                 </DialogHeader>
                 <div className="mt-4 space-y-4">
                   <div className="flex space-x-2">
-                    <Input placeholder="New workspace name" id="new-workspace-name" />
-                    <Button onClick={() => {
-                      const input = document.getElementById("new-workspace-name") as HTMLInputElement
-                      if (input.value) {
-                        createNewWorkspace(input.value)
-                        input.value = ""
-                      }
-                    }}>
+                    <Input
+                      placeholder="New workspace name"
+                      id="new-workspace-name"
+                    />
+                    <Button
+                      onClick={() => {
+                        const input = document.getElementById(
+                          "new-workspace-name",
+                        ) as HTMLInputElement;
+                        if (input.value) {
+                          createNewWorkspace(input.value);
+                          input.value = "";
+                        }
+                      }}
+                    >
                       Create
                     </Button>
                   </div>
                   <ScrollArea className="h-[200px]">
                     <div className="space-y-2">
                       {workspaces.map((workspace) => (
-                        <div key={workspace.id} className="flex items-center justify-between rounded-lg border p-2">
+                        <div
+                          key={workspace.id}
+                          className="flex items-center justify-between rounded-lg border p-2"
+                        >
                           <span>{workspace.title}</span>
-                          <Button variant="ghost" size="sm" onClick={() => switchWorkspace(workspace)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => switchWorkspace(workspace)}
+                          >
                             Switch
                           </Button>
                         </div>
@@ -560,7 +580,9 @@ export default function NoteTakingApp() {
               {isPreview ? (
                 <ScrollArea className="flex-1">
                   <div className="prose dark:prose-invert max-w-none p-8">
-                    <div dangerouslySetInnerHTML={{ __html: renderedContent }} />
+                    <div
+                      dangerouslySetInnerHTML={{ __html: renderedContent }}
+                    />
                   </div>
                 </ScrollArea>
               ) : (
@@ -574,13 +596,19 @@ export default function NoteTakingApp() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem onSelect={() => applyFormatting("h1")}>
+                        <DropdownMenuItem
+                          onSelect={() => applyFormatting("h1")}
+                        >
                           Heading 1
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => applyFormatting("h2")}>
+                        <DropdownMenuItem
+                          onSelect={() => applyFormatting("h2")}
+                        >
                           Heading 2
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => applyFormatting("h3")}>
+                        <DropdownMenuItem
+                          onSelect={() => applyFormatting("h3")}
+                        >
                           Heading 3
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -665,7 +693,7 @@ export default function NoteTakingApp() {
                           defaultLanguage="markdown"
                           value={currentNote.content}
                           onChange={handleEditorChange}
-                          theme={theme === 'dark' ? 'myCustomTheme' : 'light'}
+                          theme={theme === "dark" ? "myCustomTheme" : "light"}
                           options={{
                             minimap: { enabled: false },
                             wordWrap: "on",
@@ -688,15 +716,17 @@ export default function NoteTakingApp() {
                         ref={editorRef}
                         id="note-content"
                         contentEditable
-                        dangerouslySetInnerHTML={{ __html: currentNote.content }}
+                        dangerouslySetInnerHTML={{
+                          __html: currentNote.content,
+                        }}
                         onInput={(e) => {
-                          const target = e.target as HTMLDivElement
-                          const selection = window.getSelection()
-                          const range = selection?.getRangeAt(0)
-                          handleContentChange(target.innerHTML)
+                          const target = e.target as HTMLDivElement;
+                          const selection = window.getSelection();
+                          const range = selection?.getRangeAt(0);
+                          handleContentChange(target.innerHTML);
                           if (selection && range) {
-                            selection.removeAllRanges()
-                            selection.addRange(range)
+                            selection.removeAllRanges();
+                            selection.addRange(range);
                           }
                         }}
                         className="min-h-full w-full resize-none overflow-auto p-4 focus:outline-none"
@@ -723,5 +753,5 @@ export default function NoteTakingApp() {
         )}
       </main>
     </div>
-  )
+  );
 }
