@@ -27,7 +27,6 @@ export const PomodoroTimer = () => {
     setTimerHours,
     setTimerMinutes,
     setTimerSeconds,
-    setPomodoroTheme
   ] = usePomodoroTimer((state) => [
     state.timer,
     state.currentMode,
@@ -40,7 +39,6 @@ export const PomodoroTimer = () => {
     state.setTimerHours,
     state.setTimerMinutes,
     state.setTimerSeconds,
-    state.setPomodoroTheme
   ]);
 
   const [popUpVisible, openPopUp, closePopUp] = usePopup((state) => [
@@ -144,11 +142,19 @@ export const PomodoroTimer = () => {
     },
   ];
 
+  console.log("Pomodoro Themes", pomodoroTheme);
+
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-opacity-30 bg-[url('/pomodoro/japanese.png')] bg-blend-overlay ${
+      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-blend-overlay ${
         focusModeEnabled ? "h-[99%]" : "min-h-[calc(100%-5.5rem)]"
       }`}
+      style={{
+        backgroundImage: `url(${pomodoroTheme})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
     >
       <div className="flex gap-5">
         {pomodoroModes.map((mode) => (

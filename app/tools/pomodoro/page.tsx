@@ -40,7 +40,6 @@ const PomodoroPage = () => {
       try {
         isSetupCalled.current = true;
         const response = await axios.post("/api/pomodoro/settings");
-        console.log(response.data);
         if (response.status === 201) {
           setPomodoroSetupReady(true);
           addAllTemplates(response.data.userPomodoroTemplateIds);
