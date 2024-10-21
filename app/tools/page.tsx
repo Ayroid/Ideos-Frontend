@@ -17,7 +17,7 @@ const pagesData = [
     id: 2,
     title: "Pomodoro",
     icon: <AiFillHourglass size={96} />,
-    status: false,
+    status: true,
     link: "/tools/pomodoro",
   },
   {
