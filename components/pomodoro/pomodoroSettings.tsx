@@ -20,16 +20,16 @@ const PomodoroSettings = () => {
       title: "Themes",
       icon: <MdOutlineWallpaper size={20} />,
     },
-    {
-      id: 3,
-      title: "Sounds",
-      icon: <MdMusicNote size={20} />,
-    },
-    {
-      id: 4,
-      title: "Integrations",
-      icon: <TbPlugConnected size={20} />,
-    },
+    // {
+    //   id: 3,
+    //   title: "Sounds",
+    //   icon: <MdMusicNote size={20} />,
+    // },
+    // {
+    //   id: 4,
+    //   title: "Integrations",
+    //   icon: <TbPlugConnected size={20} />,
+    // },
   ];
 
   const [activePanel, setActivePanel] = useState("Templates");

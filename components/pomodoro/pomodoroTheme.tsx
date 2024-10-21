@@ -23,7 +23,7 @@ const PomodoroThemes = () => {
   return (
     <div className="flex flex-col h-full max-h-[80vh] overflow-hidden">
       <h2 className="text-2xl font-bold p-4">Choose a Theme</h2>
-      <div className="flex-grow overflow-y-auto px-4 pb-4">
+      <div className="flex-grow overflow-y-auto p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {themes.map((item) => (
             <div
