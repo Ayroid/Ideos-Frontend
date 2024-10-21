@@ -39,9 +39,9 @@ const Pages = () => {
           href={page.link}
         >
           <Card className="relative h-80 w-80 hover:bg-primary-foreground/95">
-            <FaCheck
+            {/* <FaCheck
               className={`absolute right-4 top-4 ${page.status ? "block" : "hidden"}`}
-            />
+            /> */}
             <CardHeader className="flex h-full w-full flex-col items-center justify-center">
               <CardTitle>{page.icon}</CardTitle>
             </CardHeader>

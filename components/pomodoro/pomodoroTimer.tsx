@@ -21,22 +21,26 @@ export const PomodoroTimer = () => {
     pomodoroDuration,
     shortBreakDuration,
     longBreakDuration,
+    pomodoroTheme,
     setTimerMode,
     updateTimerMode,
     setTimerHours,
     setTimerMinutes,
     setTimerSeconds,
+    setPomodoroTheme
   ] = usePomodoroTimer((state) => [
     state.timer,
     state.currentMode,
     state.pomodoroDuration,
     state.shortBreakDuration,
     state.longBreakDuration,
+    state.pomodoroTheme,
     state.setTimerMode,
     state.updateTimerMode,
     state.setTimerHours,
     state.setTimerMinutes,
     state.setTimerSeconds,
+    state.setPomodoroTheme
   ]);
 
   const [popUpVisible, openPopUp, closePopUp] = usePopup((state) => [
@@ -142,7 +146,7 @@ export const PomodoroTimer = () => {
 
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-opacity-30 bg-[url('/pomodoro/image.png')] bg-blend-overlay ${
+      className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-opacity-30 bg-[url('/pomodoro/japanese.png')] bg-blend-overlay ${
         focusModeEnabled ? "h-[99%]" : "min-h-[calc(100%-5.5rem)]"
       }`}
     >

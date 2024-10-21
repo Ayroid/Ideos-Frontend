@@ -18,6 +18,7 @@ type State = {
   shortBreakDuration: number;
   longBreakDuration: number;
   sessionsBeforeLongBreak: number;
+  pomodoroTheme: string;
 };
 
 type Actions = {
@@ -40,6 +41,7 @@ type Actions = {
   setShortBreakDuration: (duration: number) => void;
   setLongBreakDuration: (duration: number) => void;
   setSessionsBeforeLongBreak: (sessionsBeforeLongBreak: number) => void;
+  setPomodoroTheme: (theme: string) => void;
 };
 
 type PomodoroTimerStore = State & Actions;
@@ -62,6 +64,7 @@ const usePomodoroTimerStore = create<PomodoroTimerStore>((set) => ({
   shortBreakDuration: 5,
   longBreakDuration: 15,
   sessionsBeforeLongBreak: 4,
+  pomodoroTheme: "/pomodoro/japanese.png",
 
   startTimer: () =>
     set((state: PomodoroTimerStore) => ({
@@ -235,6 +238,11 @@ const usePomodoroTimerStore = create<PomodoroTimerStore>((set) => ({
   setSessionsBeforeLongBreak: (sessionsBeforeLongBreak: number) =>
     set((state: PomodoroTimerStore) => ({
       sessionsBeforeLongBreak,
+    })),
+
+  setPomodoroTheme: (theme: string) =>
+    set((state: PomodoroTimerStore) => ({
+      pomodoroTheme: theme,
     })),
 }));
 

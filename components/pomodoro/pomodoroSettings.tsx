@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { PomodoroTemplates } from "./pomodoroTemplate";
+import PomodoroThemes from "./pomodoroTheme";
 
 const PomodoroSettings = () => {
   const sidebar = [
@@ -59,6 +60,7 @@ const PomodoroSettings = () => {
           <CardHeader className="px-4 py-6">
             <CardTitle className="mx-2 text-2xl">{activePanel}</CardTitle>
             {activePanel === "Templates" && <PomodoroTemplates />}
+            {activePanel === "Themes" && <PomodoroThemes />}
           </CardHeader>
         </div>
       </CardContent>
