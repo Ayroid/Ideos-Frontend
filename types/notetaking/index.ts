@@ -29,16 +29,16 @@ export type File = {
 
 
 export type Workspace = {
-  id: string;
-  title: string;
-  logo: string | null;
-  iconId: string;
-  createdAt: string;
-  inTrash: boolean;
-  workspaceOwner: string;
-  bannerUrl: string;
-  data: any; // Customize as needed
-  folders: Folder[]; // Array of folders within the workspace
+  id?: string;
+  title?: string;
+  logo?: string | null;
+  iconId?: string;
+  createdAt?: string;
+  inTrash?: boolean;
+  workspaceOwner?: string;
+  bannerUrl?: string;
+  data?: any; // Customize as needed
+  folders?: Folder[]; // Array of folders within the workspace
 };
 
 // Type for Zustand store state

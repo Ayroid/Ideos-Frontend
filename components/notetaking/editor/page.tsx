@@ -335,7 +335,6 @@ export default function NoteTakingApp() {
   const createNewWorkspace = (name: string) => {
     const newWorkspace: Workspace = {
       id: Date.now().toString(),
-      name,
       createdAt: new Date().toISOString(),
     };
     setWorkspaces([...workspaces, newWorkspace]);
