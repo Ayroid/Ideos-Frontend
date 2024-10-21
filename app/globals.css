@@ -92,14 +92,25 @@
   animation: spinFaster 0.5s linear infinite;
 }
 
-@layer utilities {
-  .no-spinner::-webkit-outer-spin-button,
-  .no-spinner::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
 
-  .no-spinner {
-    -moz-appearance: textfield; /* Firefox */
-  }
+
+.markdown-editor .monaco-editor {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.markdown-editor .monaco-editor {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.markdown-editor .monaco-editor,
+.markdown-editor .monaco-editor .margin,
+.markdown-editor .monaco-editor .monaco-editor-background {
+  background-color: transparent !important;
+}
+
+.markdown-editor .monaco-editor .view-overlays .current-line {
+  border: none !important;
+  
 }
