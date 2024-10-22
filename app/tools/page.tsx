@@ -4,6 +4,7 @@ import { AiFillHourglass } from "react-icons/ai";
 import { BsKanbanFill } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa";
 import { FaNoteSticky } from "react-icons/fa6";
+import { MdDraw } from "react-icons/md";
 
 const pagesData = [
   {
@@ -26,6 +27,13 @@ const pagesData = [
     icon: <FaNoteSticky size={96} />,
     status: false,
     link: "/tools/notes",
+  },
+  {
+    id: 4,
+    title: "Drawing",
+    icon: <MdDraw size={96} />,
+    status: false,
+    link: "/tools/drawing",
   },
 ];
 
