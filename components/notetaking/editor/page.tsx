@@ -715,17 +715,12 @@ export default function NoteTakingApp() {
                         ref={editorRef}
                         id="note-content"
                         contentEditable
-                        dangerouslySetInnerHTML={{
-                          __html: currentNote.content,
-                        }}
+                        suppressContentEditableWarning={true}
                         onInput={(e) => {
                           const target = e.target as HTMLDivElement;
-                          const selection = window.getSelection();
-                          const range = selection?.getRangeAt(0);
-                          handleContentChange(target.innerHTML);
-                          if (selection && range) {
-                            selection.removeAllRanges();
-                            selection.addRange(range);
+                          const currentContent = target.innerHTML;
+                          if (currentContent !== currentNote.content) {
+                            handleContentChange(currentContent);
                           }
                         }}
                         className="min-h-full w-full resize-none overflow-auto p-4 focus:outline-none"
