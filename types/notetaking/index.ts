@@ -13,7 +13,7 @@ export const CreateWorkspaceFormSchema = z.object({
 });
 
 export const UploadBannerFormSchema = z.object({
-  banner: z.string().describe('Banner Image').optional(), // Optional since it's not always required
+  banner: z.string().describe('Banner Image').optional(), 
 });
 
 // Type for File
