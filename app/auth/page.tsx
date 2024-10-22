@@ -1,4 +1,7 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+"use client"
+
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   LoginLink,
   LogoutLink,
@@ -10,43 +13,33 @@ const actionsData = [
   {
     id: 1,
     title: "Sign up",
-    icon: <FaUserPlus size={96} />,
+    description: "Create a new account to get started",
+    icon: <FaUserPlus size={48} />,
     component: (
       <RegisterLink>
-        <Card className="relative h-80 w-80 hover:bg-primary-foreground/95">
-          <CardHeader className="flex h-full w-full flex-col items-center justify-center">
-            <CardTitle>{<FaUserPlus size={96} />}</CardTitle>
-          </CardHeader>
-        </Card>
+        <Button className="w-full h-12 text-lg">Sign Up</Button>
       </RegisterLink>
     ),
   },
   {
     id: 2,
     title: "Sign in",
-    icon: <FaSignInAlt size={96} />,
+    description: "Access your account and start using our tools",
+    icon: <FaSignInAlt size={48} />,
     component: (
       <LoginLink>
-        <Card className="relative h-80 w-80 hover:bg-primary-foreground/95">
-          <CardHeader className="flex h-full w-full flex-col items-center justify-center">
-            <CardTitle>{<FaSignInAlt size={96} />}</CardTitle>
-          </CardHeader>
-        </Card>
+        <Button className="w-full h-12 text-lg" variant="outline">Sign In</Button>
       </LoginLink>
     ),
   },
-
   {
     id: 3,
     title: "Sign out",
-    icon: <FaSignOutAlt size={96} />,
+    description: "Securely log out of your current session",
+    icon: <FaSignOutAlt size={48} />,
     component: (
       <LogoutLink>
-        <Card className="relative h-80 w-80 hover:bg-primary-foreground/95">
-          <CardHeader className="flex h-full w-full flex-col items-center justify-center">
-            <CardTitle>{<FaSignOutAlt size={96} />}</CardTitle>
-          </CardHeader>
-        </Card>
+        <Button className="w-full h-12 text-lg" variant="secondary">Sign Out</Button>
       </LogoutLink>
     ),
   },
@@ -54,16 +47,32 @@ const actionsData = [
 
 const LoginPage = () => {
   return (
-    <div className="flex w-full items-center gap-4 p-10">
-      {actionsData.map((action) => (
-        <div
-          key={action.id}
-          className="flex flex-col items-center justify-center gap-2"
-        >
-          {action.component}
-          <h2 className="text-center">{action.title}</h2>
-        </div>
-      ))}
+    <div className="p-8 md:py-16">
+      <header className="mb-12">
+        <h1 className="text-4xl font-bold mb-4">Welcome to Our Platform</h1>
+        <p className="text-xl text-muted-foreground max-w-2xl">
+          Unlock the full potential of our productivity tools by creating an account or signing in. Your journey to enhanced efficiency starts here.
+        </p>
+      </header>
+
+      <div className="flex gap-8">
+        {actionsData.map((action) => (
+          <Card key={action.id} className="flex flex-col w-full justify-between">
+            <CardHeader>
+              <div className="w-full h-16 rounded-full flex items-center justify-center mb-4">
+                {action.icon}
+              </div>
+              <CardTitle className="text-2xl text-center mb-2">{action.title}</CardTitle>
+              <CardDescription className="text-center">
+                {action.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow flex justify-center items-end">
+              {action.component} 
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
