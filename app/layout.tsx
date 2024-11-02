@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Separator } from "@/components/ui/separator";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,24 +27,23 @@ export default function RootLayout({
         <link rel="icon" href="/ideos.png" />
       </head>
       <body className={inter.className}>
+      <SidebarProvider>
+        <AppSidebar />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex h-screen w-screen overflow-hidden">
-            <div>
-              <SidebarComponent />
-            </div>
-            <main className="box-border w-full overflow-y-auto">
+            <main className="w-full" >
               <Navbar />
               <Separator />
               {children}
             </main>
             <Toaster expand visibleToasts={1} />
-          </div>
+          {/* </div> */}
         </ThemeProvider>
+        </SidebarProvider>
       </body>
     </html>
   );

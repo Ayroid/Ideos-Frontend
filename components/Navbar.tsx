@@ -3,6 +3,7 @@ import { useFocusMode } from "@/store/pomodoro/focusMode";
 import { ProfileAvatar } from "./ProfileAvatar";
 import RelativeBreadCrumb from "./RelativeBreadCrumb";
 import { ThemeSwitch } from "./ui/theme-switch";
+import { SidebarTrigger } from "./ui/sidebar";
 
 const Navbar = () => {
   const [focusModeEnabled] = useFocusMode((state) => [
@@ -12,10 +13,13 @@ const Navbar = () => {
   ]);
   return (
     <div
-      className={`${focusModeEnabled && "hidden"} flex items-center justify-between px-10 py-6`}
+      className={`${focusModeEnabled && "hidden"} flex items-center justify-between p-6`}
     >
-      <RelativeBreadCrumb />
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-6">
+        <SidebarTrigger />
+        <RelativeBreadCrumb />
+      </div>
+      <div className="flex items-center gap-6">
         <ThemeSwitch />
         <ProfileAvatar />
       </div>

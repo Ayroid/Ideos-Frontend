@@ -5,7 +5,7 @@ import { useState } from "react";
 import { FaTools, FaUserCheck } from "react-icons/fa";
 import { MdSpaceDashboard } from "react-icons/md";
 import { RiSettings4Fill } from "react-icons/ri";
-import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar";
+import { Sidebar, SidebarBody, SidebarLink } from "./ui/sidebar-aceternity";
 import { useFocusMode } from "@/store/pomodoro/focusMode";
 
 export const Logo = () => {
