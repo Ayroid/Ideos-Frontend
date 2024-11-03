@@ -1,19 +1,15 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Bell,
   Building2,
-  Globe,
-  Moon,
-  Sun,
-  ChevronDown,
   Monitor,
+  Moon,
+  Sun
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from 'react';
@@ -120,13 +116,13 @@ function SettingsPage() {
 
   if (!mounted) {
     return (
-      <div className="p-6">
-        <div className="mx-auto max-w-4xl">
+      <div className="p-8">
+        <div className="max-w-6xl">
           <div className="mb-6 flex items-center justify-between">
             <Skeleton className="h-8 w-32" />
           </div>
-          <Card className="space-y-6">
-            <CardContent className="pt-6">
+          <div className="space-y-6">
+            <div className="pt-6">
               {/* Workspace Section Skeleton */}
               <div className="mb-8">
                 <div className="mb-4 flex items-center gap-2">
@@ -166,22 +162,22 @@ function SettingsPage() {
                   <NotificationItemSkeleton />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex items-center justify-between">
+    <div className="p-8">
+      <div className="max-w-6xl">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Settings</h1>
         </div>
 
-        <Card className="space-y-6">
-          <CardContent className="pt-6">
+        <div className="space-y-6 border-none">
+          <div className="pt-6">
             {/* Workspace Section */}
             <div className="mb-8">
               <div className="mb-4 flex items-center gap-2">
@@ -327,8 +323,8 @@ function SettingsPage() {
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

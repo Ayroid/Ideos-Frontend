@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -92,37 +91,35 @@ function UserProfile() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="p-6">
-        <div className="mx-auto max-w-4xl space-y-8">
+      <div className="p-8">
+        <div className="max-w-6xl space-y-8">
           <div className="flex items-center justify-between">
             <Skeleton className="h-8 w-32" />
           </div>
-
-          <Card>
-            <CardHeader className="border-b pb-6">
+          <div>
+            <div className="border-b pb-6">
               <ProfileHeaderSkeleton />
-            </CardHeader>
-
-            <CardContent className="space-y-6 pt-6">
+            </div>
+            <div className="space-y-6 pt-6">
               <PersonalInfoSkeleton />
               <ContactInfoSkeleton />
               <AccountDetailsSkeleton />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mx-auto max-w-4xl space-y-8">
+    <div className="p-8">
+      <div className="max-w-6xl space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">User Profile</h1>
         </div>
 
-        <Card>
-          <CardHeader className="border-b pb-6">
+        <div>
+          <div className="border-b pb-6">
             <div className="flex items-center gap-6">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={user?.picture ?? ""} />
@@ -137,9 +134,9 @@ function UserProfile() {
                 <p className="text-md">{user?.email}</p>
               </div>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="space-y-6 pt-6">
+          <div className="space-y-6 pt-6">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Personal Information</h3>
 
@@ -216,8 +213,8 @@ function UserProfile() {
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

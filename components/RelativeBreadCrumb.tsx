@@ -27,10 +27,7 @@ const RelativeBreadCrumb = () => {
           <BreadcrumbLink asChild>
             <Button variant="ghost" className="h-7 w-7">
               <Link href="/">
-                <House
-                  size="20"
-                  color={theme == "dark" ? "white" : "black"}
-                />
+                <House size="20" />
               </Link>
             </Button>
           </BreadcrumbLink>
