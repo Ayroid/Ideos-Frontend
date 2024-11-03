@@ -123,11 +123,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={sidebarData.teams} />
       </SidebarHeader>
       <SidebarContent>
+      <Separator />
         <SidebarMain sections={sidebarData.pages} groupLabel="Pages" />
         <Separator />
         <SidebarMain sections={sidebarData.tools} groupLabel="Tools" />
         <SecondarySidebarSection items={sidebarData.utilities} />
       </SidebarContent>
+      <Separator />
       <SidebarFooter>
         <SidebarUser user={sidebarData.user} />
       </SidebarFooter>
