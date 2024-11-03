@@ -23,7 +23,6 @@ const Navbar = () => {
       </div>
       <div className="flex items-center gap-6">
         <ThemeSwitch />
-        <ProfileAvatar />
       </div>
     </div>
   );
