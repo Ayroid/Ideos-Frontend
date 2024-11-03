@@ -5,8 +5,9 @@ import {
   Bell,
   ChevronsUpDown,
   CreditCard,
+  LogIn,
   LogOut,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,6 +26,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
 export function NavUser({
   user,
@@ -36,6 +41,8 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+
+  const { user: kindeUser } = useKindeBrowserClient();
 
   return (
     <SidebarMenu>
@@ -84,10 +91,12 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="flex items-center gap-2">
-                <BadgeCheck size="16" />
-                Account
-              </DropdownMenuItem>
+              <Link href="/profile" className="w-full">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <BadgeCheck size="16" />
+                  Account
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuItem className="flex items-center gap-2">
                 <CreditCard size="16" />
                 Billing
@@ -98,10 +107,21 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex items-center gap-2">
-              <LogOut size="16" />
-              Log out
-            </DropdownMenuItem>
+            {kindeUser ? (
+              <LogoutLink>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <LogOut size="16" />
+                  Log out
+                </DropdownMenuItem>
+              </LogoutLink>
+            ) : (
+              <LoginLink>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <LogIn size="16" />
+                  Log in
+                </DropdownMenuItem>
+              </LoginLink>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

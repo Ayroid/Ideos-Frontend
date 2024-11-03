@@ -35,8 +35,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { user, isLoading } = useKindeBrowserClient();
 
-  console.log("User Object: ", user);
-
   const sidebarData = {
     user: {
       name: user?.given_name ?? "User",
