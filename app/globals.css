@@ -108,8 +108,6 @@
   animation: spinFaster 0.5s linear infinite;
 }
 
-
-
 .markdown-editor .monaco-editor {
   padding-top: 16px;
   padding-bottom: 16px;
@@ -128,5 +126,4 @@
 
 .markdown-editor .monaco-editor .view-overlays .current-line {
   border: none !important;
-  
 }

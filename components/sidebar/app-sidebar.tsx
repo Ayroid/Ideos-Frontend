@@ -1,38 +1,37 @@
-"use client"
+"use client";
 
-import * as React from "react"
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
+  Brush,
   Command,
-  Frame,
   GalleryVerticalEnd,
+  Hourglass,
+  LayoutDashboard,
   LifeBuoy,
-  Map,
+  PencilRuler,
   PieChart,
   Send,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+  Settings,
+  SquareKanban,
+  SquarePen
+} from "lucide-react";
+import * as React from "react";
 
-import { NavMain } from "@/components/sidebar/nav-main"
-import { NavProjects } from "@/components/sidebar/nav-projects"
-import { NavUser } from "@/components/sidebar/nav-user"
-import { TeamSwitcher } from "@/components/sidebar/team-switcher"
+import { SidebarSection } from "@/components/sidebar/sidebar-sections";
+import { SidebarUser } from "@/components/sidebar/sidebar-user";
+import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { NavSecondary } from "./nav-secondary"
+import { SecondarySidebarSection } from "./sidebar-secondary";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-
   const { user, isLoading } = useKindeBrowserClient();
 
   const sidebarData = {
@@ -58,123 +57,64 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         plan: "Free",
       },
     ],
-    navMain: [
+    pages: [
       {
-        title: "Playground",
-        url: "#",
-        icon: SquareTerminal,
+        name: "Dashboard",
+        url: "/",
+        icon: LayoutDashboard,
+      },
+      {
+        name: "Analytics",
+        url: "/analytics",
+        icon: PieChart,
+      },
+      {
+        name: "Tools",
+        url: "/tools",
+        icon: PencilRuler,
         isActive: true,
         items: [
           {
-            title: "History",
-            url: "#",
+            icon: SquareKanban,
+            title: "Kanban",
+            url: "/tools/kanban",
           },
           {
-            title: "Starred",
-            url: "#",
+            icon: Hourglass,
+            title: "Pomodoro",
+            url: "/tools/pomodoro",
           },
           {
-            title: "Settings",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Models",
-        url: "#",
-        icon: Bot,
-        items: [
-          {
-            title: "Genesis",
-            url: "#",
+            icon: SquarePen,
+            title: "Notes",
+            url: "/tools/notes",
           },
           {
-            title: "Explorer",
-            url: "#",
-          },
-          {
-            title: "Quantum",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Documentation",
-        url: "#",
-        icon: BookOpen,
-        items: [
-          {
-            title: "Introduction",
-            url: "#",
-          },
-          {
-            title: "Get Started",
-            url: "#",
-          },
-          {
-            title: "Tutorials",
-            url: "#",
-          },
-          {
-            title: "Changelog",
-            url: "#",
-          },
-        ],
-      },
-      {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-        items: [
-          {
-            title: "General",
-            url: "#",
-          },
-          {
-            title: "Team",
-            url: "#",
-          },
-          {
-            title: "Billing",
-            url: "#",
-          },
-          {
-            title: "Limits",
-            url: "#",
+            icon: Brush,
+            title: "Drawing",
+            url: "/tools/drawing",
           },
         ],
       },
     ],
-    navSecondary: [
+    utilities: [
       {
         title: "Support",
-        url: "#",
+        url: "/support",
         icon: LifeBuoy,
       },
       {
         title: "Feedback",
-        url: "#",
+        url: "/feedback",
         icon: Send,
       },
-    ],
-    projects: [
       {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
+        title: "Settings",
+        url: "/settings",
+        icon: Settings,
       },
     ],
-  }
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -182,14 +122,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={sidebarData.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarData.navMain} />
-        <NavProjects projects={sidebarData.projects} />
-        <NavSecondary items={sidebarData.navSecondary} />
+        <SidebarSection sections={sidebarData.pages} groupLabel="Pages" />
+        <SecondarySidebarSection items={sidebarData.utilities} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={sidebarData.user} />
+        <SidebarUser user={sidebarData.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

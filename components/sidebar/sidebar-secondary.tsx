@@ -19,13 +19,7 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
-// projects: {
-//   name: string
-//   url: string
-//   icon: LucideIcon
-// }[]
-
-export function NavSecondary({
+export function SecondarySidebarSection({
   items,
 }: {
   items: {

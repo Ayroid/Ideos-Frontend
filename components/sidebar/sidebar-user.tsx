@@ -31,7 +31,7 @@ import Link from "next/link";
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 
-export function NavUser({
+export function SidebarUser({
   user,
 }: {
   user: {
