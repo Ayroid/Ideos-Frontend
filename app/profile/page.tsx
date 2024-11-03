@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,18 +20,18 @@ function UserProfile() {
   }
 
   return (
-    <div className="p-6 text-white">
+    <div className="p-6">
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Profile Settings</h1>
+          <h1 className="text-2xl font-bold">User Profile</h1>
         </div>
 
-        <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur">
-          <CardHeader className="border-b border-zinc-800 pb-6">
+        <Card>
+          <CardHeader className="border-b pb-6">
             <div className="flex items-center gap-6">
-              <Avatar className="h-20 w-20 bg-gray-100/10">
+              <Avatar className="h-20 w-20">
                 <AvatarImage src={user?.picture ?? ""} />
-                <AvatarFallback className="text-4xl text-white">
+                <AvatarFallback className="text-4xl">
                   {user?.given_name?.[0]}
                 </AvatarFallback>
               </Avatar>
@@ -40,7 +39,7 @@ function UserProfile() {
                 <h2 className="text-2xl font-semibold">
                   {user?.given_name} {user?.family_name}
                 </h2>
-                <p className="text-md text-zinc-400">{user?.email}</p>
+                <p className="text-md">{user?.email}</p>
               </div>
             </div>
           </CardHeader>
@@ -51,26 +50,24 @@ function UserProfile() {
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm text-zinc-400">
+                  <Label htmlFor="firstName" className="text-sm">
                     First Name
                   </Label>
                   <Input
                     id="firstName"
                     value={user?.given_name as string}
                     readOnly
-                    className="border-zinc-700 bg-zinc-800/50 text-white"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm text-zinc-400">
+                  <Label htmlFor="lastName" className="text-sm">
                     Last Name
                   </Label>
                   <Input
                     id="lastName"
                     value={user?.family_name as string}
                     readOnly
-                    className="border-zinc-700 bg-zinc-800/50 text-white"
                   />
                 </div>
               </div>
@@ -80,21 +77,19 @@ function UserProfile() {
               <h3 className="text-lg font-medium">Contact Information</h3>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
-                  <Mail className="h-5 w-5 text-zinc-400" />
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Mail className="h-5 w-5" />
                   <div className="flex-1">
-                    <p className="text-sm text-zinc-400">Email Address</p>
+                    <p className="text-sm">Email Address</p>
                     <p className="text-sm font-medium">{user?.email}</p>
                   </div>
-                  <Badge variant="secondary" className="bg-zinc-700">
-                    Verified
-                  </Badge>
+                  <Badge variant="secondary">Verified</Badge>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
-                  <Lock className="h-5 w-5 text-zinc-400" />
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Lock className="h-5 w-5" />
                   <div className="flex-1">
-                    <p className="text-sm text-zinc-400">Password</p>
+                    <p className="text-sm">Password</p>
                     <p className="text-sm font-medium">Managed by Google</p>
                   </div>
                 </div>
@@ -106,10 +101,10 @@ function UserProfile() {
               <h3 className="text-lg font-medium">Account Details</h3>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
-                  <Calendar className="h-5 w-5 text-zinc-400" />
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Calendar className="h-5 w-5" />
                   <div>
-                    <p className="text-sm text-zinc-400">Member Since</p>
+                    <p className="text-sm">Member Since</p>
                     <p className="text-sm font-medium">
                       {new Date(
                         user?.created_at ?? "2024-01-01",
@@ -118,10 +113,10 @@ function UserProfile() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
-                  <Globe className="h-5 w-5 text-zinc-400" />
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <Globe className="h-5 w-5" />
                   <div>
-                    <p className="text-sm text-zinc-400">Account Type</p>
+                    <p className="text-sm">Account Type</p>
                     <p className="text-sm font-medium">Google Account</p>
                   </div>
                 </div>
