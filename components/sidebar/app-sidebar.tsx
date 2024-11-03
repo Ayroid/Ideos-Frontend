@@ -30,6 +30,8 @@ import {
 
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { SecondarySidebarSection } from "./sidebar-secondary";
+import { SidebarMain } from "./sidebar-main";
+import { Separator } from "../ui/separator";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, isLoading } = useKindeBrowserClient();
@@ -59,39 +61,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ],
     pages: [
       {
-        name: "Dashboard",
+        title: "Dashboard",
         url: "/",
         icon: LayoutDashboard,
       },
       {
-        name: "Analytics",
+        title: "Analytics",
         url: "/analytics",
         icon: PieChart,
       },
       {
-        name: "All Tools",
+        title: "All Tools",
         url: "/tools",
         icon: PencilRuler,
       },
     ],
     tools: [
       {
-        name: "Kanban",
+        title: "Kanban",
         url: "/tools/kanban",
         icon: SquareKanban,
       },
       {
-        name: "Pomodoro",
+        title: "Pomodoro",
         url: "/tools/pomodoro",
         icon: Hourglass,
       },
       {
-        name: "Notes",
+        title: "Notes",
         url: "/tools/notes",
         icon: SquarePen,
       },
       {
-        name: "Drawing",
+        title: "Drawing",
         url: "/tools/drawing",
         icon: Brush,
       },
@@ -121,8 +123,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={sidebarData.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarSection sections={sidebarData.pages} groupLabel="Pages" />
-        <SidebarSection sections={sidebarData.tools} groupLabel="Tools" />
+        <SidebarMain sections={sidebarData.pages} groupLabel="Pages" />
+        <Separator />
+        <SidebarMain sections={sidebarData.tools} groupLabel="Tools" />
         <SecondarySidebarSection items={sidebarData.utilities} />
       </SidebarContent>
       <SidebarFooter>

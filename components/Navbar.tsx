@@ -21,9 +21,6 @@ const Navbar = () => {
         <Separator orientation="vertical" className="h-6" />
         <RelativeBreadCrumb />
       </div>
-      <div className="flex items-center gap-6">
-        <ThemeSwitch />
-      </div>
     </div>
   );
 };
