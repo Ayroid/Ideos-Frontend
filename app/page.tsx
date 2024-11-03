@@ -18,10 +18,22 @@ import Link from "next/link";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { FaTools, FaUserCheck, FaBell, FaChartLine } from "react-icons/fa";
-import { RiSettings4Fill } from "react-icons/ri";
+import {
+  Wrench,
+  UserCheck,
+  Bell,
+  LineChart,
+  Settings
+} from "lucide-react";
 
-const StatsCard = ({ title, value, icon: Icon, subtext }) => (
+interface StatsCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ComponentType<{ className?: string }>;
+  subtext?: string;
+}
+
+const StatsCard = ({ title, value, icon: Icon, subtext }: StatsCardProps) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -62,7 +74,7 @@ function HomeContent() {
     {
       id: 1,
       title: "Authentication",
-      icon: <FaUserCheck size={24} />,
+      icon: <UserCheck size={24} />,
       link: "/auth",
       description: "Manage user authentication and access control",
       buttonText: "Manage Access",
@@ -70,7 +82,7 @@ function HomeContent() {
     {
       id: 2,
       title: "Tools",
-      icon: <FaTools size={24} />,
+      icon: <Wrench size={24} />,
       link: "/tools",
       description: "Access and manage various tools and utilities",
       buttonText: "View Tools",
@@ -78,7 +90,7 @@ function HomeContent() {
     {
       id: 3,
       title: "Settings",
-      icon: <RiSettings4Fill size={24} />,
+      icon: <Settings size={24} />,
       link: "/settings",
       description: "Configure system and user preferences",
       buttonText: "Configure",
@@ -132,7 +144,7 @@ function HomeContent() {
           </p>
         </div>
         <Button variant="outline" className="flex items-center gap-2">
-          <FaBell className="h-4 w-4" />
+          <Bell className="h-4 w-4" />
           <span>Notifications</span>
         </Button>
       </div>
@@ -141,19 +153,19 @@ function HomeContent() {
         <StatsCard
           title="Total Users"
           value="26"
-          icon={FaUserCheck}
+          icon={UserCheck}
           subtext="+40% from last month"
         />
         <StatsCard
           title="Active Tools"
           value="3"
-          icon={FaTools}
+          icon={Wrench}
           subtext="+2 new this week"
         />
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Project Progress</CardTitle>
-            <FaChartLine className="h-4 w-4 text-muted-foreground" />
+            <LineChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex items-center justify-between">
@@ -166,7 +178,7 @@ function HomeContent() {
         <StatsCard
           title="Upcoming Deadlines"
           value="3"
-          icon={FaBell}
+          icon={Bell}
           subtext="within next 7 days"
         />
       </div>

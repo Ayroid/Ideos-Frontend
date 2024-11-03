@@ -198,7 +198,8 @@ function UserProfile() {
                     <p className="text-sm">Member Since</p>
                     <p className="text-sm font-medium">
                       {new Date(
-                        user?.created_at ?? "2024-01-01",
+                        // user?.created_at ?? "2024-01-01",
+                        "2024-01-01",
                       ).toLocaleDateString()}
                     </p>
                   </div>
