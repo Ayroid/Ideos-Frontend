@@ -12,20 +12,26 @@ import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import { GoHomeFill } from "react-icons/go";
 import { Button } from "./ui/button";
+import { useTheme } from "next-themes";
+import { House } from "lucide-react";
 
 const RelativeBreadCrumb = () => {
   const paths = usePathname();
   const pathNames = paths.split("/").filter((path) => path);
+  const { theme } = useTheme();
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-          <Button variant="ghost" className="h-7 w-7">
-            <Link href="/">
-              <GoHomeFill size="20" color="white" />
-            </Link>
+            <Button variant="ghost" className="h-7 w-7">
+              <Link href="/">
+                <House
+                  size="20"
+                  color={theme == "dark" ? "white" : "black"}
+                />
+              </Link>
             </Button>
           </BreadcrumbLink>
         </BreadcrumbItem>
@@ -42,7 +48,9 @@ const RelativeBreadCrumb = () => {
                     <Link href={href}>{linkName}</Link>
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage className="text-base">{linkName}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-base">
+                    {linkName}
+                  </BreadcrumbPage>
                 )}
               </BreadcrumbItem>
             </Fragment>
