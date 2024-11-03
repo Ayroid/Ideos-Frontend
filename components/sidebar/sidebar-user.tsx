@@ -84,10 +84,12 @@ export function SidebarUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+            <Link href="/subscription-plans" className="w-full">
               <DropdownMenuItem className="flex items-center gap-2">
                 <Sparkles size="16" />
                 Upgrade to Pro
               </DropdownMenuItem>
+            </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
@@ -97,14 +99,18 @@ export function SidebarUser({
                   Account
                 </DropdownMenuItem>
               </Link>
-              <DropdownMenuItem className="flex items-center gap-2">
-                <CreditCard size="16" />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2">
-                <Bell size="16" />
-                Notifications
-              </DropdownMenuItem>
+              <Link href="/billing" className="w-full">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <CreditCard size="16" />
+                  Billing
+                </DropdownMenuItem>
+              </Link>
+              <Link href="/notifications" className="w-full">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <Bell size="16" />
+                  Notifications
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             {kindeUser ? (

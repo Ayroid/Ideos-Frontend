@@ -1,5 +1,5 @@
-import { ChevronRight, type LucideIcon } from "lucide-react"
-import * as React from "react"
+import { ChevronRight, type LucideIcon } from "lucide-react";
+import * as React from "react";
 
 import {
   SidebarGroup,
@@ -11,12 +11,12 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 
 export function SidebarSection({
   groupLabel,
@@ -49,17 +49,17 @@ export function SidebarSection({
               defaultOpen={item.isActive}
               className="group/collapsible"
             >
-              <SidebarMenuItem>
-                <SidebarMenuButton tooltip={item.name}>
-                  <a href={item.url} className="flex items-center gap-2">
+              <SidebarMenuItem className="relative">
+                <CollapsibleTrigger asChild className="absolute right-2 top-2">
+                  <ChevronRight className="ml-auto rounded-sm bg-inherit transition-transform duration-200 hover:bg-gray-100/10 group-data-[state=open]/collapsible:rotate-90" size="16" />
+                </CollapsibleTrigger>
+                <a href={item.url} className="flex items-center gap-2">
+                  <SidebarMenuButton tooltip={item.name}>
                     {item.icon && <item.icon size="16" />}
                     <span>{item.name}</span>
-                  </a>
-                  <CollapsibleTrigger asChild>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 hover:bg-gray-100/10 rounded-sm bg-inherit" />
-                  </CollapsibleTrigger>
-                </SidebarMenuButton>
-                <CollapsibleContent className="transition-all duration-300 data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown overflow-hidden">
+                  </SidebarMenuButton>
+                </a>
+                <CollapsibleContent className="data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown overflow-hidden transition-all duration-300">
                   <SidebarMenuSub>
                     {item.items.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
@@ -76,13 +76,15 @@ export function SidebarSection({
               </SidebarMenuItem>
             </Collapsible>
           ) : (
-            <SidebarMenuItem key={item.name}>
-              <SidebarMenuButton tooltip={item.name}>
-                {item.icon && <item.icon />}
-                <span>{item.name}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )
+            <a href={item.url}>
+              <SidebarMenuItem key={item.name}>
+                <SidebarMenuButton tooltip={item.name}>
+                  {item.icon && <item.icon size="16" />}
+                  <span>{item.name}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </a>
+          ),
         )}
       </SidebarMenu>
     </SidebarGroup>

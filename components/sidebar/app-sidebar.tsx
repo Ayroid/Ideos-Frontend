@@ -13,7 +13,7 @@ import {
   Send,
   Settings,
   SquareKanban,
-  SquarePen
+  SquarePen,
 } from "lucide-react";
 import * as React from "react";
 
@@ -69,32 +69,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: PieChart,
       },
       {
-        name: "Tools",
+        name: "All Tools",
         url: "/tools",
         icon: PencilRuler,
-        isActive: true,
-        items: [
-          {
-            icon: SquareKanban,
-            title: "Kanban",
-            url: "/tools/kanban",
-          },
-          {
-            icon: Hourglass,
-            title: "Pomodoro",
-            url: "/tools/pomodoro",
-          },
-          {
-            icon: SquarePen,
-            title: "Notes",
-            url: "/tools/notes",
-          },
-          {
-            icon: Brush,
-            title: "Drawing",
-            url: "/tools/drawing",
-          },
-        ],
+      },
+    ],
+    tools: [
+      {
+        name: "Kanban",
+        url: "/tools/kanban",
+        icon: SquareKanban,
+      },
+      {
+        name: "Pomodoro",
+        url: "/tools/pomodoro",
+        icon: Hourglass,
+      },
+      {
+        name: "Notes",
+        url: "/tools/notes",
+        icon: SquarePen,
+      },
+      {
+        name: "Drawing",
+        url: "/tools/drawing",
+        icon: Brush,
       },
     ],
     utilities: [
@@ -123,6 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarSection sections={sidebarData.pages} groupLabel="Pages" />
+        <SidebarSection sections={sidebarData.tools} groupLabel="Tools" />
         <SecondarySidebarSection items={sidebarData.utilities} />
       </SidebarContent>
       <SidebarFooter>
