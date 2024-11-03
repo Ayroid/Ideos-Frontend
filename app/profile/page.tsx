@@ -1,150 +1,136 @@
 "use client";
-import { Avatar } from "@/components/ui/avatar";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { SVGProps } from "react";
+import { Calendar, Globe, Lock, Mail } from "lucide-react";
 
 function UserProfile() {
   const { user, isLoading } = useKindeBrowserClient();
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-white"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center py-4">
-      <div className="grid max-w-3xl gap-4 lg:grid-cols-2 lg:gap-6 xl:gap-10">
-        <div className="space-y-4 lg:col-span-2">
-          <div className="flex items-center space-x-4">
-            {isLoading ? (
-              <div className="flex items-center space-x-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-[250px]" />
-                  <Skeleton className="h-4 w-[200px]" />
-                </div>
-              </div>
-            ) : (
-              <Avatar className="h-12 w-12">
-                <img
-                  src={user?.picture ? user.picture : "/placeholder-avatar.jpg"}
-                  width="96"
-                  height="96"
-                  alt="Avatar"
-                  className="rounded-full"
-                  style={{ aspectRatio: "96/96", objectFit: "cover" }}
-                />
+    <div className="p-6 text-white">
+      <div className="mx-auto max-w-4xl space-y-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Profile Settings</h1>
+        </div>
+
+        <Card className="border-zinc-800 bg-zinc-900/50 backdrop-blur">
+          <CardHeader className="border-b border-zinc-800 pb-6">
+            <div className="flex items-center gap-6">
+              <Avatar className="h-20 w-20 bg-gray-100/10">
+                <AvatarImage src={user?.picture ?? ""} />
+                <AvatarFallback className="text-4xl text-white">
+                  {user?.given_name?.[0]}
+                </AvatarFallback>
               </Avatar>
-            )}
-            {!isLoading && (
               <div className="space-y-1">
-                <h1 className="text-2xl font-bold">{user?.given_name}</h1>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Senior Software Engineer
-                </p>
+                <h2 className="text-2xl font-semibold">
+                  {user?.given_name} {user?.family_name}
+                </h2>
+                <p className="text-md text-zinc-400">{user?.email}</p>
               </div>
-            )}
-          </div>
-          <p className="text-gray-500 dark:text-gray-400">
-            Passionate about building accessible and inclusive web experiences.
-          </p>
-        </div>
-        <div className="w-80 space-y-4">
-          <Card>
-            <CardContent className="space-y-4">
-              <div className="space-y-2 py-4">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={user?.given_name ?? ""} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Enter your bio"
-                  className="min-h-[100px]"
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button>Save</Button>
-            </CardFooter>
-          </Card>
-        </div>
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Recent Activity</h2>
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="flex items-center justify-start gap-4 py-4">
-                <CalendarIcon />
-                <div className="flex flex-col">
-                  <p className="text-md font-semibold text-gray-500 dark:text-gray-400">
-                    Scheduled a meeting
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    2 hours ago
-                  </p>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-6 pt-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Personal Information</h3>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm text-zinc-400">
+                    First Name
+                  </Label>
+                  <Input
+                    id="firstName"
+                    value={user?.given_name as string}
+                    readOnly
+                    className="border-zinc-700 bg-zinc-800/50 text-white"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center justify-start gap-4 py-4">
-                <MessageCircleIcon />
-                <div className="flex flex-col">
-                  <p className="text-md font-semibold text-gray-500 dark:text-gray-400">
-                    Sent a message
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    1 day ago
-                  </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm text-zinc-400">
+                    Last Name
+                  </Label>
+                  <Input
+                    id="lastName"
+                    value={user?.family_name as string}
+                    readOnly
+                    className="border-zinc-700 bg-zinc-800/50 text-white"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4">
+              <h3 className="text-lg font-medium">Contact Information</h3>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
+                  <Mail className="h-5 w-5 text-zinc-400" />
+                  <div className="flex-1">
+                    <p className="text-sm text-zinc-400">Email Address</p>
+                    <p className="text-sm font-medium">{user?.email}</p>
+                  </div>
+                  <Badge variant="secondary" className="bg-zinc-700">
+                    Verified
+                  </Badge>
+                </div>
+
+                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
+                  <Lock className="h-5 w-5 text-zinc-400" />
+                  <div className="flex-1">
+                    <p className="text-sm text-zinc-400">Password</p>
+                    <p className="text-sm font-medium">Managed by Google</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Details */}
+            <div className="space-y-4 pt-4">
+              <h3 className="text-lg font-medium">Account Details</h3>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
+                  <Calendar className="h-5 w-5 text-zinc-400" />
+                  <div>
+                    <p className="text-sm text-zinc-400">Member Since</p>
+                    <p className="text-sm font-medium">
+                      {new Date(
+                        user?.created_at ?? "2024-01-01",
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-800/50 p-3">
+                  <Globe className="h-5 w-5 text-zinc-400" />
+                  <div>
+                    <p className="text-sm text-zinc-400">Account Type</p>
+                    <p className="text-sm font-medium">Google Account</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  );
-}
-
-function CalendarIcon(props: Readonly<SVGProps<SVGSVGElement>>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M8 2v4" />
-      <path d="M16 2v4" />
-      <rect width="18" height="18" x="3" y="4" rx="2" />
-      <path d="M3 10h18" />
-    </svg>
-  );
-}
-
-function MessageCircleIcon(props: Readonly<SVGProps<SVGSVGElement>>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-    </svg>
   );
 }
 
