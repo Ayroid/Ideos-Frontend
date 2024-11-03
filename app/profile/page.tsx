@@ -5,16 +5,111 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { Calendar, Globe, Lock, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
+
+// Skeleton components
+const ProfileHeaderSkeleton = () => (
+  <div className="flex items-center gap-6">
+    <Skeleton className="h-20 w-20 rounded-full" />
+    <div className="space-y-2">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-4 w-32" />
+    </div>
+  </div>
+);
+
+const PersonalInfoSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-6 w-40" />
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  </div>
+);
+
+const ContactInfoSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-6 w-40" />
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 rounded-lg border p-3">
+        <Skeleton className="h-5 w-5" />
+        <div className="flex-1">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
+        </div>
+        <Skeleton className="h-6 w-16" />
+      </div>
+      <div className="flex items-center gap-3 rounded-lg border p-3">
+        <Skeleton className="h-5 w-5" />
+        <div className="flex-1">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const AccountDetailsSkeleton = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-6 w-40" />
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="flex items-center gap-3 rounded-lg border p-3">
+        <Skeleton className="h-5 w-5" />
+        <div>
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3 rounded-lg border p-3">
+        <Skeleton className="h-5 w-5" />
+        <div>
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-1 h-4 w-32" />
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 function UserProfile() {
   const { user, isLoading } = useKindeBrowserClient();
+  const [mounted, setMounted] = useState(false);
 
-  if (isLoading) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-white"></div>
+      <div className="p-6">
+        <div className="mx-auto max-w-4xl space-y-8">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-32" />
+          </div>
+
+          <Card>
+            <CardHeader className="border-b pb-6">
+              <ProfileHeaderSkeleton />
+            </CardHeader>
+
+            <CardContent className="space-y-6 pt-6">
+              <PersonalInfoSkeleton />
+              <ContactInfoSkeleton />
+              <AccountDetailsSkeleton />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -96,7 +191,6 @@ function UserProfile() {
               </div>
             </div>
 
-            {/* Account Details */}
             <div className="space-y-4 pt-4">
               <h3 className="text-lg font-medium">Account Details</h3>
 
