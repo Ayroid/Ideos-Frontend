@@ -44,19 +44,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     teams: [
       {
-        name: "Acme Inc",
+        name: "Ideos",
         logo: GalleryVerticalEnd,
         plan: "Enterprise",
       },
       {
-        name: "Acme Corp.",
-        logo: AudioWaveform,
-        plan: "Startup",
-      },
-      {
-        name: "Evil Corp.",
+        name: "Visual Rift",
         logo: Command,
-        plan: "Free",
+        plan: "Enterprise",
       },
     ],
     pages: [
