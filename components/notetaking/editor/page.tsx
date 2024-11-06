@@ -88,44 +88,63 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
-  const [debouncedContent] = useDebounce(currentNote?.content, 1000);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
     null,
   );
   const { theme } = useTheme();
-
+  const fetchNotesAndFolders = async (workspaceId: string) => {
+    try {
+      const [notesResponse, foldersResponse] = await Promise.all([
+        axios.get(`/api/notetaking/workspaces/${workspaceId}/notes`),
+        axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`),
+      ]);
+  
+      // Check if the responses are successful
+      if (notesResponse.status === 200) {
+        const notesData = notesResponse.data || []; // Fallback to an empty array if data is null or undefined
+        setNotes(notesData);
+        
+        // Set the first note as the current note, if available
+        if (notesData.length > 0) {
+          setCurrentNote(notesData[0]);
+        } else {
+          setCurrentNote(null); // Handle the case where no notes are available
+        }
+      } else {
+        console.error("Failed to fetch notes:", notesResponse.status);
+        setNotes([]); // Fallback to empty if fetch fails
+        setCurrentNote(null);
+      }
+  
+      if (foldersResponse.status === 200) {
+        setFolders(foldersResponse.data || []); // Fallback to an empty array if folders data is null or undefined
+      } else {
+        console.error("Failed to fetch folders:", foldersResponse.status);
+        setFolders([]); // Fallback to empty if fetch fails
+      }
+    } catch (error) {
+      console.error("Failed to fetch notes and folders:", error);
+      setNotes([]); // Ensure empty state on error
+      setFolders([]);
+      setCurrentNote(null);
+    }
+  };
   useEffect(() => {
-    // Load notes and folders from localStorage or API
-    const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-    const savedFolders = JSON.parse(localStorage.getItem("folders") || "[]");
-    setNotes(savedNotes);
-    setFolders(savedFolders);
+    fetchNotesAndFolders(workspaceId);
   }, []);
 
   useEffect(() => {
-    const savedNotes = JSON.parse(localStorage.getItem("notes") || "[]");
-    const savedFolders = JSON.parse(localStorage.getItem("folders") || "[]");
-    setNotes(savedNotes);
-    setFolders(savedFolders);
-    if (savedNotes.length > 0) {
-      setCurrentNote(savedNotes[0]);
-    } else {
-      createNewNote();
+    if (currentNote) {
+      // If in preview mode, render the markup; else, show the raw content
+      if (isPreview) {
+        renderContent(currentNote.content, currentNote.isMarkup);
+      } else {
+        setRenderedContent(currentNote.content); // Show raw content in edit mode
+      }
     }
-  }, []);
+  }, [currentNote, isPreview]); // This effect depends on currentNote and isPreview
 
-  useEffect(() => {
-    if (currentNote && isPreview) {
-      renderContent(currentNote.content, currentNote.isMarkup);
-    }
-  }, [currentNote, isPreview]);
-
-  // useEffect(() => {
-  //   if (debouncedContent) {
-  //     saveNote();
-  //   }
-  // }, [debouncedContent]);
 
   const renderContent = useCallback((content: string, isMarkup: boolean) => {
     if (isMarkup) {
@@ -136,41 +155,43 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   }, []);
 
   const saveNote = async () => {
-    if (currentNote && !isSaving) {  // Check if not already saving
+    if (currentNote && !isSaving) {
+      // Check if not already saving
       try {
-        setIsSaving(true);  // Set saving to true to block concurrent requests
-    
+        setIsSaving(true); // Set saving to true to block concurrent requests
+
         // Send the request only when the save button is clicked
         const response = await axios.put(
           `/api/notetaking/notes/${currentNote._id}/save`,
           currentNote,
         );
-    
+
         // Update the notes list only after a successful request
         const updatedNotes = notes.map((note) =>
-          note._id === currentNote._id ? { ...currentNote, ...response.data } : note,
+          note._id === currentNote._id
+            ? { ...currentNote, ...response.data }
+            : note,
         );
-    
+
         // Update local state and local storage
         setNotes(updatedNotes);
         localStorage.setItem("notes", JSON.stringify(updatedNotes));
-    
+
         // Update current note if it matches the response
         if (currentNote && currentNote._id === response.data._id) {
           setCurrentNote(response.data);
         }
-    
+
         // Simulate a short delay for saving and reset the saving state
-        setTimeout(() => setIsSaving(false), 1000);  // Reset the state after a delay
+        setTimeout(() => setIsSaving(false), 1000); // Reset the state after a delay
       } catch (error) {
         console.error("Failed to save the note:", error);
-        setIsSaving(false);  // Reset the saving state on error
+        setIsSaving(false); // Reset the saving state on error
       }
     } else {
       console.warn("No current note to save or already saving");
     }
   };
-  
 
   const createNewNote = useCallback(async () => {
     try {
@@ -226,7 +247,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   };
 
   const selectNote = (note: Note) => {
-    saveNote();
     setCurrentNote(note);
     setIsPreview(false);
   };
@@ -337,17 +357,21 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         "to folder with ID:",
         targetFolderId,
       );
+      
       const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, {
         folderId: targetFolderId,
       });
-
+  
+      // Update notes array: remove from old folder and add to the new folder
       const updatedNotes = notes.map((note) =>
         note._id === noteId ? { ...note, folderId: targetFolderId } : note,
       );
       setNotes(updatedNotes);
-
+  
+      // Store the updated notes in localStorage
       localStorage.setItem("notes", JSON.stringify(updatedNotes));
-
+  
+      // Update the current note if it's the moved note
       if (currentNote && currentNote._id === noteId) {
         setCurrentNote({ ...currentNote, folderId: targetFolderId });
       }
@@ -355,6 +379,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       console.error("Failed to move the note:", error);
     }
   };
+  
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
