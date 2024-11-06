@@ -178,6 +178,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     try {
       const newFolderData = {
         name: "New Folder",
+        "workspaceId": workspaceId
       };
   
       // Send POST request to backend API to create the folder
