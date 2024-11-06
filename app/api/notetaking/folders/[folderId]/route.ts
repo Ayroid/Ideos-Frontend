@@ -39,3 +39,28 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Failed to delete folder" }, { status: 500 });
   }
 }
+
+
+export async function PUT(req: NextRequest, { params }: { params: { folderId: string } }) {
+  const accessToken = await getAccessTokenRaw();
+  const { folderId } = params;
+
+  try {
+    const { newName } = await req.json();
+
+    const response = await axios.put(
+      `${process.env.SERVER_URL}/folder/${folderId}`,
+      { name: newName },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return NextResponse.json(response.data);
+  } catch (error) {
+    console.error("Failed to rename folder:", error);
+    return NextResponse.json({ error: "Failed to rename folder" }, { status: 500 });
+  }
+}

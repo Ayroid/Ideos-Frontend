@@ -286,13 +286,25 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   };
   
 
-  const renameFolder = (folderId: string, newName: string) => {
-    const updatedFolders = folders.map((folder) =>
-      folder._id === folderId ? { ...folder, name: newName } : folder,
-    );
-    setFolders(updatedFolders);
-    localStorage.setItem("folders", JSON.stringify(updatedFolders));
+  const renameFolder = async (folderId: string, newName: string) => {
+    try {
+      // Send the PUT request to update the folder name on the server
+      await axios.put(`/api/notetaking/folders/${folderId}`, { newName });
+  
+      // Update the local state after successful rename
+      const updatedFolders = folders.map((folder) =>
+        folder._id === folderId ? { ...folder, name: newName } : folder
+      );
+      setFolders(updatedFolders);
+  
+      // Optional: update localStorage if necessary
+      localStorage.setItem("folders", JSON.stringify(updatedFolders));
+    } catch (error) {
+      console.error("Failed to rename the folder:", error);
+      // Handle the error, e.g., by showing a notification to the user
+    }
   };
+  
 
   const moveNote = (noteId: string, targetFolderId: string | null) => {
     const updatedNotes = notes.map((note) =>
