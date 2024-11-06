@@ -48,6 +48,7 @@ import { useDebounce } from "use-debounce";
 import { NoteItem } from "./NoteItem";
 import { FolderItem } from "./FolderItem";
 import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions";
+import axios from "axios";
 import {
   Note,
   Folder as FolderType,
@@ -74,7 +75,13 @@ loader.init().then((monaco) => {
   });
 });
 
-export default function NoteTakingApp() {
+interface NoteTakingAppProps {
+
+  workspaceId: string;
+
+}
+
+export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [folders, setFolders] = useState<FolderType[]>([]);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
@@ -142,28 +149,51 @@ export default function NoteTakingApp() {
     }
   };
 
-  const createNewNote = () => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title: "Untitled Note",
-      content: "",
-      folderId: null,
-      isMarkup: false,
-    };
-    setNotes((prevNotes) => [...prevNotes, newNote]);
-    setCurrentNote(newNote);
-    localStorage.setItem("notes", JSON.stringify([...notes, newNote]));
-  };
+  const createNewNote = useCallback(async () => {
+    try {
+      const newNote = {
+        title: "Untitled Note",
+        content: " ",
+        folderId: null,
+        isMarkup: false,
+      };
 
-  const createNewFolder = () => {
-    const newFolder: FolderType = {
-      id: Date.now().toString(),
-      name: "New Folder",
-    };
-    setFolders((prevFolders) => [...prevFolders, newFolder]);
-    localStorage.setItem("folders", JSON.stringify([...folders, newFolder]));
-  };
+      const response = await axios.post("/api/notetaking/notes", newNote);
 
+      const createdNote = response.data;
+
+      // Update local state with the new note
+      setNotes((prevNotes) => [...prevNotes, createdNote]);
+      setCurrentNote(createdNote);
+
+      // Optional: Update localStorage if you need offline support
+      localStorage.setItem("notes", JSON.stringify([...notes, createdNote]));
+    } catch (error) {
+      console.error("Failed to create a new note:", error);
+      // Handle error, e.g., show a notification
+    }
+  }, [notes]);
+
+  const createNewFolder = async () => {
+    try {
+      const newFolderData = {
+        name: "New Folder",
+      };
+  
+      // Send POST request to backend API to create the folder
+      const response = await axios.post("/api/notetaking/folders", newFolderData);
+      const createdFolder = response.data;
+  
+      // Update state with the created folder from backend
+      setFolders((prevFolders) => [...prevFolders, createdFolder]);
+  
+      // Optional: update localStorage if necessary
+      localStorage.setItem("folders", JSON.stringify([...folders, createdFolder]));
+    } catch (error) {
+      console.error("Failed to create a new folder:", error);
+      // Handle the error, e.g., by showing a notification to the user
+    }
+  };
   const selectNote = (note: Note) => {
     saveNote();
     setCurrentNote(note);

@@ -8,6 +8,10 @@ interface WorkspaceProps {
   params: { workspaceId: string };
 }
 
+interface NoteTakingAppProps {
+  workspaceId: string;
+}
+
 const Workspace = ({ params }: WorkspaceProps) => {
   const { workspaceId } = params;
   const router = useRouter();
@@ -19,7 +23,7 @@ const Workspace = ({ params }: WorkspaceProps) => {
     const fetchWorkspace = async () => {
       try {
         const response = await fetch(
-          `/api/notetaking?workspaceId=${workspaceId}`
+          `/api/notetaking?workspaceId=${workspaceId}`,
         );
         if (!response.ok) {
           setError(true);
@@ -34,7 +38,6 @@ const Workspace = ({ params }: WorkspaceProps) => {
         setLoading(false);
       }
     };
-    
 
     fetchWorkspace();
   }, [workspaceId]);
@@ -62,7 +65,7 @@ const Workspace = ({ params }: WorkspaceProps) => {
 
   return (
     <div className="relative">
-      <NoteTakingApp />
+      <NoteTakingApp workspaceId={workspaceId} />
     </div>
   );
 };
