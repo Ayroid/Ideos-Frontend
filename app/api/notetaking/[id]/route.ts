@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
         title: title,
         description,
         theme,
-        logo: null, 
       },
       {
         headers: { Authorization: `Bearer ${accessToken}` },
