@@ -33,3 +33,27 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Failed to delete note" }, { status: 500 });
   }
 }
+
+export async function PUT(req: NextRequest, { params }: { params: { noteId: string } }) {
+  const accessToken = await getAccessTokenRaw();
+  const { noteId } = params;
+
+  try {
+    const { newTitle } = await req.json();
+
+    const response = await axios.put(
+      `${process.env.SERVER_URL}/note/${noteId}`,
+      { title: newTitle },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return NextResponse.json(response.data);
+  } catch (error) {
+    console.error("Failed to rename note:", error);
+    return NextResponse.json({ error: "Failed to rename note" }, { status: 500 });
+  }
+}

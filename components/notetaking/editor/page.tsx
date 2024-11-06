@@ -261,16 +261,30 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     }
   };
 
-  const renameNote = (noteId: string, newTitle: string) => {
-    const updatedNotes = notes.map((note) =>
-      note._id === noteId ? { ...note, title: newTitle } : note,
-    );
-    setNotes(updatedNotes);
-    localStorage.setItem("notes", JSON.stringify(updatedNotes));
-    if (currentNote && currentNote._id === noteId) {
-      setCurrentNote({ ...currentNote, title: newTitle });
+  const renameNote = async (noteId: string, newTitle: string) => {
+    try {
+      // Send the PUT request to update the note title on the server
+      await axios.put(`/api/notetaking/notes/${noteId}`, { newTitle });
+  
+      // Update the local state after successful rename
+      const updatedNotes = notes.map((note) =>
+        note._id === noteId ? { ...note, title: newTitle } : note
+      );
+      setNotes(updatedNotes);
+  
+      // Optional: update localStorage if necessary
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+  
+      // Update the currentNote if it matches the renamed note
+      if (currentNote && currentNote._id === noteId) {
+        setCurrentNote({ ...currentNote, title: newTitle });
+      }
+    } catch (error) {
+      console.error("Failed to rename the note:", error);
+      // Handle the error, e.g., by showing a notification to the user
     }
   };
+  
 
   const renameFolder = (folderId: string, newName: string) => {
     const updatedFolders = folders.map((folder) =>
