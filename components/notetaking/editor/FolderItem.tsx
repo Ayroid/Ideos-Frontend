@@ -42,12 +42,12 @@ export const FolderItem: React.FC<FolderItemProps> = ({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onBlur={() => {
-              onRename(folder.id, newName)
+              onRename(folder._id, newName)
               setIsRenaming(false)
             }}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                onRename(folder.id, newName)
+                onRename(folder._id, newName)
                 setIsRenaming(false)
               }
             }}
@@ -83,7 +83,7 @@ export const FolderItem: React.FC<FolderItemProps> = ({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => onDelete(folder.id)}
+                  onClick={() => onDelete(folder._id)}
                 >
                   <Trash className="h-3 w-3" />
                 </Button>
@@ -95,10 +95,10 @@ export const FolderItem: React.FC<FolderItemProps> = ({
       </div>
       <ul className="space-y-1 ml-6">
         {notes
-          .filter(note => note.folderId === folder.id)
+          .filter(note => note.folderId === folder._id)
           .map(note => (
             <NoteItem
-              key={note.id}
+              key={note._id}
               note={note}
               currentNote={currentNote}
               folders={folders}

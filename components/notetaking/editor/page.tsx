@@ -76,9 +76,7 @@ loader.init().then((monaco) => {
 });
 
 interface NoteTakingAppProps {
-
   workspaceId: string;
-
 }
 
 export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
@@ -178,18 +176,24 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     try {
       const newFolderData = {
         name: "New Folder",
-        "workspaceId": workspaceId
+        workspaceId: workspaceId,
       };
-  
+
       // Send POST request to backend API to create the folder
-      const response = await axios.post("/api/notetaking/folders", newFolderData);
+      const response = await axios.post(
+        "/api/notetaking/folders",
+        newFolderData,
+      );
       const createdFolder = response.data;
-  
+
       // Update state with the created folder from backend
       setFolders((prevFolders) => [...prevFolders, createdFolder]);
-  
+
       // Optional: update localStorage if necessary
-      localStorage.setItem("folders", JSON.stringify([...folders, createdFolder]));
+      localStorage.setItem(
+        "folders",
+        JSON.stringify([...folders, createdFolder]),
+      );
     } catch (error) {
       console.error("Failed to create a new folder:", error);
       // Handle the error, e.g., by showing a notification to the user
@@ -202,38 +206,59 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     setIsPreview(false);
   };
 
-const deleteNote = async (noteId: string) => {
-  try {
-    console.log("Deleting note with ID:", noteId);
-    await axios.delete(`/api/notetaking/notes/${noteId}`);
+  const deleteNote = async (noteId: string) => {
+    try {
+      console.log("Deleting note with ID:", noteId);
+      await axios.delete(`/api/notetaking/notes/${noteId}`);
 
-    // Update local state after successful deletion from backend
-    const updatedNotes = notes.filter((note) => note._id !== noteId);
-    setNotes(updatedNotes);
+      // Update local state after successful deletion from backend
+      const updatedNotes = notes.filter((note) => note._id !== noteId);
+      setNotes(updatedNotes);
 
-    // Optional: update localStorage if necessary
-    localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      // Optional: update localStorage if necessary
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
 
-    // If the current note is deleted, select the first remaining note or null
-    if (currentNote && currentNote._id === noteId) {
-      setCurrentNote(updatedNotes[0] || null);
+      // If the current note is deleted, select the first remaining note or null
+      if (currentNote && currentNote._id === noteId) {
+        setCurrentNote(updatedNotes[0] || null);
+      }
+    } catch (error) {
+      console.error("Failed to delete the note:", error);
+      // Handle the error, e.g., by showing a notification to the user
     }
-  } catch (error) {
-    console.error("Failed to delete the note:", error);
-    // Handle the error, e.g., by showing a notification to the user
-  }
-};
+  };
 
-  const deleteFolder = (folderId: string) => {
-    const updatedFolders = folders.filter((folder) => folder.id !== folderId);
-    setFolders(updatedFolders);
-    localStorage.setItem("folders", JSON.stringify(updatedFolders));
+  const deleteFolder = async (folderId: string) => {
+    try {
+      console.log(
+        "Deleting folder with ID:",
+        folderId,
+        "from workspace:",
+        workspaceId,
+      );
 
-    const updatedNotes = notes.map((note) =>
-      note.folderId === folderId ? { ...note, folderId: null } : note,
-    );
-    setNotes(updatedNotes);
-    localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      // Send DELETE request to the API route with workspaceId as a query parameter
+      await axios.delete(
+        `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
+      );
+
+      // Update folders in local state after successful deletion
+      const updatedFolders = folders.filter(
+        (folder) => folder._id !== folderId,
+      );
+      setFolders(updatedFolders);
+      localStorage.setItem("folders", JSON.stringify(updatedFolders));
+
+      // Update notes: remove folderId from notes that were in the deleted folder
+      const updatedNotes = notes.map((note) =>
+        note.folderId === folderId ? { ...note, folderId: null } : note,
+      );
+      setNotes(updatedNotes);
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+    } catch (error) {
+      console.error("Failed to delete the folder:", error);
+      // Handle error (e.g., show a notification)
+    }
   };
 
   const renameNote = (noteId: string, newTitle: string) => {
@@ -249,7 +274,7 @@ const deleteNote = async (noteId: string) => {
 
   const renameFolder = (folderId: string, newName: string) => {
     const updatedFolders = folders.map((folder) =>
-      folder.id === folderId ? { ...folder, name: newName } : folder,
+      folder._id === folderId ? { ...folder, name: newName } : folder,
     );
     setFolders(updatedFolders);
     localStorage.setItem("folders", JSON.stringify(updatedFolders));
@@ -442,7 +467,7 @@ const deleteNote = async (noteId: string) => {
           <div className="space-y-4 p-4">
             {folders.map((folder) => (
               <FolderItem
-                key={folder.id}
+                key={folder._id}
                 folder={folder}
                 notes={notes}
                 currentNote={currentNote}

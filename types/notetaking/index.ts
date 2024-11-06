@@ -31,12 +31,7 @@ export type File = {
 export type Workspace = {
   id?: string;
   title?: string;
-  logo?: string | null;
-  iconId?: string;
   createdAt?: string;
-  inTrash?: boolean;
-  workspaceOwner?: string;
-  bannerUrl?: string;
   data?: any; // Customize as needed
   folders?: Folder[]; // Array of folders within the workspace
 };
@@ -60,6 +55,7 @@ export interface Note {
 }
 
 export interface Folder {
-  id: string
+  _id: string
   name: string
+  notes: String[]
 }
