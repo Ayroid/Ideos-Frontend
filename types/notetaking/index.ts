@@ -52,7 +52,7 @@ export type WorkspaceStoreState = {
 
 
 export interface Note {
-  id: string
+  _id: string
   title: string
   content: string
   folderId: string | null

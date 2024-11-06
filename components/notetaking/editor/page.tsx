@@ -141,7 +141,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     if (currentNote) {
       setIsSaving(true);
       const updatedNotes = notes.map((note) =>
-        note.id === currentNote.id ? currentNote : note,
+        note._id === currentNote._id ? currentNote : note,
       );
       setNotes(updatedNotes);
       localStorage.setItem("notes", JSON.stringify(updatedNotes));
@@ -195,20 +195,34 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       // Handle the error, e.g., by showing a notification to the user
     }
   };
+
   const selectNote = (note: Note) => {
     saveNote();
     setCurrentNote(note);
     setIsPreview(false);
   };
 
-  const deleteNote = (noteId: string) => {
-    const updatedNotes = notes.filter((note) => note.id !== noteId);
+const deleteNote = async (noteId: string) => {
+  try {
+    console.log("Deleting note with ID:", noteId);
+    await axios.delete(`/api/notetaking/notes/${noteId}`);
+
+    // Update local state after successful deletion from backend
+    const updatedNotes = notes.filter((note) => note._id !== noteId);
     setNotes(updatedNotes);
+
+    // Optional: update localStorage if necessary
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
-    if (currentNote && currentNote.id === noteId) {
+
+    // If the current note is deleted, select the first remaining note or null
+    if (currentNote && currentNote._id === noteId) {
       setCurrentNote(updatedNotes[0] || null);
     }
-  };
+  } catch (error) {
+    console.error("Failed to delete the note:", error);
+    // Handle the error, e.g., by showing a notification to the user
+  }
+};
 
   const deleteFolder = (folderId: string) => {
     const updatedFolders = folders.filter((folder) => folder.id !== folderId);
@@ -224,11 +238,11 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
 
   const renameNote = (noteId: string, newTitle: string) => {
     const updatedNotes = notes.map((note) =>
-      note.id === noteId ? { ...note, title: newTitle } : note,
+      note._id === noteId ? { ...note, title: newTitle } : note,
     );
     setNotes(updatedNotes);
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
-    if (currentNote && currentNote.id === noteId) {
+    if (currentNote && currentNote._id === noteId) {
       setCurrentNote({ ...currentNote, title: newTitle });
     }
   };
@@ -243,11 +257,11 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
 
   const moveNote = (noteId: string, targetFolderId: string | null) => {
     const updatedNotes = notes.map((note) =>
-      note.id === noteId ? { ...note, folderId: targetFolderId } : note,
+      note._id === noteId ? { ...note, folderId: targetFolderId } : note,
     );
     setNotes(updatedNotes);
     localStorage.setItem("notes", JSON.stringify(updatedNotes));
-    if (currentNote && currentNote.id === noteId) {
+    if (currentNote && currentNote._id === noteId) {
       setCurrentNote({ ...currentNote, folderId: targetFolderId });
     }
   };
@@ -454,7 +468,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                   )
                   .map((note) => (
                     <NoteItem
-                      key={note.id}
+                      key={note._id}
                       note={note}
                       currentNote={currentNote}
                       folders={folders}

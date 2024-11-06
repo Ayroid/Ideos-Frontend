@@ -30,7 +30,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
   return (
     <li 
       className={`flex items-center justify-between p-2 rounded-md transition-colors duration-200 ${
-        currentNote && currentNote.id === note.id ? 'bg-secondary' : 'hover:bg-secondary'
+        currentNote && currentNote._id === note._id ? 'bg-secondary' : 'hover:bg-secondary'
       }`}
     >
       {isRenaming ? (
@@ -38,12 +38,12 @@ export const NoteItem: React.FC<NoteItemProps> = ({
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           onBlur={() => {
-            onRename(note.id, newTitle)
+            onRename(note._id, newTitle)
             setIsRenaming(false)
           }}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
-              onRename(note.id, newTitle)
+              onRename(note._id, newTitle)
               setIsRenaming(false)
             }
           }}
@@ -67,16 +67,16 @@ export const NoteItem: React.FC<NoteItemProps> = ({
                 <DropdownMenuItem onSelect={() => setIsRenaming(true)}>
                   Rename
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => onDelete(note.id)}>
+                <DropdownMenuItem onSelect={() => onDelete(note._id)}>
                   Delete
                 </DropdownMenuItem>
                 {folders.map(folder => (
-                  <DropdownMenuItem key={folder.id} onSelect={() => onMove(note.id, folder.id)}>
+                  <DropdownMenuItem key={folder.id} onSelect={() => onMove(note._id, folder.id)}>
                     Move to {folder.name}
                   </DropdownMenuItem>
                 ))}
                 {note.folderId && (
-                  <DropdownMenuItem onSelect={() => onMove(note.id, null)}>
+                  <DropdownMenuItem onSelect={() => onMove(note._id, null)}>
                     Move to Uncategorized
                   </DropdownMenuItem>
                 )}
