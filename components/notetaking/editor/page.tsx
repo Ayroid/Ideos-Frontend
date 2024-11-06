@@ -306,17 +306,26 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   };
   
 
-  const moveNote = (noteId: string, targetFolderId: string | null) => {
-    const updatedNotes = notes.map((note) =>
-      note._id === noteId ? { ...note, folderId: targetFolderId } : note,
-    );
-    setNotes(updatedNotes);
-    localStorage.setItem("notes", JSON.stringify(updatedNotes));
-    if (currentNote && currentNote._id === noteId) {
-      setCurrentNote({ ...currentNote, folderId: targetFolderId });
+  const moveNote = async (noteId: string, targetFolderId: string | null) => {
+    try {
+      console.log("Moving note with ID:", noteId, "to folder with ID:", targetFolderId);
+      const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, { folderId: targetFolderId });
+  
+      const updatedNotes = notes.map((note) =>
+        note._id === noteId ? { ...note, folderId: targetFolderId } : note
+      );
+      setNotes(updatedNotes);
+  
+      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+  
+      if (currentNote && currentNote._id === noteId) {
+        setCurrentNote({ ...currentNote, folderId: targetFolderId });
+      }
+    } catch (error) {
+      console.error("Failed to move the note:", error);
     }
   };
-
+  
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && currentNote) {

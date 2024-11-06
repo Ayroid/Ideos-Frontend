@@ -71,7 +71,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
                   Delete
                 </DropdownMenuItem>
                 {folders.map(folder => (
-                  <DropdownMenuItem key={folder.id} onSelect={() => onMove(note._id, folder.id)}>
+                  <DropdownMenuItem key={folder._id} onSelect={() => onMove(note._id, folder._id)}>
                     Move to {folder.name}
                   </DropdownMenuItem>
                 ))}
