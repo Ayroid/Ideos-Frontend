@@ -93,18 +93,19 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     null,
   );
   const { theme } = useTheme();
+
   const fetchNotesAndFolders = async (workspaceId: string) => {
     try {
       const [notesResponse, foldersResponse] = await Promise.all([
         axios.get(`/api/notetaking/workspaces/${workspaceId}/notes`),
         axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`),
       ]);
-  
+
       // Check if the responses are successful
       if (notesResponse.status === 200) {
-        const notesData = notesResponse.data || []; // Fallback to an empty array if data is null or undefined
+        const notesData = notesResponse.data || [];
         setNotes(notesData);
-        
+
         // Set the first note as the current note, if available
         if (notesData.length > 0) {
           setCurrentNote(notesData[0]);
@@ -116,7 +117,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         setNotes([]); // Fallback to empty if fetch fails
         setCurrentNote(null);
       }
-  
+
       if (foldersResponse.status === 200) {
         setFolders(foldersResponse.data || []); // Fallback to an empty array if folders data is null or undefined
       } else {
@@ -130,6 +131,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       setCurrentNote(null);
     }
   };
+
   useEffect(() => {
     fetchNotesAndFolders(workspaceId);
   }, []);
@@ -144,7 +146,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       }
     }
   }, [currentNote, isPreview]); // This effect depends on currentNote and isPreview
-
 
   const renderContent = useCallback((content: string, isMarkup: boolean) => {
     if (isMarkup) {
@@ -357,20 +358,20 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         "to folder with ID:",
         targetFolderId,
       );
-      
+
       const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, {
         folderId: targetFolderId,
       });
-  
+
       // Update notes array: remove from old folder and add to the new folder
       const updatedNotes = notes.map((note) =>
         note._id === noteId ? { ...note, folderId: targetFolderId } : note,
       );
       setNotes(updatedNotes);
-  
+
       // Store the updated notes in localStorage
       localStorage.setItem("notes", JSON.stringify(updatedNotes));
-  
+
       // Update the current note if it's the moved note
       if (currentNote && currentNote._id === noteId) {
         setCurrentNote({ ...currentNote, folderId: targetFolderId });
@@ -379,7 +380,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       console.error("Failed to move the note:", error);
     }
   };
-  
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

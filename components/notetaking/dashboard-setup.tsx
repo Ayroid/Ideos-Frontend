@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
@@ -82,6 +82,23 @@ export default function WorkspaceCreation() {
     setValue("theme", value);
   };
 
+  // Function to fetch workspaces from the backend
+  const fetchUserWorkspaces = async () => {
+    try {
+      const response = await axios.get("/api/notetaking/workspaces/userworkspace");
+      if (response.data) {
+        setPreviousWorkspaces(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching workspaces:", error);
+      toast.error("Failed to fetch workspaces. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    fetchUserWorkspaces(); // Fetch workspaces on component mount
+  }, []);
+
   const createWorkspace = useCallback(
     async (data: CreateWorkspaceFormData) => {
       setIsCreating(true);
@@ -96,7 +113,7 @@ export default function WorkspaceCreation() {
         if (workspaceCreated) {
           setPreviousWorkspaces((prev) => [...prev, workspaceCreated]);
           toast.success("Workspace Created");
-          router.push(`/tools/notes/dashboard/${workspaceCreated}`);
+          router.push(`/tools/notes/dashboard/${workspaceCreated._id}`);
         } else {
           toast.error("Failed to create workspace. Please try again.");
         }
@@ -263,9 +280,7 @@ export default function WorkspaceCreation() {
                     <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
                       <Briefcase className="mb-4 h-12 w-12 opacity-50" />
                       <p>No workspaces created yet.</p>
-                      <p className="mt-2 text-sm">
-                        Create your first workspace to get started!
-                      </p>
+                      <p>Start by creating a new one!</p>
                     </div>
                   )}
                 </ScrollArea>
