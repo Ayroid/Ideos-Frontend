@@ -1,4 +1,5 @@
 "use client";
+import Loading from "@/components/Loading";
 import { PomodoroTimer } from "@/components/pomodoro/pomodoroTimer";
 import {
   PomodoroTemplateStore,
@@ -80,7 +81,7 @@ const PomodoroPage = () => {
   }, [activeTemplateId]);
 
   if (!pomodoroSetupReady) {
-    return <div>Loading...</div>;
+    return <Loading  />;
   }
 
   return <PomodoroTimer />;
