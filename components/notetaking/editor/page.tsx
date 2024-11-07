@@ -17,6 +17,7 @@ import axios from 'axios'
 import { Note, Folder as FolderType, Workspace } from "@/types/notetaking/index"
 import Editor from '@monaco-editor/react'
 import { useTheme } from 'next-themes'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
 interface NoteTakingAppProps {
   workspaceId: string
@@ -34,6 +35,8 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
   const { theme } = useTheme()
+  const [showSaveWarning, setShowSaveWarning] = useState(false)
+  const [pendingNoteChange, setPendingNoteChange] = useState<Note | null>(null)
 
   const fetchNotesAndFolders = useCallback(async (workspaceId: string) => {
     try {
@@ -142,8 +145,14 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   }
 
   const selectNote = (note: Note) => {
-    setCurrentNote(note)
-    setIsPreview(false)
+    if (currentNote && currentNote._id !== note._id) {
+      setShowSaveWarning(true)
+      setPendingNoteChange(note)
+    } 
+    else {
+      setCurrentNote(note)
+      setIsPreview(false)
+    }
   }
 
   const deleteNote = async (noteId: string) => {
@@ -245,7 +254,10 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
 
   const handleContentChange = (value: string | undefined) => {
     if (value !== undefined && currentNote) {
-      setCurrentNote({ ...currentNote, content: value })
+      setCurrentNote((prevNote) => ({
+        ...prevNote!,
+        content: value
+      }))
       if (isPreview) {
         renderContent(value, currentNote.isMarkup)
       }
@@ -322,6 +334,22 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     setCurrentWorkspace(workspace)
     // Fetch notes and folders for the selected workspace
     fetchNotesAndFolders(workspaceId)
+  }
+
+  const findAndReplace = () => {
+    const searchTerm = prompt("Enter search term:")
+    const replaceTerm = prompt("Enter replacement term:")
+    if (searchTerm && replaceTerm && currentNote) {
+      const newContent = currentNote.content.replace(new RegExp(searchTerm, 'g'), replaceTerm)
+      setCurrentNote({ ...currentNote, content: newContent })
+    }
+  }
+
+  const getWordCount = () => {
+    if (currentNote) {
+      const wordCount = currentNote.content.trim().split(/\s+/).length
+      alert(`Word count: ${wordCount}`)
+    }
   }
 
   return (
@@ -643,8 +671,8 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Find and Replace</DropdownMenuItem>
-                        <DropdownMenuItem>Word Count</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={findAndReplace}>Find and Replace</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={getWordCount}>Word Count</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -661,10 +689,10 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                             minimap: { enabled: false },
                             wordWrap: "on",
                             wrappingIndent: "indent",
-                            lineNumbers: "off",
-                            folding: false,
+                            lineNumbers: "on",
+                            folding: true,
                             lineDecorationsWidth: 0,
-                            lineNumbersMinChars: 0,
+                            lineNumbersMinChars: 3,
                             glyphMargin: false,
                             padding: { top: 16, bottom: 16 },
                             scrollBeyondLastLine: false,
@@ -703,6 +731,37 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
             </div>
           </div>
         )}
+        <AlertDialog open={showSaveWarning} onOpenChange={setShowSaveWarning}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have unsaved changes. Do you want to save before switching notes?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setShowSaveWarning(false)
+                if (pendingNoteChange) {
+                  setCurrentNote(pendingNoteChange)
+                  setPendingNoteChange(null)
+                }
+              }}>
+                Discard
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                saveNote()
+                setShowSaveWarning(false)
+                if (pendingNoteChange) {
+                  setCurrentNote(pendingNoteChange)
+                  setPendingNoteChange(null)
+                }
+              }}>
+                Save
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   )
