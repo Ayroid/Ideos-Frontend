@@ -6,7 +6,6 @@ import {
   usePomodoroTemplate,
 } from "@/store/pomodoro/pomodoroTemplates";
 import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
-import { PomodoroTemplate } from "@/types/pomodoro";
 import axios from "axios";
 import React, { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
@@ -47,16 +46,23 @@ const PomodoroPage = () => {
         isSetupCalled.current = true;
         const response = await axios.post("/api/pomodoro/settings");
         if (response.status === 201 || response.status === 200) {
-          const data = response.data;
-          addAllTemplates(data.userPomodoroTemplateIds);
-          setActiveTemplateId(data.activePomodoroTemplateId);
-          setPomodoroTheme(data.activePomodoroTheme);
           setPomodoroSetupReady(true);
+          addAllTemplates(response.data.userPomodoroTemplateIds);
+          setActiveTemplateId(response.data.activePomodoroTemplateId);
+          setPomodoroTheme(response.data.activePomodoroTheme);
           toast.success("Pomodoro Ready!");
         }
       } catch (error) {
         console.error("Failed to setup pomodoro:", error);
       }
+    }
+
+    async function fetchTemplates() {
+      const response = await axios.get("/api/pomodoro/settings");
+      addAllTemplates(response.data.userPomodoroTemplateIds);
+      setActiveTemplateId(response.data.activePomodoroTemplateId);
+      setPomodoroTheme(response.data.activePomodoroTheme);
+      toast.success("Pomodoro Ready!");
     }
 
     setupPomodoro();
