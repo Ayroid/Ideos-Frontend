@@ -1,198 +1,114 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Toggle } from "@/components/ui/toggle";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Folder,
-  FileText,
-  FolderPlus,
-  Save,
-  ImageIcon,
-  Code,
-  Eye,
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Link,
-  Heading1,
-  Heading2,
-  Heading3,
-  Quote,
-  Search,
-  Loader2,
-  ChevronDown,
-  MoreVertical,
-  Layout,
-} from "lucide-react";
-import { useDebounce } from "use-debounce";
-import { NoteItem } from "./NoteItem";
-import { FolderItem } from "./FolderItem";
-import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions";
-import axios from "axios";
-import {
-  Note,
-  Folder as FolderType,
-  Workspace,
-} from "@/types/notetaking/index";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Editor, { loader } from "@monaco-editor/react";
-import { useTheme } from "next-themes";
-
-// Load Monaco Editor's themes
-loader.init().then((monaco) => {
-  monaco.editor.defineTheme("myCustomTheme", {
-    base: "vs-dark",
-    inherit: true,
-    rules: [],
-    colors: {
-      "editor.background": "#1f2937",
-    },
-  });
-});
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Toggle } from "@/components/ui/toggle"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Folder, FileText, FolderPlus, Save, ImageIcon, Code, Eye, Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Heading3, Quote, Search, Loader2, ChevronDown, MoreVertical, Layout } from 'lucide-react'
+import { NoteItem } from './NoteItem'
+import { FolderItem } from './FolderItem'
+import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions"
+import axios from 'axios'
+import { Note, Folder as FolderType, Workspace } from "@/types/notetaking/index"
+import Editor from '@monaco-editor/react'
+import { useTheme } from 'next-themes'
 
 interface NoteTakingAppProps {
-  workspaceId: string;
+  workspaceId: string
 }
 
 export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [folders, setFolders] = useState<FolderType[]>([]);
-  const [currentNote, setCurrentNote] = useState<Note | null>(null);
-  const [isPreview, setIsPreview] = useState(false);
-  const [renderedContent, setRenderedContent] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
-    null,
-  );
-  const { theme } = useTheme();
+  const [notes, setNotes] = useState<Note[]>([])
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [currentNote, setCurrentNote] = useState<Note | null>(null)
+  const [isPreview, setIsPreview] = useState(false)
+  const [renderedContent, setRenderedContent] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
+  const { theme } = useTheme()
 
-  const fetchNotesAndFolders = async (workspaceId: string) => {
+  const fetchNotesAndFolders = useCallback(async (workspaceId: string) => {
     try {
       const [notesResponse, foldersResponse] = await Promise.all([
         axios.get(`/api/notetaking/workspaces/${workspaceId}/notes`),
-        axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`),
-      ]);
+        axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`)
+      ])
 
-      // Check if the responses are successful
       if (notesResponse.status === 200) {
-        const notesData = notesResponse.data || [];
-        setNotes(notesData);
-
-        // Set the first note as the current note, if available
+        const notesData = notesResponse.data || []
+        setNotes(notesData)
         if (notesData.length > 0) {
-          setCurrentNote(notesData[0]);
+          setCurrentNote(notesData[0])
         } else {
-          setCurrentNote(null); // Handle the case where no notes are available
+          setCurrentNote(null)
         }
       } else {
-        console.error("Failed to fetch notes:", notesResponse.status);
-        setNotes([]); // Fallback to empty if fetch fails
-        setCurrentNote(null);
+        console.error("Failed to fetch notes:", notesResponse.status)
+        setNotes([])
+        setCurrentNote(null)
       }
 
       if (foldersResponse.status === 200) {
-        setFolders(foldersResponse.data || []); // Fallback to an empty array if folders data is null or undefined
+        setFolders(foldersResponse.data || [])
       } else {
-        console.error("Failed to fetch folders:", foldersResponse.status);
-        setFolders([]); // Fallback to empty if fetch fails
+        console.error("Failed to fetch folders:", foldersResponse.status)
+        setFolders([])
       }
     } catch (error) {
-      console.error("Failed to fetch notes and folders:", error);
-      setNotes([]); // Ensure empty state on error
-      setFolders([]);
-      setCurrentNote(null);
+      console.error("Failed to fetch notes and folders:", error)
+      setNotes([])
+      setFolders([])
+      setCurrentNote(null)
     }
-  };
+  }, [])
 
   useEffect(() => {
-    fetchNotesAndFolders(workspaceId);
-  }, []);
+    fetchNotesAndFolders(workspaceId)
+  }, [fetchNotesAndFolders, workspaceId])
 
   useEffect(() => {
     if (currentNote) {
-      // If in preview mode, render the markup; else, show the raw content
       if (isPreview) {
-        renderContent(currentNote.content, currentNote.isMarkup);
+        renderContent(currentNote.content, currentNote.isMarkup)
       } else {
-        setRenderedContent(currentNote.content); // Show raw content in edit mode
+        setRenderedContent(currentNote.content)
       }
     }
-  }, [currentNote, isPreview]); // This effect depends on currentNote and isPreview
+  }, [currentNote, isPreview])
 
   const renderContent = useCallback((content: string, isMarkup: boolean) => {
     if (isMarkup) {
-      setRenderedContent(convertMarkupToHtml(content));
+      setRenderedContent(convertMarkupToHtml(content))
     } else {
-      setRenderedContent(content);
+      setRenderedContent(content)
     }
-  }, []);
+  }, [])
 
   const saveNote = async () => {
     if (currentNote && !isSaving) {
-      // Check if not already saving
       try {
-        setIsSaving(true); // Set saving to true to block concurrent requests
-
-        // Send the request only when the save button is clicked
-        const response = await axios.put(
-          `/api/notetaking/notes/${currentNote._id}/save`,
-          currentNote,
-        );
-
-        // Update the notes list only after a successful request
-        const updatedNotes = notes.map((note) =>
-          note._id === currentNote._id
-            ? { ...currentNote, ...response.data }
-            : note,
-        );
-
-        // Update local state and local storage
-        setNotes(updatedNotes);
-        localStorage.setItem("notes", JSON.stringify(updatedNotes));
-
-        // Update current note if it matches the response
-        if (currentNote && currentNote._id === response.data._id) {
-          setCurrentNote(response.data);
+        setIsSaving(true)
+        const response = await axios.put(`/api/notetaking/notes/${currentNote._id}/save`, currentNote)
+        const updatedNotes = notes.map(note => note._id === currentNote._id ? { ...currentNote, ...response.data } : note)
+        setNotes(updatedNotes)
+        if (currentNote._id === response.data._id) {
+          setCurrentNote(response.data)
         }
-
-        // Simulate a short delay for saving and reset the saving state
-        setTimeout(() => setIsSaving(false), 1000); // Reset the state after a delay
+        setTimeout(() => setIsSaving(false), 1000)
       } catch (error) {
-        console.error("Failed to save the note:", error);
-        setIsSaving(false); // Reset the saving state on error
+        console.error("Failed to save the note:", error)
+        setIsSaving(false)
       }
-    } else {
-      console.warn("No current note to save or already saving");
     }
-  };
+  }
 
   const createNewNote = useCallback(async () => {
     try {
@@ -201,318 +117,212 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         content: " ",
         folderId: null,
         isMarkup: false,
-      };
-
-      const response = await axios.post("/api/notetaking/notes", newNote);
-
-      const createdNote = response.data;
-
-      // Update local state with the new note
-      setNotes((prevNotes) => [...prevNotes, createdNote]);
-      setCurrentNote(createdNote);
-
-      // Optional: Update localStorage if you need offline support
-      localStorage.setItem("notes", JSON.stringify([...notes, createdNote]));
+      }
+      const response = await axios.post("/api/notetaking/notes", newNote)
+      const createdNote = response.data
+      setNotes(prevNotes => [...prevNotes, createdNote])
+      setCurrentNote(createdNote)
     } catch (error) {
-      console.error("Failed to create a new note:", error);
-      // Handle error, e.g., show a notification
+      console.error("Failed to create a new note:", error)
     }
-  }, [notes]);
+  }, [])
 
   const createNewFolder = async () => {
     try {
       const newFolderData = {
         name: "New Folder",
         workspaceId: workspaceId,
-      };
-
-      // Send POST request to backend API to create the folder
-      const response = await axios.post(
-        "/api/notetaking/folders",
-        newFolderData,
-      );
-      const createdFolder = response.data;
-
-      // Update state with the created folder from backend
-      setFolders((prevFolders) => [...prevFolders, createdFolder]);
-
-      // Optional: update localStorage if necessary
-      localStorage.setItem(
-        "folders",
-        JSON.stringify([...folders, createdFolder]),
-      );
+      }
+      const response = await axios.post("/api/notetaking/folders", newFolderData)
+      const createdFolder = response.data
+      setFolders(prevFolders => [...prevFolders, createdFolder])
     } catch (error) {
-      console.error("Failed to create a new folder:", error);
-      // Handle the error, e.g., by showing a notification to the user
+      console.error("Failed to create a new folder:", error)
     }
-  };
+  }
 
   const selectNote = (note: Note) => {
-    setCurrentNote(note);
-    setIsPreview(false);
-  };
+    setCurrentNote(note)
+    setIsPreview(false)
+  }
 
   const deleteNote = async (noteId: string) => {
     try {
-      console.log("Deleting note with ID:", noteId);
-      await axios.delete(`/api/notetaking/notes/${noteId}`);
-
-      // Update local state after successful deletion from backend
-      const updatedNotes = notes.filter((note) => note._id !== noteId);
-      setNotes(updatedNotes);
-
-      // Optional: update localStorage if necessary
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
-
-      // If the current note is deleted, select the first remaining note or null
+      await axios.delete(`/api/notetaking/notes/${noteId}`)
+      const updatedNotes = notes.filter(note => note._id !== noteId)
+      setNotes(updatedNotes)
       if (currentNote && currentNote._id === noteId) {
-        setCurrentNote(updatedNotes[0] || null);
+        setCurrentNote(updatedNotes[0] || null)
       }
     } catch (error) {
-      console.error("Failed to delete the note:", error);
-      // Handle the error, e.g., by showing a notification to the user
+      console.error("Failed to delete the note:", error)
     }
-  };
+  }
 
   const deleteFolder = async (folderId: string) => {
     try {
-      console.log(
-        "Deleting folder with ID:",
-        folderId,
-        "from workspace:",
-        workspaceId,
-      );
-
-      // Send DELETE request to the API route with workspaceId as a query parameter
-      await axios.delete(
-        `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
-      );
-
-      // Update folders in local state after successful deletion
-      const updatedFolders = folders.filter(
-        (folder) => folder._id !== folderId,
-      );
-      setFolders(updatedFolders);
-      localStorage.setItem("folders", JSON.stringify(updatedFolders));
-
-      // Update notes: remove folderId from notes that were in the deleted folder
-      const updatedNotes = notes.map((note) =>
-        note.folderId === folderId ? { ...note, folderId: null } : note,
-      );
-      setNotes(updatedNotes);
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
+      await axios.delete(`/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`)
+      const updatedFolders = folders.filter(folder => folder._id !== folderId)
+      setFolders(updatedFolders)
+      const updatedNotes = notes.map(note => note.folderId === folderId ? { ...note, folderId: null } : note)
+      setNotes(updatedNotes)
     } catch (error) {
-      console.error("Failed to delete the folder:", error);
-      // Handle error (e.g., show a notification)
+      console.error("Failed to delete the folder:", error)
     }
-  };
+  }
 
   const renameNote = async (noteId: string, newTitle: string) => {
     try {
-      // Send the PUT request to update the note title on the server
-      await axios.put(`/api/notetaking/notes/${noteId}`, { newTitle });
-
-      // Update the local state after successful rename
-      const updatedNotes = notes.map((note) =>
-        note._id === noteId ? { ...note, title: newTitle } : note,
-      );
-      setNotes(updatedNotes);
-
-      // Optional: update localStorage if necessary
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
-
-      // Update the currentNote if it matches the renamed note
+      await axios.put(`/api/notetaking/notes/${noteId}`, { newTitle })
+      const updatedNotes = notes.map(note => note._id === noteId ? { ...note, title: newTitle } : note)
+      setNotes(updatedNotes)
       if (currentNote && currentNote._id === noteId) {
-        setCurrentNote({ ...currentNote, title: newTitle });
+        setCurrentNote({ ...currentNote, title: newTitle })
       }
     } catch (error) {
-      console.error("Failed to rename the note:", error);
-      // Handle the error, e.g., by showing a notification to the user
+      console.error("Failed to rename the note:", error)
     }
-  };
+  }
 
   const renameFolder = async (folderId: string, newName: string) => {
     try {
-      // Send the PUT request to update the folder name on the server
-      await axios.put(`/api/notetaking/folders/${folderId}`, { newName });
-
-      // Update the local state after successful rename
-      const updatedFolders = folders.map((folder) =>
-        folder._id === folderId ? { ...folder, name: newName } : folder,
-      );
-      setFolders(updatedFolders);
-
-      // Optional: update localStorage if necessary
-      localStorage.setItem("folders", JSON.stringify(updatedFolders));
+      await axios.put(`/api/notetaking/folders/${folderId}`, { newName })
+      const updatedFolders = folders.map(folder => folder._id === folderId ? { ...folder, name: newName } : folder)
+      setFolders(updatedFolders)
     } catch (error) {
-      console.error("Failed to rename the folder:", error);
-      // Handle the error, e.g., by showing a notification to the user
+      console.error("Failed to rename the folder:", error)
     }
-  };
+  }
 
   const moveNote = async (noteId: string, targetFolderId: string | null) => {
     try {
-      console.log(
-        "Moving note with ID:",
-        noteId,
-        "to folder with ID:",
-        targetFolderId,
-      );
-
-      const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, {
-        folderId: targetFolderId,
-      });
-
-      // Update notes array: remove from old folder and add to the new folder
-      const updatedNotes = notes.map((note) =>
-        note._id === noteId ? { ...note, folderId: targetFolderId } : note,
-      );
-      setNotes(updatedNotes);
-
-      // Store the updated notes in localStorage
-      localStorage.setItem("notes", JSON.stringify(updatedNotes));
-
-      // Update the current note if it's the moved note
+      const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, { folderId: targetFolderId })
+      const updatedNotes = notes.map(note => note._id === noteId ? { ...note, folderId: targetFolderId } : note)
+      setNotes(updatedNotes)
       if (currentNote && currentNote._id === noteId) {
-        setCurrentNote({ ...currentNote, folderId: targetFolderId });
+        setCurrentNote({ ...currentNote, folderId: targetFolderId })
       }
     } catch (error) {
-      console.error("Failed to move the note:", error);
+      console.error("Failed to move the note:", error)
     }
-  };
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file && currentNote) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onloadend = () => {
-        const img = new Image();
+        const img = new Image()
         img.onload = () => {
           const imageElement = currentNote.isMarkup
             ? `![${file.name}](${reader.result} ==${img.width}x${img.height})`
-            : `<img src="${reader.result}" alt="${file.name}" width="${img.width}" height="${img.height}">`;
-          const updatedContent = currentNote.content + "\n" + imageElement;
-          setCurrentNote({ ...currentNote, content: updatedContent });
+            : `<img src="${reader.result}" alt="${file.name}" width="${img.width}" height="${img.height}">`
+          const updatedContent = currentNote.content + "\n" + imageElement
+          setCurrentNote({ ...currentNote, content: updatedContent })
           if (isPreview) {
-            renderContent(updatedContent, currentNote.isMarkup);
+            renderContent(updatedContent, currentNote.isMarkup)
           }
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
+        }
+        img.src = reader.result as string
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const toggleMarkup = () => {
     if (currentNote) {
-      const newIsMarkup = !currentNote.isMarkup;
-      let newContent = currentNote.content;
-
+      const newIsMarkup = !currentNote.isMarkup
+      let newContent = currentNote.content
       if (newIsMarkup) {
-        newContent = convertHtmlToMarkup(newContent);
+        newContent = convertHtmlToMarkup(newContent)
       } else {
-        newContent = convertMarkupToHtml(newContent);
+        newContent = convertMarkupToHtml(newContent)
       }
-
-      setCurrentNote({
-        ...currentNote,
-        isMarkup: newIsMarkup,
-        content: newContent,
-      });
-      setIsPreview(false);
+      setCurrentNote({ ...currentNote, isMarkup: newIsMarkup, content: newContent })
+      setIsPreview(false)
     }
-  };
+  }
 
-  const handleContentChange = (value: string) => {
-    if (currentNote) {
-      setCurrentNote({ ...currentNote, content: value });
+  const handleContentChange = (value: string | undefined) => {
+    if (value !== undefined && currentNote) {
+      setCurrentNote({ ...currentNote, content: value })
       if (isPreview) {
-        renderContent(value, currentNote.isMarkup);
+        renderContent(value, currentNote.isMarkup)
       }
     }
-  };
+  }
 
   const applyFormatting = (format: string) => {
     if (currentNote?.isMarkup) {
-      const textarea = document.getElementById(
-        "note-content",
-      ) as HTMLTextAreaElement;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = textarea.value.substring(start, end);
-      let formattedText = "";
+      const editor = editorRef.current
+      if (editor) {
+        const selection = window.getSelection()
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          const selectedText = range.toString()
+          let formattedText = ''
 
-      switch (format) {
-        case "bold":
-          formattedText = `**${selectedText}**`;
-          break;
-        case "italic":
-          formattedText = `_${selectedText}_`;
-          break;
-        case "underline":
-          formattedText = `~~${selectedText}~~`;
-          break;
-        case "h1":
-          formattedText = `# ${selectedText}`;
-          break;
-        case "h2":
-          formattedText = `## ${selectedText}`;
-          break;
-        case "h3":
-          formattedText = `### ${selectedText}`;
-          break;
-        case "list":
-          formattedText = `\n- ${selectedText}`;
-          break;
-        case "ordered-list":
-          formattedText = `\n1. ${selectedText}`;
-          break;
-        case "quote":
-          formattedText = `> ${selectedText}`;
-          break;
-        case "link":
-          const url = prompt("Enter the URL:");
-          formattedText = `[[${url}|${selectedText}]]`;
-          break;
-        default:
-          formattedText = selectedText;
-      }
+          switch (format) {
+            case 'bold':
+              formattedText = `**${selectedText}**`
+              break
+            case 'italic':
+              formattedText = `_${selectedText}_`
+              break
+            case 'underline':
+              formattedText = `~~${selectedText}~~`
+              break
+            case 'h1':
+              formattedText = `# ${selectedText}`
+              break
+            case 'h2':
+              formattedText = `## ${selectedText}`
+              break
+            case 'h3':
+              formattedText = `### ${selectedText}`
+              break
+            case 'list':
+              formattedText = `\n- ${selectedText}`
+              break
+            case 'ordered-list':
+              formattedText = `\n1. ${selectedText}`
+              break
+            case 'quote':
+              formattedText = `> ${selectedText}`
+              break
+            case 'link':
+              const url = prompt('Enter the URL:')
+              formattedText = `[${selectedText}](${url})`
+              break
+            default:
+              formattedText = selectedText
+          }
 
-      const newContent =
-        textarea.value.substring(0, start) +
-        formattedText +
-        textarea.value.substring(end);
-
-      setCurrentNote({ ...currentNote, content: newContent });
-      if (isPreview) {
-        renderContent(newContent, true);
+          range.deleteContents()
+          range.insertNode(document.createTextNode(formattedText))
+          handleContentChange(editor.innerHTML)
+        }
       }
     } else {
-      document.execCommand(format);
+      document.execCommand(format)
     }
-  };
+  }
 
   const createNewWorkspace = (name: string) => {
     const newWorkspace: Workspace = {
       id: Date.now().toString(),
+      title: name,
       createdAt: new Date().toISOString(),
-    };
-    setWorkspaces([...workspaces, newWorkspace]);
-    setCurrentWorkspace(newWorkspace);
-  };
+    }
+    setWorkspaces([...workspaces, newWorkspace])
+    setCurrentWorkspace(newWorkspace)
+  }
 
   const switchWorkspace = (workspace: Workspace) => {
-    setCurrentWorkspace(workspace);
-    // Here you would typically load the notes and folders for the selected workspace
-    // For this example, we'll just clear the current note
-    setCurrentNote(null);
-  };
-
-  const handleEditorChange = (value: string | undefined) => {
-    if (value !== undefined && currentNote) {
-      setCurrentNote({ ...currentNote, content: value });
-    }
-  };
+    setCurrentWorkspace(workspace)
+    // Fetch notes and folders for the selected workspace
+    fetchNotesAndFolders(workspaceId)
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -579,7 +389,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                 {notes
                   .filter((note) => note.folderId === null)
                   .filter((note) =>
-                    note.title.toLowerCase().includes(searchTerm.toLowerCase()),
+                    note.title.toLowerCase().includes(searchTerm.toLowerCase())
                   )
                   .map((note) => (
                     <NoteItem
@@ -627,11 +437,11 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                     <Button
                       onClick={() => {
                         const input = document.getElementById(
-                          "new-workspace-name",
-                        ) as HTMLInputElement;
+                          "new-workspace-name"
+                        ) as HTMLInputElement
                         if (input.value) {
-                          createNewWorkspace(input.value);
-                          input.value = "";
+                          createNewWorkspace(input.value)
+                          input.value = ""
                         }
                       }}
                     >
@@ -755,19 +565,13 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onSelect={() => applyFormatting("h1")}
-                        >
+                        <DropdownMenuItem onSelect={() => applyFormatting("h1")}>
                           Heading 1
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => applyFormatting("h2")}
-                        >
+                        <DropdownMenuItem onSelect={() => applyFormatting("h2")}>
                           Heading 2
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => applyFormatting("h3")}
-                        >
+                        <DropdownMenuItem onSelect={() => applyFormatting("h3")}>
                           Heading 3
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -802,7 +606,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => applyFormatting("insertUnorderedList")}
+                      onClick={() => applyFormatting("list")}
                     >
                       <List className="h-4 w-4" />
                     </Button>
@@ -810,7 +614,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => applyFormatting("insertOrderedList")}
+                      onClick={() => applyFormatting("ordered-list")}
                     >
                       <ListOrdered className="h-4 w-4" />
                     </Button>
@@ -819,7 +623,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => applyFormatting("formatBlock")}
+                      onClick={() => applyFormatting("quote")}
                     >
                       <Quote className="h-4 w-4" />
                     </Button>
@@ -827,7 +631,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => applyFormatting("createLink")}
+                      onClick={() => applyFormatting("link")}
                     >
                       <Link className="h-4 w-4" />
                     </Button>
@@ -851,8 +655,8 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                           height="100%"
                           defaultLanguage="markdown"
                           value={currentNote.content}
-                          onChange={handleEditorChange}
-                          theme={theme === "dark" ? "myCustomTheme" : "light"}
+                          onChange={handleContentChange}
+                          theme={theme === "dark" ? "vs-dark" : "light"}
                           options={{
                             minimap: { enabled: false },
                             wordWrap: "on",
@@ -873,16 +677,10 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                     ) : (
                       <div
                         ref={editorRef}
-                        id="note-content"
                         contentEditable
                         suppressContentEditableWarning={true}
-                        onInput={(e) => {
-                          const target = e.target as HTMLDivElement;
-                          const currentContent = target.innerHTML;
-                          if (currentContent !== currentNote.content) {
-                            handleContentChange(currentContent);
-                          }
-                        }}
+                        onInput={(e) => handleContentChange((e.target as HTMLDivElement).innerHTML)}
+                        dangerouslySetInnerHTML={{ __html: currentNote.content }}
                         className="min-h-full w-full resize-none overflow-auto p-4 focus:outline-none"
                       />
                     )}
@@ -894,7 +692,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         ) : (
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+              <FileText className="mx-auto h-12 w-4 text-muted-foreground" />
               <h2 className="mt-2 text-xl font-semibold">No Note Selected</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Select a note or create a new one to get started
@@ -907,5 +705,5 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         )}
       </main>
     </div>
-  );
+  )
 }

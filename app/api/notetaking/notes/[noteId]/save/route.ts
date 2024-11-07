@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: { params: { noteId: stri
     const { title, content, folderId } = await req.json(); // Make sure these fields are being sent correctly
 
     // Add validation to ensure required fields are present
-    if (!title || !content || !noteId) {
+    if (!title || !content || !noteId || !folderId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
