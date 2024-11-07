@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
   try {
     const requestBody = await parseRequestBody(req);
     const response = await axios.post(
-      `${process.env.SERVER_URL}/pomodoro/settings/activeTemplate`,
+      `${process.env.SERVER_URL}/pomodoro/settings/activeTheme`,
       {
-        template_id: requestBody.template_id,
+        theme: requestBody.theme,
       },
       {
         headers: {

@@ -142,8 +142,6 @@ export const PomodoroTimer = () => {
     },
   ];
 
-  console.log("Pomodoro Themes", pomodoroTheme);
-
   return (
     <div
       className={`flex flex-col items-center justify-center gap-10 overflow-hidden bg-blend-overlay ${

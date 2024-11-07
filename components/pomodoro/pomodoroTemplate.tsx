@@ -20,10 +20,9 @@ import { usePomodoroTimer } from "@/store/pomodoro/pomodoroTimer";
 const PomodoroTemplates = () => {
   const [
     templates,
-    activeTemplateId,
+
     editingIndex,
     editFormData,
-    setActiveTemplateId,
     addTemplate,
     editTemplate,
     updateTemplate,
@@ -33,10 +32,9 @@ const PomodoroTemplates = () => {
     deleteTemplate,
   ] = usePomodoroTemplate((state: PomodoroTemplateStore) => [
     state.templates,
-    state.activeTemplateId,
     state.editingIndex,
     state.editFormData,
-    state.setActiveTemplateId,
+
     state.addTemplate,
     state.editTemplate,
     state.updateTemplate,
@@ -51,11 +49,15 @@ const PomodoroTemplates = () => {
     setShortBreakDuration,
     setLongBreakDuration,
     setSessionsBeforeLongBreak,
+    activeTemplateId,
+    setActiveTemplateId,
   ] = usePomodoroTimer((state) => [
     state.setPomodoroDuration,
     state.setShortBreakDuration,
     state.setLongBreakDuration,
     state.setSessionsBeforeLongBreak,
+    state.activeTemplateId,
+    state.setActiveTemplateId,
   ]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {

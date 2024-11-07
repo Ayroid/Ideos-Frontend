@@ -3,13 +3,11 @@ import { create } from "zustand";
 
 type State = {
   templates: PomodoroTemplate[];
-  activeTemplateId: string | null;
   editingIndex: number | null;
   editFormData: PomodoroTemplate;
 };
 
 type Actions = {
-  setActiveTemplateId: (templateId: string) => void;
   addTemplate: (template: PomodoroTemplate) => void;
   addAllTemplates: (templates: PomodoroTemplate[]) => void;
   editTemplate: (index: number) => void;
@@ -24,7 +22,6 @@ type PomodoroTemplateStore = State & Actions;
 
 const usePomodoroTemplateStore = create<PomodoroTemplateStore>((set) => ({
   templates: [] as PomodoroTemplate[],
-  activeTemplateId: null,
   editingIndex: null,
   editFormData: {
     _id: "",
@@ -34,11 +31,6 @@ const usePomodoroTemplateStore = create<PomodoroTemplateStore>((set) => ({
     longBreakDuration: 15,
     sessionsBeforeLongBreak: 4,
   },
-
-  setActiveTemplateId: (templateId: string) =>
-    set((state: PomodoroTemplateStore) => ({
-      activeTemplateId: templateId,
-    })),
 
   addTemplate: (template: PomodoroTemplate) =>
     set((state: PomodoroTemplateStore) => ({
