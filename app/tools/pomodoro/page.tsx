@@ -1,4 +1,5 @@
 "use client";
+import Loading from "@/components/Loading";
 import { PomodoroTimer } from "@/components/pomodoro/pomodoroTimer";
 import {
   PomodoroTemplateStore,
@@ -10,24 +11,28 @@ import React, { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 
 const PomodoroPage = () => {
-  const [templates, activeTemplateId, setActiveTemplateId, addAllTemplates] =
-    usePomodoroTemplate((state: PomodoroTemplateStore) => [
-      state.templates,
-      state.activeTemplateId,
-      state.setActiveTemplateId,
-      state.addAllTemplates,
-    ]);
+  const [templates, addAllTemplates] = usePomodoroTemplate(
+    (state: PomodoroTemplateStore) => [state.templates, state.addAllTemplates],
+  );
 
   const [
     setPomodoroDuration,
     setShortBreakDuration,
     setLongBreakDuration,
     setSessionsBeforeLongBreak,
+    activeTemplateId,
+    setActiveTemplateId,
+    pomodoroTheme,
+    setPomodoroTheme,
   ] = usePomodoroTimer((state) => [
     state.setPomodoroDuration,
     state.setShortBreakDuration,
     state.setLongBreakDuration,
     state.setSessionsBeforeLongBreak,
+    state.activeTemplateId,
+    state.setActiveTemplateId,
+    state.pomodoroTheme,
+    state.setPomodoroTheme,
   ]);
 
   const [pomodoroSetupReady, setPomodoroSetupReady] = useState(false);
@@ -40,14 +45,12 @@ const PomodoroPage = () => {
       try {
         isSetupCalled.current = true;
         const response = await axios.post("/api/pomodoro/settings");
-        if (response.status === 201) {
+        if (response.status === 201 || response.status === 200) {
           setPomodoroSetupReady(true);
           addAllTemplates(response.data.userPomodoroTemplateIds);
           setActiveTemplateId(response.data.activePomodoroTemplateId);
+          setPomodoroTheme(response.data.activePomodoroTheme);
           toast.success("Pomodoro Ready!");
-        } else if (response.status === 200) {
-          setPomodoroSetupReady(true);
-          fetchTemplates();
         }
       } catch (error) {
         console.error("Failed to setup pomodoro:", error);
@@ -58,6 +61,7 @@ const PomodoroPage = () => {
       const response = await axios.get("/api/pomodoro/settings");
       addAllTemplates(response.data.userPomodoroTemplateIds);
       setActiveTemplateId(response.data.activePomodoroTemplateId);
+      setPomodoroTheme(response.data.activePomodoroTheme);
       toast.success("Pomodoro Ready!");
     }
 
@@ -80,7 +84,7 @@ const PomodoroPage = () => {
   }, [activeTemplateId]);
 
   if (!pomodoroSetupReady) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   return <PomodoroTimer />;
