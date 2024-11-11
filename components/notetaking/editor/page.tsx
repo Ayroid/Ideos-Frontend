@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Editor } from "novel";
 import type { Editor as TipTapEditor } from "@tiptap/core";
 import { Button } from "@/components/ui/button";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +16,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Save, Loader2, Download, Network } from "lucide-react";
-
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import axios from "axios";
@@ -33,7 +31,7 @@ import Breadcrumb from "./components/BreadCrumb";
 import CommandMenu from "./components/CommandMenu";
 import GraphView from "./components/GraphView";
 import { toast } from "sonner";
-import _ from 'lodash';
+import _ from "lodash";
 
 interface NoteTakingAppProps {
   workspaceId: string;
@@ -59,36 +57,31 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     null,
   );
   const [showGraphView, setShowGraphView] = useState(false);
-  const [expandedFolders, setExpandedFolders] = useState<{
-    [key: string]: boolean;
-  }>({
-    uncategorized: true, // Start with uncategorized expanded by default
-  });
 
-  // Fetch data
+  const debouncedSaveTitle = useRef(
+    _.debounce(async (note: Note) => {
+      try {
+        const response = await axios.put(`/api/notetaking/notes/${note._id}`, {
+          title: note.title,
+        });
 
-  const debouncedSaveTitle = useRef(_.debounce(async (note: Note) => {
-    try {
-      const response = await axios.put(`/api/notetaking/notes/${note._id}`, {
-        title: note.title,
-      });
-      
-      const updatedNote = {
-        ...response.data,
-        content: typeof response.data.content === 'string' 
-          ? JSON.parse(response.data.content)
-          : response.data.content
-      };
+        const updatedNote = {
+          ...response.data,
+          content:
+            typeof response.data.content === "string"
+              ? JSON.parse(response.data.content)
+              : response.data.content,
+        };
 
-      setNotes(prevNotes => 
-        prevNotes.map(n => n._id === note._id ? updatedNote : n)
-      );
-    } catch (error) {
-      console.error('Failed to update note title:', error);
-      toast.error('Failed to update note title');
-    }
-  }, 1000)).current;
-
+        setNotes((prevNotes) =>
+          prevNotes.map((n) => (n._id === note._id ? updatedNote : n)),
+        );
+      } catch (error) {
+        console.error("Failed to update note title:", error);
+        toast.error("Failed to update note title");
+      }
+    }, 1000),
+  ).current;
   // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
@@ -111,12 +104,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
             setCurrentNote(notesData[0]);
             // If the note is in a folder, expand that folder
             const firstNote = notesData[0];
-            if (firstNote.folderId) {
-              setExpandedFolders((prev) => ({
-                ...prev,
-                [firstNote.folderId]: true,
-              }));
-            }
           }
         }
 
@@ -124,15 +111,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
           const foldersData = foldersResponse.data || [];
           setFolders(foldersData);
           // Initialize expanded state for new folders
-          setExpandedFolders((prev) => {
-            const newExpandedState = { ...prev };
-            foldersData.forEach((folder: FolderType) => {
-              if (!(folder._id in newExpandedState)) {
-                newExpandedState[folder._id] = false;
-              }
-            });
-            return newExpandedState;
-          });
         }
       } catch (error) {
         console.error("Failed to fetch notes and folders:", error);
@@ -245,33 +223,21 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         };
 
         setSearchTerm(""); // Reset search term when creating a new note
-        
+
         const response = await axios.post("/api/notetaking/notes", newNoteData);
-        
-        const parsedContent = typeof response.data.content === "string"
-          ? JSON.parse(response.data.content)
-          : response.data.content;
+
+        const parsedContent =
+          typeof response.data.content === "string"
+            ? JSON.parse(response.data.content)
+            : response.data.content;
 
         const createdNote = {
           ...response.data,
           content: parsedContent,
         };
 
-        setNotes(prevNotes => [...prevNotes, createdNote]);
+        setNotes((prevNotes) => [...prevNotes, createdNote]);
         setCurrentNote(createdNote);
-
-        if (folderId) {
-          setExpandedFolders(prev => ({
-            ...prev,
-            [folderId]: true,
-          }));
-        } else {
-          // Ensure uncategorized section is expanded for new notes
-          setExpandedFolders(prev => ({
-            ...prev,
-            uncategorized: true,
-          }));
-        }
 
         toast.success("New note created");
       } catch (error) {
@@ -391,10 +357,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       setFolders((prevFolders) => [...prevFolders, createdFolder]);
 
       // Expand the newly created folder
-      setExpandedFolders((prev) => ({
-        ...prev,
-        [createdFolder._id]: true,
-      }));
 
       toast.success("New folder created");
     } catch (error) {
@@ -403,66 +365,67 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     }
   };
 
-  const deleteNote = useCallback(async (noteId: string) => {
-    try {
-      const noteToDelete = notes.find((note) => note._id === noteId);
-      if (!noteToDelete) return;
+  const deleteNote = useCallback(
+    async (noteId: string) => {
+      try {
+        const noteToDelete = notes.find((note) => note._id === noteId);
+        if (!noteToDelete) return;
 
-      // Optimistically update UI
-      setNotes(prevNotes => prevNotes.filter(note => note._id !== noteId));
-      
-      if (currentNote && currentNote._id === noteId) {
-        const remainingNotes = notes.filter(note => note._id !== noteId);
-        setCurrentNote(remainingNotes.length > 0 ? remainingNotes[0] : null);
+        // Optimistically update UI
+        setNotes((prevNotes) =>
+          prevNotes.filter((note) => note._id !== noteId),
+        );
+
+        if (currentNote && currentNote._id === noteId) {
+          const remainingNotes = notes.filter((note) => note._id !== noteId);
+          setCurrentNote(remainingNotes.length > 0 ? remainingNotes[0] : null);
+        }
+
+        // Make API call
+        await axios.delete(`/api/notetaking/notes/${noteId}`);
+        toast.success("Note deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete note:", error);
+        // Revert on error
+        fetchNotesAndFolders(workspaceId);
+        toast.error("Failed to delete note");
       }
+    },
+    [notes, currentNote, workspaceId, fetchNotesAndFolders],
+  );
 
-      // Make API call
-      await axios.delete(`/api/notetaking/notes/${noteId}`);
-      toast.success("Note deleted successfully");
-    } catch (error) {
-      console.error("Failed to delete note:", error);
-      // Revert on error
-      fetchNotesAndFolders(workspaceId);
-      toast.error("Failed to delete note");
-    }
-  }, [notes, currentNote, workspaceId, fetchNotesAndFolders]);
+  const deleteFolder = useCallback(
+    async (folderId: string) => {
+      try {
+        // Optimistically update UI
+        const updatedFolders = folders.filter(
+          (folder) => folder._id !== folderId,
+        );
+        setFolders(updatedFolders);
 
-  const deleteFolder = useCallback(async (folderId: string) => {
-    try {
-      // Optimistically update UI
-      const updatedFolders = folders.filter(folder => folder._id !== folderId);
-      setFolders(updatedFolders);
+        // Update notes to uncategorized
+        setNotes((prevNotes) =>
+          prevNotes.map((note) =>
+            note.folderId === folderId ? { ...note, folderId: null } : note,
+          ),
+        );
 
-      // Update notes to uncategorized
-      setNotes(prevNotes => prevNotes.map(note => 
-        note.folderId === folderId ? { ...note, folderId: null } : note
-      ));
+        await axios.delete(
+          `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
+        );
 
-      // Remove from expanded folders state
-      setExpandedFolders(prev => {
-        const newState = { ...prev };
-        delete newState[folderId];
-        return newState;
-      });
+        // Expand uncategorized if notes were moved there
 
-      await axios.delete(`/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`);
-      
-      // Expand uncategorized if notes were moved there
-      if (notes.some(note => note.folderId === folderId)) {
-        setExpandedFolders(prev => ({
-          ...prev,
-          uncategorized: true,
-        }));
+        toast.success("Folder deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete folder:", error);
+        // Revert on error
+        fetchNotesAndFolders(workspaceId);
+        toast.error("Failed to delete folder");
       }
-
-      toast.success("Folder deleted successfully");
-    } catch (error) {
-      console.error("Failed to delete folder:", error);
-      // Revert on error
-      fetchNotesAndFolders(workspaceId);
-      toast.error("Failed to delete folder");
-    }
-  }, [folders, notes, workspaceId, fetchNotesAndFolders]);
+    },
+    [folders, notes, workspaceId, fetchNotesAndFolders],
+  );
 
   const renameNote = async (noteId: string, newTitle: string) => {
     try {
@@ -538,17 +501,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       }
 
       // Expand the target folder or uncategorized section
-      if (targetFolderId) {
-        setExpandedFolders((prev) => ({
-          ...prev,
-          [targetFolderId]: true,
-        }));
-      } else {
-        setExpandedFolders((prev) => ({
-          ...prev,
-          uncategorized: true,
-        }));
-      }
 
       toast.success(
         targetFolderId ? "Note moved to folder" : "Note moved to uncategorized",
@@ -561,16 +513,18 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!currentNote) return;
-    
+
     const newTitle = e.target.value;
     const updatedNote = { ...currentNote, title: newTitle };
-    
+
     // Update local state immediately
     setCurrentNote(updatedNote);
-    setNotes(prevNotes => 
-      prevNotes.map(note => note._id === currentNote._id ? updatedNote : note)
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note._id === currentNote._id ? updatedNote : note,
+      ),
     );
-    
+
     // Debounced API call
     debouncedSaveTitle(updatedNote);
   };
@@ -583,7 +537,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         currentNote={currentNote}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onCreateNote={createNewNote} // This now accepts a folderId parameter
+        onCreateNote={createNewNote}
         onCreateFolder={createNewFolder}
         onSelectNote={selectNote}
         onRenameNote={renameNote}
@@ -594,10 +548,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         onOpenCommandMenu={() => setIsCommandMenuOpen(true)}
-        expandedFolders={expandedFolders}
-        setExpandedFolders={setExpandedFolders}
       />
-
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[#2e2e2e] bg-[#1e1e1e] px-4">
           <div className="flex items-center space-x-4">
@@ -660,7 +611,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
               <div className="px-4 py-6">
                 <Input
                   value={currentNote.title}
-                  onChange={handleTitleChange}  // Use the new handler
+                  onChange={handleTitleChange}
                   className="mb-6 border-none bg-transparent px-0 text-2xl font-bold text-white focus-visible:ring-0"
                   placeholder="Untitled Note"
                 />
