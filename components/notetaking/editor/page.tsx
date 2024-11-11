@@ -16,12 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Save,
-  Loader2,
-  Download,
-  Network,
-} from "lucide-react";
+import { Save, Loader2, Download, Network } from "lucide-react";
 
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -94,7 +89,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   useEffect(() => {
     fetchNotesAndFolders(workspaceId);
   }, [fetchNotesAndFolders, workspaceId]);
-
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -182,7 +176,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
 
   const createNewNote = useCallback(async (folderId: string | null = null) => {
     try {
-      // Create a clean initial content structure
       const initialContent = {
         type: "doc",
         content: [
@@ -193,12 +186,10 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         ],
       };
 
-      // Create a clean new note object with only the necessary data
       const newNoteData = {
-        title: "Untitled Note",
-        content: sanitizeContent(initialContent),
+        title: "Mera Note",
+        content: JSON.stringify(initialContent),
         folderId: folderId,
-        workspaceId: workspaceId,
       };
 
       // Make the API call with clean data
@@ -207,9 +198,10 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       // Process the response
       let parsedContent;
       try {
-        parsedContent = typeof response.data.content === "string" 
-          ? JSON.parse(response.data.content)
-          : response.data.content;
+        parsedContent =
+          typeof response.data.content === "string"
+            ? JSON.parse(response.data.content)
+            : response.data.content;
       } catch (e) {
         console.error("Failed to parse content from response:", e);
         parsedContent = initialContent;
@@ -228,7 +220,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       console.error("Failed to create a new note:", error);
       toast.error("Failed to create new note");
     }
-  }, [workspaceId]);
+  }, []);
 
   const selectNote = (note: Note) => {
     if (currentNote && currentNote._id !== note._id) {
@@ -237,18 +229,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     } else {
       setCurrentNote(note);
     }
-  };
-
-  // Handler functions
-  const handleImageUpload = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        resolve(reader.result as string);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   };
 
   const handleContentChange = useCallback(
@@ -295,20 +275,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       }
     },
     [currentNote, lastSavedContent, autoSaveTimer],
-  );  
-
-  const sanitizeContent = (content: any) => {
-    // If content is already a string, return it
-    if (typeof content === "string") return content;
-  
-    // Create a clean version of the content without circular references
-    const cleanContent = {
-      type: "doc",
-      content: content?.content || [{ type: "paragraph", content: [] }]
-    };
-  
-    return JSON.stringify(cleanContent);
-  };
+  );
 
   useEffect(() => {
     return () => {
@@ -318,37 +285,14 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     };
   }, [autoSaveTimer]);
 
-  // Novel editor configuration
-  // In your NoteTakingApp component
   const editorProps = {
-    defaultValue: (() => {
-      try {
-        if (!currentNote?.content) {
-          return {
-            type: "doc",
-            content: [{ type: "paragraph", content: [] }],
-          };
-        }
-        return parseContent(currentNote.content);
-      } catch (e) {
-        console.error("Error setting editor default value:", e);
-        return {
-          type: "doc",
-          content: [{ type: "paragraph", content: [] }],
-        };
-      }
-    })(),
+    defaultValue: currentNote?.content
+      ? parseContent(currentNote.content)
+      : { type: "doc", content: [{ type: "paragraph", content: [] }] },
     onDebouncedUpdate: handleContentChange,
-    className:
-      "min-h-[calc(100vh-12rem)] prose prose-sm dark:prose-invert editor-content",
-    editorProps: {
-      attributes: {
-        class:
-          "prose prose-sm dark:prose-invert max-w-full focus:outline-none px-0 py-4",
-      },
-    },
     disableLocalStorage: true,
     immediatelyRender: false,
+    className: "min-h-[calc(100vh-12rem)] prose prose-sm dark:prose-invert",
   };
 
   const downloadAsPDF = async () => {
@@ -630,7 +574,10 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                   placeholder="Untitled Note"
                 />
                 <div className="editor-content bg-[#1e1e1e]">
-                <Editor key={`editor-${currentNote?._id || "empty"}`} {...editorProps} />
+                  <Editor
+                    key={`editor-${currentNote?._id || "empty"}`}
+                    {...editorProps}
+                  />
                 </div>
               </div>
             </div>

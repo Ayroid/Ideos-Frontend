@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     const requestBody = await req.json(); 
+    console.log ("Request body:", requestBody);
     const response = await axios.post(
       `${process.env.SERVER_URL}/note`, 
       requestBody,
