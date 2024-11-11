@@ -17,10 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import {
-  ImageIcon,
   Save,
   Loader2,
-  MoreVertical,
   Download,
   Network,
 } from "lucide-react";
@@ -38,7 +36,6 @@ import {
 import Sidebar from "./components/Sidebar";
 import Breadcrumb from "./components/BreadCrumb";
 import CommandMenu from "./components/CommandMenu";
-import { JSONContent } from "@tiptap/react";
 import GraphView from "./components/GraphView";
 import { toast } from "sonner";
 
@@ -53,8 +50,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [isEditorReady, setIsEditorReady] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
     null,
   );
@@ -100,22 +95,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     fetchNotesAndFolders(workspaceId);
   }, [fetchNotesAndFolders, workspaceId]);
 
-  useEffect(() => {
-    setIsEditorReady(true);
-    return () => {
-      setIsEditorReady(false);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (currentNote) {
-      setContent(
-        typeof currentNote.content === "string"
-          ? currentNote.content
-          : JSON.stringify(currentNote.content),
-      );
-    }
-  }, [currentNote]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -370,14 +349,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     },
     disableLocalStorage: true,
     immediatelyRender: false,
-  };
-
-  const renderEditor = () => {
-    if (!isEditorReady) return null;
-
-    return (
-      <Editor key={`editor-${currentNote?._id || "empty"}`} {...editorProps} />
-    );
   };
 
   const downloadAsPDF = async () => {
@@ -659,7 +630,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                   placeholder="Untitled Note"
                 />
                 <div className="editor-content bg-[#1e1e1e]">
-                  {renderEditor()}
+                <Editor key={`editor-${currentNote?._id || "empty"}`} {...editorProps} />
                 </div>
               </div>
             </div>
