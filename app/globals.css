@@ -108,22 +108,25 @@
   animation: spinFaster 0.5s linear infinite;
 }
 
-.markdown-editor .monaco-editor {
-  padding-top: 16px;
-  padding-bottom: 16px;
-}
 
-.markdown-editor .monaco-editor {
-  padding-top: 16px;
-  padding-bottom: 16px;
-}
 
-.markdown-editor .monaco-editor,
-.markdown-editor .monaco-editor .margin,
-.markdown-editor .monaco-editor .monaco-editor-background {
-  background-color: transparent !important;
-}
-
-.markdown-editor .monaco-editor .view-overlays .current-line {
+/* .markdown-editor .monaco-editor .view-overlays .current-line {
   border: none !important;
+} */
+
+
+.graph-node {
+  transition: r 0.2s ease-in-out;
 }
+
+.graph-link {
+  transition: stroke-width 0.2s ease-in-out;
+}
+
+.graph-tooltip {
+  transition: opacity 0.2s ease-in-out;
+}
+
+
+
+

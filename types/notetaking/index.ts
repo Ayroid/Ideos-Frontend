@@ -1,5 +1,6 @@
 import { Socket, Server as NetServer } from 'net';
 import { NextApiResponse } from 'next';
+import { JSONContent } from "@tiptap/react";
 import { z } from 'zod';
 
 // Define schemas for the forms used in your project
@@ -49,9 +50,10 @@ export type WorkspaceStoreState = {
 export interface Note {
   _id: string
   title: string
-  content: string
+  content: string | JSONContent
   folderId: string | null
-  isMarkup: boolean
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Folder {

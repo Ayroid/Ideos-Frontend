@@ -1,558 +1,622 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Toggle } from "@/components/ui/toggle"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Folder, FileText, FolderPlus, Save, ImageIcon, Code, Eye, Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Heading3, Quote, Search, Loader2, ChevronDown, MoreVertical, Layout } from 'lucide-react'
-import { NoteItem } from './NoteItem'
-import { FolderItem } from './FolderItem'
-import { convertHtmlToMarkup, convertMarkupToHtml } from "@/utils/conversions"
-import axios from 'axios'
-import { Note, Folder as FolderType, Workspace } from "@/types/notetaking/index"
-import Editor from '@monaco-editor/react'
-import { useTheme } from 'next-themes'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import React, { useState, useEffect, useCallback } from "react";
+import { Editor } from "novel";
+import type { Editor as TipTapEditor } from "@tiptap/core";
+import { Button } from "@/components/ui/button";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import {
+  ImageIcon,
+  Save,
+  Loader2,
+  MoreVertical,
+  Download,
+  Network,
+} from "lucide-react";
+
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import axios from "axios";
+import {
+  Note,
+  Folder as FolderType,
+  Workspace,
+} from "@/types/notetaking/index";
+
+// Import custom components
+import Sidebar from "./components/Sidebar";
+import Breadcrumb from "./components/BreadCrumb";
+import CommandMenu from "./components/CommandMenu";
+import { JSONContent } from "@tiptap/react";
+import GraphView from "./components/GraphView";
+import { toast } from "sonner";
 
 interface NoteTakingAppProps {
-  workspaceId: string
+  workspaceId: string;
 }
 
 export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
-  const [notes, setNotes] = useState<Note[]>([])
-  const [folders, setFolders] = useState<FolderType[]>([])
-  const [currentNote, setCurrentNote] = useState<Note | null>(null)
-  const [isPreview, setIsPreview] = useState(false)
-  const [renderedContent, setRenderedContent] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
-  const editorRef = useRef<HTMLDivElement>(null)
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null)
-  const { theme } = useTheme()
-  const [showSaveWarning, setShowSaveWarning] = useState(false)
-  const [pendingNoteChange, setPendingNoteChange] = useState<Note | null>(null)
+  // States
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [folders, setFolders] = useState<FolderType[]>([]);
+  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [isEditorReady, setIsEditorReady] = useState(false);
+  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
+    null,
+  );
+  const [content, setContent] = useState<string>();
+  const [showSaveWarning, setShowSaveWarning] = useState(false);
+  const [pendingNoteChange, setPendingNoteChange] = useState<Note | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
+  const [lastSavedContent, setLastSavedContent] = useState<string>("");
+  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(
+    null,
+  );
+  const [showGraphView, setShowGraphView] = useState(false);
 
-  const fetchNotesAndFolders = useCallback(async (workspaceId: string) => {
-    try {
-      const [notesResponse, foldersResponse] = await Promise.all([
-        axios.get(`/api/notetaking/workspaces/${workspaceId}/notes`),
-        axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`)
-      ])
+  // Fetch data
+  const fetchNotesAndFolders = useCallback(
+    async (workspaceId: string) => {
+      try {
+        const [notesResponse, foldersResponse] = await Promise.all([
+          axios.get(`/api/notetaking/workspaces/${workspaceId}/notes`),
+          axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`),
+        ]);
 
-      if (notesResponse.status === 200) {
-        const notesData = notesResponse.data || []
-        setNotes(notesData)
-        if (notesData.length > 0) {
-          setCurrentNote(notesData[0])
-        } else {
-          setCurrentNote(null)
+        if (notesResponse.status === 200) {
+          const notesData = notesResponse.data || [];
+          setNotes(notesData);
+          if (notesData.length > 0 && !currentNote) {
+            setCurrentNote(notesData[0]);
+          }
         }
-      } else {
-        console.error("Failed to fetch notes:", notesResponse.status)
-        setNotes([])
-        setCurrentNote(null)
-      }
 
-      if (foldersResponse.status === 200) {
-        setFolders(foldersResponse.data || [])
-      } else {
-        console.error("Failed to fetch folders:", foldersResponse.status)
-        setFolders([])
+        if (foldersResponse.status === 200) {
+          setFolders(foldersResponse.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notes and folders:", error);
       }
-    } catch (error) {
-      console.error("Failed to fetch notes and folders:", error)
-      setNotes([])
-      setFolders([])
-      setCurrentNote(null)
-    }
-  }, [])
+    },
+    [currentNote],
+  );
 
   useEffect(() => {
-    fetchNotesAndFolders(workspaceId)
-  }, [fetchNotesAndFolders, workspaceId])
+    fetchNotesAndFolders(workspaceId);
+  }, [fetchNotesAndFolders, workspaceId]);
+
+  useEffect(() => {
+    setIsEditorReady(true);
+    return () => {
+      setIsEditorReady(false);
+    };
+  }, []);
 
   useEffect(() => {
     if (currentNote) {
-      if (isPreview) {
-        renderContent(currentNote.content, currentNote.isMarkup)
-      } else {
-        setRenderedContent(currentNote.content)
+      setContent(
+        typeof currentNote.content === "string"
+          ? currentNote.content
+          : JSON.stringify(currentNote.content),
+      );
+    }
+  }, [currentNote]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsCommandMenuOpen(true);
       }
-    }
-  }, [currentNote, isPreview])
+      if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        saveNote();
+      }
+    };
 
-  const renderContent = useCallback((content: string, isMarkup: boolean) => {
-    if (isMarkup) {
-      setRenderedContent(convertMarkupToHtml(content))
-    } else {
-      setRenderedContent(content)
-    }
-  }, [])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
+  // Note operations
   const saveNote = async () => {
     if (currentNote && !isSaving) {
       try {
-        setIsSaving(true)
-        const response = await axios.put(`/api/notetaking/notes/${currentNote._id}/save`, currentNote)
-        const updatedNotes = notes.map(note => note._id === currentNote._id ? { ...currentNote, ...response.data } : note)
-        setNotes(updatedNotes)
-        if (currentNote._id === response.data._id) {
-          setCurrentNote(response.data)
-        }
-        setTimeout(() => setIsSaving(false), 1000)
-      } catch (error) {
-        console.error("Failed to save the note:", error)
-        setIsSaving(false)
-      }
-    }
-  }
+        setIsSaving(true);
+        const response = await axios.put(
+          `/api/notetaking/notes/${currentNote._id}/save`,
+          {
+            ...currentNote,
+            content: JSON.stringify(currentNote.content), // Stringify the content
+          },
+        );
 
-  const createNewNote = useCallback(async () => {
-    try {
-      const newNote = {
-        title: "Untitled Note",
-        content: " ",
-        folderId: null,
-        isMarkup: false,
+        // Parse the content when receiving response
+        const updatedNotes = notes.map((note) =>
+          note._id === currentNote._id
+            ? {
+                ...currentNote,
+                ...response.data,
+                content: JSON.parse(response.data.content), // Parse the content
+              }
+            : note,
+        );
+
+        setNotes(updatedNotes);
+        if (currentNote._id === response.data._id) {
+          setCurrentNote({
+            ...response.data,
+            content: JSON.parse(response.data.content), // Parse the content
+          });
+        }
+
+        toast.success("Note saved successfully");
+        setTimeout(() => setIsSaving(false), 1000);
+      } catch (error) {
+        console.error("Failed to save the note:", error);
+        toast.error("Failed to save the note");
+        setIsSaving(false);
       }
-      const response = await axios.post("/api/notetaking/notes", newNote)
-      const createdNote = response.data
-      setNotes(prevNotes => [...prevNotes, createdNote])
-      setCurrentNote(createdNote)
-    } catch (error) {
-      console.error("Failed to create a new note:", error)
     }
-  }, [])
+  };
+
+  const parseContent = (content: any) => {
+    if (!content) {
+      return {
+        type: "doc",
+        content: [{ type: "paragraph", content: [] }],
+      };
+    }
+
+    if (typeof content === "string") {
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        console.error("Failed to parse content:", e);
+        return {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: content }] },
+          ],
+        };
+      }
+    }
+
+    return content;
+  };
+
+  const createNewNote = useCallback(async (folderId: string | null = null) => {
+    try {
+      // Create a clean initial content structure
+      const initialContent = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [],
+          },
+        ],
+      };
+
+      // Create a clean new note object with only the necessary data
+      const newNoteData = {
+        title: "Untitled Note",
+        content: sanitizeContent(initialContent),
+        folderId: folderId,
+        workspaceId: workspaceId,
+      };
+
+      // Make the API call with clean data
+      const response = await axios.post("/api/notetaking/notes", newNoteData);
+
+      // Process the response
+      let parsedContent;
+      try {
+        parsedContent = typeof response.data.content === "string" 
+          ? JSON.parse(response.data.content)
+          : response.data.content;
+      } catch (e) {
+        console.error("Failed to parse content from response:", e);
+        parsedContent = initialContent;
+      }
+
+      // Create the note object with clean data
+      const createdNote = {
+        ...response.data,
+        content: parsedContent,
+      };
+
+      setNotes((prevNotes) => [...prevNotes, createdNote]);
+      setCurrentNote(createdNote);
+      toast.success("New note created");
+    } catch (error) {
+      console.error("Failed to create a new note:", error);
+      toast.error("Failed to create new note");
+    }
+  }, [workspaceId]);
+
+  const selectNote = (note: Note) => {
+    if (currentNote && currentNote._id !== note._id) {
+      setShowSaveWarning(true);
+      setPendingNoteChange(note);
+    } else {
+      setCurrentNote(note);
+    }
+  };
+
+  // Handler functions
+  const handleImageUpload = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleContentChange = useCallback(
+    (editor?: TipTapEditor) => {
+      if (editor && currentNote) {
+        const jsonContent = editor.getJSON();
+        const htmlContent = editor.getHTML();
+
+        if (autoSaveTimer) {
+          clearTimeout(autoSaveTimer);
+        }
+
+        const timer = setTimeout(async () => {
+          if (htmlContent !== lastSavedContent) {
+            try {
+              const response = await axios.put(
+                `/api/notetaking/notes/${currentNote._id}/save`,
+                {
+                  ...currentNote,
+                  content: JSON.stringify(jsonContent),
+                },
+              );
+              setLastSavedContent(htmlContent);
+
+              // Update current note with parsed content
+              const parsedContent = parseContent(response.data.content);
+              setCurrentNote((prev) => ({
+                ...prev!,
+                ...response.data,
+                content: parsedContent,
+              }));
+            } catch (error) {
+              console.error("Failed to auto-save note:", error);
+            }
+          }
+        }, 30000);
+
+        setAutoSaveTimer(timer);
+        setContent(htmlContent);
+        setCurrentNote((prev) => ({
+          ...prev!,
+          content: jsonContent,
+        }));
+      }
+    },
+    [currentNote, lastSavedContent, autoSaveTimer],
+  );  
+
+  const sanitizeContent = (content: any) => {
+    // If content is already a string, return it
+    if (typeof content === "string") return content;
+  
+    // Create a clean version of the content without circular references
+    const cleanContent = {
+      type: "doc",
+      content: content?.content || [{ type: "paragraph", content: [] }]
+    };
+  
+    return JSON.stringify(cleanContent);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+      }
+    };
+  }, [autoSaveTimer]);
+
+  // Novel editor configuration
+  // In your NoteTakingApp component
+  const editorProps = {
+    defaultValue: (() => {
+      try {
+        if (!currentNote?.content) {
+          return {
+            type: "doc",
+            content: [{ type: "paragraph", content: [] }],
+          };
+        }
+        return parseContent(currentNote.content);
+      } catch (e) {
+        console.error("Error setting editor default value:", e);
+        return {
+          type: "doc",
+          content: [{ type: "paragraph", content: [] }],
+        };
+      }
+    })(),
+    onDebouncedUpdate: handleContentChange,
+    className:
+      "min-h-[calc(100vh-12rem)] prose prose-sm dark:prose-invert editor-content",
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm dark:prose-invert max-w-full focus:outline-none px-0 py-4",
+      },
+    },
+    disableLocalStorage: true,
+    immediatelyRender: false,
+  };
+
+  const renderEditor = () => {
+    if (!isEditorReady) return null;
+
+    return (
+      <Editor key={`editor-${currentNote?._id || "empty"}`} {...editorProps} />
+    );
+  };
+
+  const downloadAsPDF = async () => {
+    if (!currentNote) return;
+
+    const content = document.querySelector(".editor-content");
+    if (!content) return;
+
+    try {
+      const canvas = await html2canvas(content as HTMLElement);
+      const imgData = canvas.toDataURL("image/png");
+
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [canvas.width, canvas.height],
+      });
+
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save(`${currentNote.title || "Untitled"}.pdf`);
+    } catch (error) {
+      console.error("Failed to download PDF:", error);
+    }
+  };
 
   const createNewFolder = async () => {
     try {
       const newFolderData = {
         name: "New Folder",
         workspaceId: workspaceId,
-      }
-      const response = await axios.post("/api/notetaking/folders", newFolderData)
-      const createdFolder = response.data
-      setFolders(prevFolders => [...prevFolders, createdFolder])
+      };
+      const response = await axios.post(
+        "/api/notetaking/folders",
+        newFolderData,
+      );
+      const createdFolder = response.data;
+      setFolders((prevFolders) => [...prevFolders, createdFolder]);
+      toast.success("New folder created");
     } catch (error) {
-      console.error("Failed to create a new folder:", error)
+      console.error("Failed to create a new folder:", error);
+      toast.error("Failed to create new folder");
     }
-  }
-
-  const selectNote = (note: Note) => {
-    if (currentNote && currentNote._id !== note._id) {
-      setShowSaveWarning(true)
-      setPendingNoteChange(note)
-    } 
-    else {
-      setCurrentNote(note)
-      setIsPreview(false)
-    }
-  }
+  };
 
   const deleteNote = async (noteId: string) => {
     try {
-      await axios.delete(`/api/notetaking/notes/${noteId}`)
-      const updatedNotes = notes.filter(note => note._id !== noteId)
-      setNotes(updatedNotes)
+      // Immediately remove the note from UI
+      const noteToDelete = notes.find((note) => note._id === noteId);
+      if (!noteToDelete) return;
+
+      // If the note being deleted is currently selected, clear the editor
       if (currentNote && currentNote._id === noteId) {
-        setCurrentNote(updatedNotes[0] || null)
+        setCurrentNote(null);
+      }
+
+      // Update local state first
+      setNotes((prevNotes) => prevNotes.filter((note) => note._id !== noteId));
+
+      // Make the API call
+      const response = await axios.delete(`/api/notetaking/notes/${noteId}`);
+
+      if (response.status === 200) {
+        toast.success("Note deleted successfully");
+
+        // If the deleted note was the current note, select another note
+        if (currentNote && currentNote._id === noteId) {
+          const remainingNotes = notes.filter((note) => note._id !== noteId);
+          if (remainingNotes.length > 0) {
+            setCurrentNote(remainingNotes[0]);
+          }
+        }
       }
     } catch (error) {
-      console.error("Failed to delete the note:", error)
+      console.error("Failed to delete note:", error);
+      // Revert the state if the API call fails
+      toast.error("Failed to delete note");
+      // Reload notes to ensure consistent state
+      fetchNotesAndFolders(workspaceId);
     }
-  }
+  };
 
   const deleteFolder = async (folderId: string) => {
     try {
-      await axios.delete(`/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`)
-      const updatedFolders = folders.filter(folder => folder._id !== folderId)
-      setFolders(updatedFolders)
-      const updatedNotes = notes.map(note => note.folderId === folderId ? { ...note, folderId: null } : note)
-      setNotes(updatedNotes)
+      await axios.delete(
+        `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
+      );
+      const updatedFolders = folders.filter(
+        (folder) => folder._id !== folderId,
+      );
+      setFolders(updatedFolders);
+
+      // Update notes that were in this folder to be uncategorized
+      const updatedNotes = notes.map((note) =>
+        note.folderId === folderId ? { ...note, folderId: null } : note,
+      );
+      setNotes(updatedNotes);
+
+      // If current note was in the deleted folder, update its folderId
+      if (currentNote && currentNote.folderId === folderId) {
+        setCurrentNote({ ...currentNote, folderId: null });
+      }
+
+      toast.success("Folder deleted successfully");
     } catch (error) {
-      console.error("Failed to delete the folder:", error)
+      console.error("Failed to delete the folder:", error);
+      toast.error("Failed to delete folder");
     }
-  }
+  };
 
   const renameNote = async (noteId: string, newTitle: string) => {
     try {
-      await axios.put(`/api/notetaking/notes/${noteId}`, { newTitle })
-      const updatedNotes = notes.map(note => note._id === noteId ? { ...note, title: newTitle } : note)
-      setNotes(updatedNotes)
+      const response = await axios.put(`/api/notetaking/notes/${noteId}`, {
+        title: newTitle,
+      });
+
+      const updatedNote = {
+        ...response.data,
+        content:
+          typeof response.data.content === "string"
+            ? JSON.parse(response.data.content)
+            : response.data.content,
+      };
+
+      const updatedNotes = notes.map((note) =>
+        note._id === noteId ? updatedNote : note,
+      );
+
+      setNotes(updatedNotes);
       if (currentNote && currentNote._id === noteId) {
-        setCurrentNote({ ...currentNote, title: newTitle })
+        setCurrentNote(updatedNote);
       }
+
+      toast.success("Note renamed successfully");
     } catch (error) {
-      console.error("Failed to rename the note:", error)
+      console.error("Failed to rename the note:", error);
+      toast.error("Failed to rename note");
     }
-  }
+  };
 
   const renameFolder = async (folderId: string, newName: string) => {
     try {
-      await axios.put(`/api/notetaking/folders/${folderId}`, { newName })
-      const updatedFolders = folders.map(folder => folder._id === folderId ? { ...folder, name: newName } : folder)
-      setFolders(updatedFolders)
+      const response = await axios.put(`/api/notetaking/folders/${folderId}`, {
+        name: newName,
+        workspaceId: workspaceId,
+      });
+
+      const updatedFolder = response.data;
+      const updatedFolders = folders.map((folder) =>
+        folder._id === folderId ? updatedFolder : folder,
+      );
+
+      setFolders(updatedFolders);
+      toast.success("Folder renamed successfully");
     } catch (error) {
-      console.error("Failed to rename the folder:", error)
+      console.error("Failed to rename the folder:", error);
+      toast.error("Failed to rename folder");
     }
-  }
+  };
 
   const moveNote = async (noteId: string, targetFolderId: string | null) => {
     try {
-      const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, { folderId: targetFolderId })
-      const updatedNotes = notes.map(note => note._id === noteId ? { ...note, folderId: targetFolderId } : note)
-      setNotes(updatedNotes)
+      const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, {
+        folderId: targetFolderId,
+      });
+
+      const updatedNote = {
+        ...response.data,
+        content:
+          typeof response.data.content === "string"
+            ? JSON.parse(response.data.content)
+            : response.data.content,
+      };
+
+      const updatedNotes = notes.map((note) =>
+        note._id === noteId ? updatedNote : note,
+      );
+
+      setNotes(updatedNotes);
       if (currentNote && currentNote._id === noteId) {
-        setCurrentNote({ ...currentNote, folderId: targetFolderId })
+        setCurrentNote(updatedNote);
       }
+
+      toast.success(
+        targetFolderId ? "Note moved to folder" : "Note moved to uncategorized",
+      );
     } catch (error) {
-      console.error("Failed to move the note:", error)
+      console.error("Failed to move the note:", error);
+      toast.error("Failed to move note");
     }
-  }
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && currentNote) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const img = new Image()
-        img.onload = () => {
-          const imageElement = currentNote.isMarkup
-            ? `![${file.name}](${reader.result} ==${img.width}x${img.height})`
-            : `<img src="${reader.result}" alt="${file.name}" width="${img.width}" height="${img.height}">`
-          const updatedContent = currentNote.content + "\n" + imageElement
-          setCurrentNote({ ...currentNote, content: updatedContent })
-          if (isPreview) {
-            renderContent(updatedContent, currentNote.isMarkup)
-          }
-        }
-        img.src = reader.result as string
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const toggleMarkup = () => {
-    if (currentNote) {
-      const newIsMarkup = !currentNote.isMarkup
-      let newContent = currentNote.content
-      if (newIsMarkup) {
-        newContent = convertHtmlToMarkup(newContent)
-      } else {
-        newContent = convertMarkupToHtml(newContent)
-      }
-      setCurrentNote({ ...currentNote, isMarkup: newIsMarkup, content: newContent })
-      setIsPreview(false)
-    }
-  }
-
-  const handleContentChange = (value: string | undefined) => {
-    if (value !== undefined && currentNote) {
-      setCurrentNote((prevNote) => ({
-        ...prevNote!,
-        content: value
-      }))
-      if (isPreview) {
-        renderContent(value, currentNote.isMarkup)
-      }
-    }
-  }
-
-  const applyFormatting = (format: string) => {
-    if (currentNote?.isMarkup) {
-      const editor = editorRef.current
-      if (editor) {
-        const selection = window.getSelection()
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0)
-          const selectedText = range.toString()
-          let formattedText = ''
-
-          switch (format) {
-            case 'bold':
-              formattedText = `**${selectedText}**`
-              break
-            case 'italic':
-              formattedText = `_${selectedText}_`
-              break
-            case 'underline':
-              formattedText = `~~${selectedText}~~`
-              break
-            case 'h1':
-              formattedText = `# ${selectedText}`
-              break
-            case 'h2':
-              formattedText = `## ${selectedText}`
-              break
-            case 'h3':
-              formattedText = `### ${selectedText}`
-              break
-            case 'list':
-              formattedText = `\n- ${selectedText}`
-              break
-            case 'ordered-list':
-              formattedText = `\n1. ${selectedText}`
-              break
-            case 'quote':
-              formattedText = `> ${selectedText}`
-              break
-            case 'link':
-              const url = prompt('Enter the URL:')
-              formattedText = `[${selectedText}](${url})`
-              break
-            default:
-              formattedText = selectedText
-          }
-
-          range.deleteContents()
-          range.insertNode(document.createTextNode(formattedText))
-          handleContentChange(editor.innerHTML)
-        }
-      }
-    } else {
-      document.execCommand(format)
-    }
-  }
-
-  const createNewWorkspace = (name: string) => {
-    const newWorkspace: Workspace = {
-      id: Date.now().toString(),
-      title: name,
-      createdAt: new Date().toISOString(),
-    }
-    setWorkspaces([...workspaces, newWorkspace])
-    setCurrentWorkspace(newWorkspace)
-  }
-
-  const switchWorkspace = (workspace: Workspace) => {
-    setCurrentWorkspace(workspace)
-    // Fetch notes and folders for the selected workspace
-    fetchNotesAndFolders(workspaceId)
-  }
-
-  const findAndReplace = () => {
-    const searchTerm = prompt("Enter search term:")
-    const replaceTerm = prompt("Enter replacement term:")
-    if (searchTerm && replaceTerm && currentNote) {
-      const newContent = currentNote.content.replace(new RegExp(searchTerm, 'g'), replaceTerm)
-      setCurrentNote({ ...currentNote, content: newContent })
-    }
-  }
-
-  const getWordCount = () => {
-    if (currentNote) {
-      const wordCount = currentNote.content.trim().split(/\s+/).length
-      alert(`Word count: ${wordCount}`)
-    }
-  }
+  };
 
   return (
-    <div className="flex h-screen bg-background">
-      <aside className="w-64 border-r">
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          <h1 className="text-lg font-semibold">Notes</h1>
-          <div className="flex space-x-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={createNewNote}>
-                    <FileText className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>New Note</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={createNewFolder}>
-                    <FolderPlus className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>New Folder</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-        </div>
-        <ScrollArea className="h-[calc(100vh-8rem)]">
-          <div className="space-y-4 p-4">
-            {folders.map((folder) => (
-              <FolderItem
-                key={folder._id}
-                folder={folder}
-                notes={notes}
-                currentNote={currentNote}
-                folders={folders}
-                onSelectNote={selectNote}
-                onRenameNote={renameNote}
-                onDeleteNote={deleteNote}
-                onMoveNote={moveNote}
-                onRename={renameFolder}
-                onDelete={deleteFolder}
-              />
-            ))}
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <Folder className="mr-2 h-4 w-4" />
-                <span className="font-medium">Uncategorized</span>
-              </div>
-              <ul className="space-y-1">
-                {notes
-                  .filter((note) => note.folderId === null)
-                  .filter((note) =>
-                    note.title.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map((note) => (
-                    <NoteItem
-                      key={note._id}
-                      note={note}
-                      currentNote={currentNote}
-                      folders={folders}
-                      onSelect={selectNote}
-                      onRename={renameNote}
-                      onDelete={deleteNote}
-                      onMove={moveNote}
-                    />
-                  ))}
-              </ul>
-            </div>
-          </div>
-        </ScrollArea>
-      </aside>
-      <main className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between border-b px-4">
+    <div className="flex h-screen bg-[#1e1e1e]">
+      <Sidebar
+        notes={notes}
+        folders={folders}
+        currentNote={currentNote}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onCreateNote={createNewNote}
+        onCreateFolder={createNewFolder}
+        onSelectNote={selectNote}
+        onRenameNote={renameNote}
+        onDeleteNote={deleteNote}
+        onMoveNote={moveNote}
+        onRenameFolder={renameFolder}
+        onDeleteFolder={deleteFolder}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        onOpenCommandMenu={() => setIsCommandMenuOpen(true)}
+      />
+
+      <div className="flex flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[#2e2e2e] bg-[#1e1e1e] px-4">
           <div className="flex items-center space-x-4">
-            <h2 className="text-lg font-semibold">
-              {currentWorkspace ? currentWorkspace.title : "My Workspace"}
-            </h2>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Layout className="mr-2 h-4 w-4" />
-                  Workspaces
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Manage Workspaces</DialogTitle>
-                  <DialogDescription>
-                    View all workspaces or create a new one.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="mt-4 space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="New workspace name"
-                      id="new-workspace-name"
-                    />
-                    <Button
-                      onClick={() => {
-                        const input = document.getElementById(
-                          "new-workspace-name"
-                        ) as HTMLInputElement
-                        if (input.value) {
-                          createNewWorkspace(input.value)
-                          input.value = ""
-                        }
-                      }}
-                    >
-                      Create
-                    </Button>
-                  </div>
-                  <ScrollArea className="h-[200px]">
-                    <div className="space-y-2">
-                      {workspaces.map((workspace) => (
-                        <div
-                          key={workspace.id}
-                          className="flex items-center justify-between rounded-lg border p-2"
-                        >
-                          <span>{workspace.title}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => switchWorkspace(workspace)}
-                          >
-                            Switch
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Breadcrumb
+              currentNote={currentNote}
+              folders={folders}
+              workspace={currentWorkspace}
+            />
           </div>
           {currentNote && (
             <div className="flex items-center space-x-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        document.getElementById("image-upload")?.click()
-                      }
-                    >
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Upload Image</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Toggle
-                      pressed={currentNote.isMarkup}
-                      onPressedChange={toggleMarkup}
-                      aria-label="Toggle Markup"
-                    >
-                      <Code className="h-4 w-4" />
-                    </Toggle>
-                  </TooltipTrigger>
-                  <TooltipContent>Toggle Markup</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Toggle
-                      pressed={isPreview}
-                      onPressedChange={setIsPreview}
-                      aria-label="Toggle Preview"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Toggle>
-                  </TooltipTrigger>
-                  <TooltipContent>Toggle Preview</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Button onClick={saveNote} variant="default" disabled={isSaving}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={downloadAsPDF}
+                className="border-[#2e2e2e] bg-transparent text-white hover:bg-[#2e2e2e]"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+              <Button
+                onClick={saveNote}
+                variant="default"
+                size="sm"
+                disabled={isSaving}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
                 {isSaving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -560,209 +624,110 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
                 )}
                 {isSaving ? "Saving..." : "Save"}
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGraphView(!showGraphView)}
+                className={`border-[#2e2e2e] bg-transparent text-white hover:bg-[#2e2e2e] ${
+                  showGraphView ? "bg-[#2e2e2e]" : ""
+                }`}
+              >
+                <Network className="mr-2 h-4 w-4" />
+                Graph View
+              </Button>
             </div>
           )}
         </header>
-        {currentNote ? (
-          <div className="flex-1 overflow-hidden">
-            <div className="flex h-full flex-col">
-              <Input
-                value={currentNote.title}
-                onChange={(e) =>
-                  setCurrentNote({ ...currentNote, title: e.target.value })
-                }
-                className="border-none bg-transparent text-xl font-bold focus-visible:ring-0"
-                placeholder="Untitled Note"
-              />
-              {isPreview ? (
-                <ScrollArea className="flex-1">
-                  <div className="prose dark:prose-invert max-w-none p-8">
-                    <div
-                      dangerouslySetInnerHTML={{ __html: renderedContent }}
-                    />
-                  </div>
-                </ScrollArea>
-              ) : (
-                <div className="flex flex-1 flex-col">
-                  <div className="flex space-x-1 border-b bg-muted/40 p-1">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 px-2">
-                          Paragraph
-                          <ChevronDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onSelect={() => applyFormatting("h1")}>
-                          Heading 1
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => applyFormatting("h2")}>
-                          Heading 2
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => applyFormatting("h3")}>
-                          Heading 3
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Separator orientation="vertical" className="h-8" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("bold")}
-                    >
-                      <Bold className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("italic")}
-                    >
-                      <Italic className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("underline")}
-                    >
-                      <Underline className="h-4 w-4" />
-                    </Button>
-                    <Separator orientation="vertical" className="h-8" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("list")}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("ordered-list")}
-                    >
-                      <ListOrdered className="h-4 w-4" />
-                    </Button>
-                    <Separator orientation="vertical" className="h-8" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("quote")}
-                    >
-                      <Quote className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => applyFormatting("link")}
-                    >
-                      <Link className="h-4 w-4" />
-                    </Button>
-                    <div className="flex-1" />
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={findAndReplace}>Find and Replace</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={getWordCount}>Word Count</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    {currentNote.isMarkup ? (
-                      <div className="h-full border-t border-border">
-                        <Editor
-                          height="100%"
-                          defaultLanguage="markdown"
-                          value={currentNote.content}
-                          onChange={handleContentChange}
-                          theme={theme === "dark" ? "vs-dark" : "light"}
-                          options={{
-                            minimap: { enabled: false },
-                            wordWrap: "on",
-                            wrappingIndent: "indent",
-                            lineNumbers: "on",
-                            folding: true,
-                            lineDecorationsWidth: 0,
-                            lineNumbersMinChars: 3,
-                            glyphMargin: false,
-                            padding: { top: 16, bottom: 16 },
-                            scrollBeyondLastLine: false,
-                            overviewRulerLanes: 0,
-                            overviewRulerBorder: false,
-                          }}
-                          className="markdown-editor"
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        ref={editorRef}
-                        contentEditable
-                        suppressContentEditableWarning={true}
-                        onInput={(e) => handleContentChange((e.target as HTMLDivElement).innerHTML)}
-                        dangerouslySetInnerHTML={{ __html: currentNote.content }}
-                        className="min-h-full w-full resize-none overflow-auto p-4 focus:outline-none"
-                      />
-                    )}
-                  </div>
+
+        <main className="flex-1 overflow-auto">
+          {showGraphView ? (
+            <GraphView
+              notes={notes}
+              folders={folders}
+              currentNote={currentNote}
+              onSelectNote={selectNote}
+            />
+          ) : currentNote ? (
+            <div className="h-full">
+              <div className="px-4 py-6">
+                <Input
+                  value={currentNote.title}
+                  onChange={(e) =>
+                    setCurrentNote({ ...currentNote, title: e.target.value })
+                  }
+                  className="mb-6 border-none bg-transparent px-0 text-2xl font-bold text-white focus-visible:ring-0"
+                  placeholder="Untitled Note"
+                />
+                <div className="editor-content bg-[#1e1e1e]">
+                  {renderEditor()}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-center">
-            <div className="text-center">
-              <FileText className="mx-auto h-12 w-4 text-muted-foreground" />
-              <h2 className="mt-2 text-xl font-semibold">No Note Selected</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Select a note or create a new one to get started
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center text-center text-white">
+              <h2 className="mb-2 text-2xl font-bold">No Note Selected</h2>
+              <p className="mb-4 text-gray-400">
+                Select a note from the sidebar or create a new one
               </p>
-              <Button className="mt-4" onClick={createNewNote}>
+              <Button
+                onClick={() => createNewNote()}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 Create New Note
               </Button>
             </div>
-          </div>
-        )}
-        <AlertDialog open={showSaveWarning} onOpenChange={setShowSaveWarning}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-              <AlertDialogDescription>
-                You have unsaved changes. Do you want to save before switching notes?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => {
-                setShowSaveWarning(false)
+          )}
+        </main>
+      </div>
+
+      <CommandMenu
+        notes={notes}
+        folders={folders}
+        onSelectNote={selectNote}
+        onCreateNote={createNewNote}
+        onCreateFolder={createNewFolder}
+        isOpen={isCommandMenuOpen}
+        onClose={() => setIsCommandMenuOpen(false)}
+      />
+
+      <AlertDialog open={showSaveWarning} onOpenChange={setShowSaveWarning}>
+        <AlertDialogContent className="bg-[#2e2e2e] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              You have unsaved changes. Do you want to save before switching
+              notes?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowSaveWarning(false);
                 if (pendingNoteChange) {
-                  setCurrentNote(pendingNoteChange)
-                  setPendingNoteChange(null)
+                  setCurrentNote(pendingNoteChange);
+                  setPendingNoteChange(null);
                 }
-              }}>
-                Discard
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={() => {
-                saveNote()
-                setShowSaveWarning(false)
+              }}
+              className="border-[#3e3e3e] bg-transparent text-white hover:bg-[#3e3e3e]"
+            >
+              Discard
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                saveNote();
+                setShowSaveWarning(false);
                 if (pendingNoteChange) {
-                  setCurrentNote(pendingNoteChange)
-                  setPendingNoteChange(null)
+                  setCurrentNote(pendingNoteChange);
+                  setPendingNoteChange(null);
                 }
-              }}>
-                Save
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </main>
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
+  );
 }
