@@ -124,7 +124,7 @@ function UserProfile() {
               <Avatar className="h-20 w-20">
                 <AvatarImage src={user?.picture ?? ""} />
                 <AvatarFallback className="text-4xl">
-                  {user?.given_name?.[0]}
+                  {user?.given_name?.[0]}{user?.given_name?.[1]}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-1">
