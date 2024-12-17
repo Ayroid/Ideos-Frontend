@@ -1,13 +1,8 @@
-import Navbar from "@/components/Navbar";
-import SidebarComponent from "@/components/SidePanel";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/ui/theme-provider";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Separator } from "@/components/ui/separator";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,23 +22,15 @@ export default function RootLayout({
         <link rel="icon" href="/ideos.png" />
       </head>
       <body className={inter.className}>
-      <SidebarProvider>
-        <AppSidebar />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-            <main className="w-full" >
-              <Navbar />
-              <Separator />
-              {children}
-            </main>
-            <Toaster expand visibleToasts={1} />
-          {/* </div> */}
+          {children}
+          <Toaster expand visibleToasts={1} />
         </ThemeProvider>
-        </SidebarProvider>
       </body>
     </html>
   );
