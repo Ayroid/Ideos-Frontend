@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Editor } from "novel";
 import type { Editor as TipTapEditor } from "@tiptap/core";
 import { Button } from "@/components/ui/button";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,15 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import {
-  ImageIcon,
-  Save,
-  Loader2,
-  MoreVertical,
-  Download,
-  Network,
-} from "lucide-react";
-
+import { Save, Loader2, Download, Network } from "lucide-react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import axios from "axios";
@@ -38,9 +29,9 @@ import {
 import Sidebar from "./components/Sidebar";
 import Breadcrumb from "./components/BreadCrumb";
 import CommandMenu from "./components/CommandMenu";
-import { JSONContent } from "@tiptap/react";
 import GraphView from "./components/GraphView";
 import { toast } from "sonner";
+import _ from "lodash";
 
 interface NoteTakingAppProps {
   workspaceId: string;
@@ -53,8 +44,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [isEditorReady, setIsEditorReady] = useState(false);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(
     null,
   );
@@ -69,7 +58,37 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   );
   const [showGraphView, setShowGraphView] = useState(false);
 
-  // Fetch data
+  const debouncedSaveTitle = useRef(
+    _.debounce(async (note: Note) => {
+      try {
+        const response = await axios.put(`/api/notetaking/notes/${note._id}`, {
+          title: note.title,
+        });
+
+        const updatedNote = {
+          ...response.data,
+          content:
+            typeof response.data.content === "string"
+              ? JSON.parse(response.data.content)
+              : response.data.content,
+        };
+
+        setNotes((prevNotes) =>
+          prevNotes.map((n) => (n._id === note._id ? updatedNote : n)),
+        );
+      } catch (error) {
+        console.error("Failed to update note title:", error);
+        toast.error("Failed to update note title");
+      }
+    }, 1000),
+  ).current;
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSaveTitle.cancel();
+    };
+  }, [debouncedSaveTitle]);
+
   const fetchNotesAndFolders = useCallback(
     async (workspaceId: string) => {
       try {
@@ -83,39 +102,26 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
           setNotes(notesData);
           if (notesData.length > 0 && !currentNote) {
             setCurrentNote(notesData[0]);
+            // If the note is in a folder, expand that folder
+            const firstNote = notesData[0];
           }
         }
 
         if (foldersResponse.status === 200) {
-          setFolders(foldersResponse.data || []);
+          const foldersData = foldersResponse.data || [];
+          setFolders(foldersData);
+          // Initialize expanded state for new folders
         }
       } catch (error) {
         console.error("Failed to fetch notes and folders:", error);
       }
     },
-    [currentNote],
+    [currentNote], // Remove expandedFolders from dependencies
   );
 
   useEffect(() => {
     fetchNotesAndFolders(workspaceId);
   }, [fetchNotesAndFolders, workspaceId]);
-
-  useEffect(() => {
-    setIsEditorReady(true);
-    return () => {
-      setIsEditorReady(false);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (currentNote) {
-      setContent(
-        typeof currentNote.content === "string"
-          ? currentNote.content
-          : JSON.stringify(currentNote.content),
-      );
-    }
-  }, [currentNote]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -201,56 +207,46 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     return content;
   };
 
-  const createNewNote = useCallback(async (folderId: string | null = null) => {
-    try {
-      // Create a clean initial content structure
-      const initialContent = {
-        type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: [],
-          },
-        ],
-      };
-
-      // Create a clean new note object with only the necessary data
-      const newNoteData = {
-        title: "Untitled Note",
-        content: sanitizeContent(initialContent),
-        folderId: folderId,
-        workspaceId: workspaceId,
-      };
-
-      // Make the API call with clean data
-      const response = await axios.post("/api/notetaking/notes", newNoteData);
-
-      // Process the response
-      let parsedContent;
+  const createNewNote = useCallback(
+    async (folderId: string | null = null) => {
       try {
-        parsedContent = typeof response.data.content === "string" 
-          ? JSON.parse(response.data.content)
-          : response.data.content;
-      } catch (e) {
-        console.error("Failed to parse content from response:", e);
-        parsedContent = initialContent;
+        const initialContent = {
+          type: "doc",
+          content: [{ type: "paragraph", content: [] }],
+        };
+
+        const newNoteData = {
+          title: "Untitled Note",
+          content: JSON.stringify(initialContent),
+          folderId: folderId,
+          workspaceId: workspaceId,
+        };
+
+        setSearchTerm(""); // Reset search term when creating a new note
+
+        const response = await axios.post("/api/notetaking/notes", newNoteData);
+
+        const parsedContent =
+          typeof response.data.content === "string"
+            ? JSON.parse(response.data.content)
+            : response.data.content;
+
+        const createdNote = {
+          ...response.data,
+          content: parsedContent,
+        };
+
+        setNotes((prevNotes) => [...prevNotes, createdNote]);
+        setCurrentNote(createdNote);
+
+        toast.success("New note created");
+      } catch (error) {
+        console.error("Failed to create a new note:", error);
+        toast.error("Failed to create new note");
       }
-
-      // Create the note object with clean data
-      const createdNote = {
-        ...response.data,
-        content: parsedContent,
-      };
-
-      setNotes((prevNotes) => [...prevNotes, createdNote]);
-      setCurrentNote(createdNote);
-      toast.success("New note created");
-    } catch (error) {
-      console.error("Failed to create a new note:", error);
-      toast.error("Failed to create new note");
-    }
-  }, [workspaceId]);
-
+    },
+    [workspaceId],
+  );
   const selectNote = (note: Note) => {
     if (currentNote && currentNote._id !== note._id) {
       setShowSaveWarning(true);
@@ -258,18 +254,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     } else {
       setCurrentNote(note);
     }
-  };
-
-  // Handler functions
-  const handleImageUpload = async (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        resolve(reader.result as string);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
   };
 
   const handleContentChange = useCallback(
@@ -316,20 +300,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       }
     },
     [currentNote, lastSavedContent, autoSaveTimer],
-  );  
-
-  const sanitizeContent = (content: any) => {
-    // If content is already a string, return it
-    if (typeof content === "string") return content;
-  
-    // Create a clean version of the content without circular references
-    const cleanContent = {
-      type: "doc",
-      content: content?.content || [{ type: "paragraph", content: [] }]
-    };
-  
-    return JSON.stringify(cleanContent);
-  };
+  );
 
   useEffect(() => {
     return () => {
@@ -339,45 +310,14 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     };
   }, [autoSaveTimer]);
 
-  // Novel editor configuration
-  // In your NoteTakingApp component
   const editorProps = {
-    defaultValue: (() => {
-      try {
-        if (!currentNote?.content) {
-          return {
-            type: "doc",
-            content: [{ type: "paragraph", content: [] }],
-          };
-        }
-        return parseContent(currentNote.content);
-      } catch (e) {
-        console.error("Error setting editor default value:", e);
-        return {
-          type: "doc",
-          content: [{ type: "paragraph", content: [] }],
-        };
-      }
-    })(),
+    defaultValue: currentNote?.content
+      ? parseContent(currentNote.content)
+      : { type: "doc", content: [{ type: "paragraph", content: [] }] },
     onDebouncedUpdate: handleContentChange,
-    className:
-      "min-h-[calc(100vh-12rem)] prose prose-sm dark:prose-invert editor-content",
-    editorProps: {
-      attributes: {
-        class:
-          "prose prose-sm dark:prose-invert max-w-full focus:outline-none px-0 py-4",
-      },
-    },
     disableLocalStorage: true,
     immediatelyRender: false,
-  };
-
-  const renderEditor = () => {
-    if (!isEditorReady) return null;
-
-    return (
-      <Editor key={`editor-${currentNote?._id || "empty"}`} {...editorProps} />
-    );
+    className: "min-h-[calc(100vh-12rem)] prose prose-sm dark:prose-invert",
   };
 
   const downloadAsPDF = async () => {
@@ -415,6 +355,9 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       );
       const createdFolder = response.data;
       setFolders((prevFolders) => [...prevFolders, createdFolder]);
+
+      // Expand the newly created folder
+
       toast.success("New folder created");
     } catch (error) {
       console.error("Failed to create a new folder:", error);
@@ -422,70 +365,67 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     }
   };
 
-  const deleteNote = async (noteId: string) => {
-    try {
-      // Immediately remove the note from UI
-      const noteToDelete = notes.find((note) => note._id === noteId);
-      if (!noteToDelete) return;
+  const deleteNote = useCallback(
+    async (noteId: string) => {
+      try {
+        const noteToDelete = notes.find((note) => note._id === noteId);
+        if (!noteToDelete) return;
 
-      // If the note being deleted is currently selected, clear the editor
-      if (currentNote && currentNote._id === noteId) {
-        setCurrentNote(null);
-      }
+        // Optimistically update UI
+        setNotes((prevNotes) =>
+          prevNotes.filter((note) => note._id !== noteId),
+        );
 
-      // Update local state first
-      setNotes((prevNotes) => prevNotes.filter((note) => note._id !== noteId));
-
-      // Make the API call
-      const response = await axios.delete(`/api/notetaking/notes/${noteId}`);
-
-      if (response.status === 200) {
-        toast.success("Note deleted successfully");
-
-        // If the deleted note was the current note, select another note
         if (currentNote && currentNote._id === noteId) {
           const remainingNotes = notes.filter((note) => note._id !== noteId);
-          if (remainingNotes.length > 0) {
-            setCurrentNote(remainingNotes[0]);
-          }
+          setCurrentNote(remainingNotes.length > 0 ? remainingNotes[0] : null);
         }
+
+        // Make API call
+        await axios.delete(`/api/notetaking/notes/${noteId}`);
+        toast.success("Note deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete note:", error);
+        // Revert on error
+        fetchNotesAndFolders(workspaceId);
+        toast.error("Failed to delete note");
       }
-    } catch (error) {
-      console.error("Failed to delete note:", error);
-      // Revert the state if the API call fails
-      toast.error("Failed to delete note");
-      // Reload notes to ensure consistent state
-      fetchNotesAndFolders(workspaceId);
-    }
-  };
+    },
+    [notes, currentNote, workspaceId, fetchNotesAndFolders],
+  );
 
-  const deleteFolder = async (folderId: string) => {
-    try {
-      await axios.delete(
-        `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
-      );
-      const updatedFolders = folders.filter(
-        (folder) => folder._id !== folderId,
-      );
-      setFolders(updatedFolders);
+  const deleteFolder = useCallback(
+    async (folderId: string) => {
+      try {
+        // Optimistically update UI
+        const updatedFolders = folders.filter(
+          (folder) => folder._id !== folderId,
+        );
+        setFolders(updatedFolders);
 
-      // Update notes that were in this folder to be uncategorized
-      const updatedNotes = notes.map((note) =>
-        note.folderId === folderId ? { ...note, folderId: null } : note,
-      );
-      setNotes(updatedNotes);
+        // Update notes to uncategorized
+        setNotes((prevNotes) =>
+          prevNotes.map((note) =>
+            note.folderId === folderId ? { ...note, folderId: null } : note,
+          ),
+        );
 
-      // If current note was in the deleted folder, update its folderId
-      if (currentNote && currentNote.folderId === folderId) {
-        setCurrentNote({ ...currentNote, folderId: null });
+        await axios.delete(
+          `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
+        );
+
+        // Expand uncategorized if notes were moved there
+
+        toast.success("Folder deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete folder:", error);
+        // Revert on error
+        fetchNotesAndFolders(workspaceId);
+        toast.error("Failed to delete folder");
       }
-
-      toast.success("Folder deleted successfully");
-    } catch (error) {
-      console.error("Failed to delete the folder:", error);
-      toast.error("Failed to delete folder");
-    }
-  };
+    },
+    [folders, notes, workspaceId, fetchNotesAndFolders],
+  );
 
   const renameNote = async (noteId: string, newTitle: string) => {
     try {
@@ -560,6 +500,8 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         setCurrentNote(updatedNote);
       }
 
+      // Expand the target folder or uncategorized section
+
       toast.success(
         targetFolderId ? "Note moved to folder" : "Note moved to uncategorized",
       );
@@ -567,6 +509,24 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       console.error("Failed to move the note:", error);
       toast.error("Failed to move note");
     }
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!currentNote) return;
+
+    const newTitle = e.target.value;
+    const updatedNote = { ...currentNote, title: newTitle };
+
+    // Update local state immediately
+    setCurrentNote(updatedNote);
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
+        note._id === currentNote._id ? updatedNote : note,
+      ),
+    );
+
+    // Debounced API call
+    debouncedSaveTitle(updatedNote);
   };
 
   return (
@@ -589,7 +549,6 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         onOpenCommandMenu={() => setIsCommandMenuOpen(true)}
       />
-
       <div className="flex flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-[#2e2e2e] bg-[#1e1e1e] px-4">
           <div className="flex items-center space-x-4">
@@ -652,14 +611,15 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
               <div className="px-4 py-6">
                 <Input
                   value={currentNote.title}
-                  onChange={(e) =>
-                    setCurrentNote({ ...currentNote, title: e.target.value })
-                  }
+                  onChange={handleTitleChange}
                   className="mb-6 border-none bg-transparent px-0 text-2xl font-bold text-white focus-visible:ring-0"
                   placeholder="Untitled Note"
                 />
                 <div className="editor-content bg-[#1e1e1e]">
-                  {renderEditor()}
+                  <Editor
+                    key={`editor-${currentNote?._id || "empty"}`}
+                    {...editorProps}
+                  />
                 </div>
               </div>
             </div>

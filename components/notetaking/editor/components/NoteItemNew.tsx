@@ -29,7 +29,7 @@ export const NoteItem: React.FC<NoteItemProps> = ({
 
   return (
     <li 
-      className={`flex items-center justify-between p-2 rounded-md transition-colors duration-200 ${
+      className={`group flex items-center justify-between p-2 rounded-md transition-colors duration-200 ${
         currentNote && currentNote._id === note._id ? 'bg-secondary' : 'hover:bg-secondary'
       }`}
     >
@@ -52,18 +52,18 @@ export const NoteItem: React.FC<NoteItemProps> = ({
         />
       ) : (
         <>
-          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => onSelect(note)}>
+          <div className="flex items-center space-x-2 cursor-pointer flex-1" onClick={() => onSelect(note)}>
             <FileText className="h-4 w-4" />
             <span className="text-sm truncate">{note.title}</span>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6">
                   <MoreVertical className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem onSelect={() => setIsRenaming(true)}>
                   Rename
                 </DropdownMenuItem>
