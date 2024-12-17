@@ -58,7 +58,7 @@ const pagesData = [
     id: 3,
     title: "Notes",
     icon: <StickyNote className="h-12 w-12" />,
-    link: "/tools/notes",
+    link: "/tools/notetaking",
     status: true,
     description: "Capture and organize your thoughts quickly",
     features: [

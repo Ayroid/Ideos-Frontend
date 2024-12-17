@@ -34,10 +34,10 @@ import { toast } from "sonner";
 import _ from "lodash";
 
 interface NoteTakingAppProps {
-  workspaceId: string;
+  notebookId: string;
 }
 
-export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
+export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
   // States
   const [notes, setNotes] = useState<Note[]>([]);
   const [folders, setFolders] = useState<FolderType[]>([]);
@@ -61,7 +61,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   const debouncedSaveTitle = useRef(
     _.debounce(async (note: Note) => {
       try {
-        const response = await axios.put(`/api/notetaking/notes/${note._id}`, {
+        const response = await axios.put(`/api/notetaking/notetaking/${note._id}`, {
           title: note.title,
         });
 
@@ -90,11 +90,11 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   }, [debouncedSaveTitle]);
 
   const fetchNotesAndFolders = useCallback(
-    async (workspaceId: string) => {
+    async (notebookId: string) => {
       try {
         const [notesResponse, foldersResponse] = await Promise.all([
-          axios.get(`/api/notetaking/workspaces/${workspaceId}/notes`),
-          axios.get(`/api/notetaking/workspaces/${workspaceId}/folders`),
+          axios.get(`/api/notetaking/workspaces/${notebookId}/notes`),
+          axios.get(`/api/notetaking/workspaces/${notebookId}/folders`),
         ]);
 
         if (notesResponse.status === 200) {
@@ -120,8 +120,8 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
   );
 
   useEffect(() => {
-    fetchNotesAndFolders(workspaceId);
-  }, [fetchNotesAndFolders, workspaceId]);
+    fetchNotesAndFolders(notebookId);
+  }, [fetchNotesAndFolders, notebookId]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -219,7 +219,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
           title: "Untitled Note",
           content: JSON.stringify(initialContent),
           folderId: folderId,
-          workspaceId: workspaceId,
+          notebookId: notebookId,
         };
 
         setSearchTerm(""); // Reset search term when creating a new note
@@ -245,7 +245,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         toast.error("Failed to create new note");
       }
     },
-    [workspaceId],
+    [notebookId],
   );
   const selectNote = (note: Note) => {
     if (currentNote && currentNote._id !== note._id) {
@@ -347,7 +347,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     try {
       const newFolderData = {
         name: "New Folder",
-        workspaceId: workspaceId,
+        notebookId: notebookId,
       };
       const response = await axios.post(
         "/api/notetaking/folders",
@@ -387,11 +387,11 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       } catch (error) {
         console.error("Failed to delete note:", error);
         // Revert on error
-        fetchNotesAndFolders(workspaceId);
+        fetchNotesAndFolders(notebookId);
         toast.error("Failed to delete note");
       }
     },
-    [notes, currentNote, workspaceId, fetchNotesAndFolders],
+    [notes, currentNote, notebookId, fetchNotesAndFolders],
   );
 
   const deleteFolder = useCallback(
@@ -411,7 +411,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
         );
 
         await axios.delete(
-          `/api/notetaking/folders/${folderId}?workspaceId=${workspaceId}`,
+          `/api/notetaking/folders/${folderId}?notebookId=${notebookId}`,
         );
 
         // Expand uncategorized if notes were moved there
@@ -420,11 +420,11 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
       } catch (error) {
         console.error("Failed to delete folder:", error);
         // Revert on error
-        fetchNotesAndFolders(workspaceId);
+        fetchNotesAndFolders(notebookId);
         toast.error("Failed to delete folder");
       }
     },
-    [folders, notes, workspaceId, fetchNotesAndFolders],
+    [folders, notes, notebookId, fetchNotesAndFolders],
   );
 
   const renameNote = async (noteId: string, newTitle: string) => {
@@ -461,7 +461,7 @@ export default function NoteTakingApp({ workspaceId }: NoteTakingAppProps) {
     try {
       const response = await axios.put(`/api/notetaking/folders/${folderId}`, {
         name: newName,
-        workspaceId: workspaceId,
+        notebookId: notebookId,
       });
 
       const updatedFolder = response.data;

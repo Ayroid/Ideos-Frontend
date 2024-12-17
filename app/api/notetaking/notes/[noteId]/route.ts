@@ -1,5 +1,3 @@
-// app/api/notetaking/notes/[noteId]/route.ts
-
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";

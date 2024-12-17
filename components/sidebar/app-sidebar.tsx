@@ -84,7 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Notes",
-        url: "/tools/notes",
+        url: "/tools/notetaking",
         icon: SquarePen,
       },
       {
