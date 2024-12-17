@@ -39,7 +39,7 @@ export default function NotesPage() {
     const checkExistingNotebook = async () => {
       try {
         const response = await axios.get("/api/notetaking/notebooks");
-        const notebook = response.data[0];
+        const notebook = response.data;
 
         if (notebook && notebook._id) {
           router.push(`/tools/notetaking/${notebook._id}`);
