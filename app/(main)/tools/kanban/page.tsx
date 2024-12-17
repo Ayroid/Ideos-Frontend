@@ -23,7 +23,7 @@ import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ColumnTypes, TodoTypes } from "../../../types/kanban";
+import { ColumnTypes, TodoTypes } from "@/types/kanban";
 
 // ICONS
 import { GoPlusCircle } from "react-icons/go";
