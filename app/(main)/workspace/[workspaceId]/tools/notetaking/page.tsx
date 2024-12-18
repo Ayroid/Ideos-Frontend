@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Building2, Loader2, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,8 @@ interface CreateNotebookFormData {
 
 export default function NotesPage() {
   const router = useRouter();
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string;
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,10 +41,10 @@ export default function NotesPage() {
     const checkExistingNotebook = async () => {
       try {
         const response = await axios.get("/api/notetaking/notebooks");
-        const notebook = response.data;
+        const notebook = response.data[0];
 
         if (notebook && notebook._id) {
-          router.push(`/tools/notetaking/${notebook._id}`);
+          router.push(`/workspace/${workspaceId}/tools/notetaking/${notebook._id}`);
         }
         setIsLoading(false);
       } catch (error) {
@@ -67,7 +69,7 @@ export default function NotesPage() {
 
         if (response.data && response.data._id) {
           toast.success("Notebook created successfully");
-          router.push(`/tools/notetaking/${response.data._id}`);
+          router.push(`/workspace/${workspaceId}/tools/notetaking/${response.data._id}`);
         } else {
           toast.error("Failed to create notebook");
         }

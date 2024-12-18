@@ -103,12 +103,12 @@ function AppSidebarComponent({ ...props }: React.ComponentProps<typeof Sidebar>)
       },
       {
         title: "Notes",
-        url: `/workspace/${workspaceId}/notetaking`,
+        url: `/workspace/${workspaceId}/tools/notetaking`,
         icon: SquarePen,
         subItems: [
           {
             title: "All Notebooks",
-            url: `/workspace/${workspaceId}/notetaking`,
+            url: `/workspace/${workspaceId}/tools/notetaking`,
           }
         ]
       },
