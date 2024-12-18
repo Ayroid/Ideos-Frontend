@@ -5,33 +5,26 @@ import { NextRequest, NextResponse } from "next/server";
 
 const { getAccessTokenRaw } = getKindeServerSession();
 
-export async function PUT(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    const url = new URL(req.url);
-    const columnId = url.pathname.split("/").pop();
-    const requestBody = await parseRequestBody(req);
-    await axios.put(
-      `${process.env.SERVER_URL}/todoColumns/${columnId}`,
-      requestBody,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+    const response = await axios.get(`${process.env.SERVER_URL}/kanban/columns`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
-    return NextResponse.json({ success: true });
+    });
+    return NextResponse.json(response.data);
   } catch (error) {
+    console.log("API THREW ERROR", error);
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    const url = new URL(req.url);
-    const columnId = url.pathname.split("/").pop();
-    await axios.delete(`${process.env.SERVER_URL}/todoColumns/${columnId}`, {
+    const requestBody = await parseRequestBody(req);
+    await axios.post(`${process.env.SERVER_URL}/kanban/columns`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

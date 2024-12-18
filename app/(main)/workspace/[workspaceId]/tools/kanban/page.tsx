@@ -105,8 +105,8 @@ const ViewKanbanBoard = () => {
   useEffect(() => {
     const fetchColumns = async () => {
       try {
-        console.log("/api/kanban/todoColumns");
-        const response = await axios.get("/api/kanban/todoColumns");
+        console.log("/api/kanban/columns");
+        const response = await axios.get("/api/kanban/columns");
         const fetchedColumns = response.data;
         console.log("fetchedColumns", fetchedColumns);
         const fetchedTodos = fetchedColumns.reduce(
@@ -140,7 +140,7 @@ const ViewKanbanBoard = () => {
   ) {
     try {
       if (serverUpdate) {
-        await axios.put(`/api/kanban/todoColumns/${columnId}`, { title });
+        await axios.put(`/api/kanban/columns/${columnId}`, { title });
         toast.success("Column updated successfully");
       } else {
         updateTodoColumnName(columnId, title);
@@ -172,7 +172,7 @@ const ViewKanbanBoard = () => {
       closePopUp();
       deleteTodoColumn(deleteColumnId!);
       deleteAllColumnTodos(deleteColumnId!);
-      await axios.delete(`/api/kanban/todoColumns/${deleteColumnId}`);
+      await axios.delete(`/api/kanban/columns/${deleteColumnId}`);
       toast.success("Column deleted successfully");
     } catch (error) {
       console.error("Error deleting column:", error);
@@ -360,7 +360,7 @@ const KanbanBoard = () => {
       };
 
       addTodoColumn(data);
-      await axios.post("/api/kanban/todoColumns", data);
+      await axios.post("/api/kanban/columns", data);
       toast.success("Column created successfully");
     } catch (error) {
       console.error("Error creating new column:", error);

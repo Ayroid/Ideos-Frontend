@@ -8,7 +8,7 @@ const { getAccessTokenRaw } = getKindeServerSession();
 export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
-    const response = await axios.get(`${process.env.SERVER_URL}/todos`, {
+    const response = await axios.get(`${process.env.SERVER_URL}/kanban/todos`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
   try {
     const requestBody = await parseRequestBody(req);
-    await axios.post(`${process.env.SERVER_URL}/todos`, requestBody, {
+    await axios.post(`${process.env.SERVER_URL}/kanban/todos`, requestBody, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
