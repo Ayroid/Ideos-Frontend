@@ -14,8 +14,11 @@ import {
   Settings,
   SquareKanban,
   SquarePen,
+  Bell
 } from "lucide-react";
 import * as React from "react";
+import { useParams } from 'next/navigation';
+import { cn } from "@/lib/utils";
 
 import { SidebarSection } from "@/components/sidebar/sidebar-sections";
 import { SidebarUser } from "@/components/sidebar/sidebar-user";
@@ -33,10 +36,21 @@ import { SecondarySidebarSection } from "./sidebar-secondary";
 import { SidebarMain } from "./sidebar-main";
 import { Separator } from "../ui/separator";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isLoading } = useKindeBrowserClient();
+const CircularLoader = React.memo(({ className }: { className?: string }) => {
+  return (
+    <div className={cn("flex justify-center items-center", className)}>
+      <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+    </div>
+  );
+});
+CircularLoader.displayName = 'CircularLoader';
 
-  const sidebarData = {
+function AppSidebarComponent({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useKindeBrowserClient();
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string;
+
+  const sidebarData = React.useMemo(() => ({
     user: {
       name: user?.given_name ?? "User",
       email: user?.email ?? "user@gmail.com",
@@ -57,40 +71,51 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     pages: [
       {
         title: "Dashboard",
-        url: "/",
+        url: `/workspace/${workspaceId}`,
         icon: LayoutDashboard,
       },
       {
         title: "Analytics",
-        url: "/analytics",
+        url: `/workspace/${workspaceId}/analytics`,
         icon: PieChart,
       },
       {
-        title: "All Tools",
-        url: "/tools",
-        icon: PencilRuler,
+        title: "Notifications",
+        url: `/workspace/${workspaceId}/notifications`,
+        icon: Bell,
+      },
+      {
+        title: "Settings",
+        url: `/workspace/${workspaceId}/settings`,
+        icon: Settings,
       },
     ],
     tools: [
       {
+        title: "Drawing",
+        url: `/workspace/${workspaceId}/tools/drawing`,
+        icon: Brush,
+      },
+      {
         title: "Kanban",
-        url: "/tools/kanban",
+        url: `/workspace/${workspaceId}/tools/kanban`,
         icon: SquareKanban,
       },
       {
-        title: "Pomodoro",
-        url: "/tools/pomodoro",
-        icon: Hourglass,
-      },
-      {
         title: "Notes",
-        url: "/tools/notetaking",
+        url: `/workspace/${workspaceId}/notetaking`,
         icon: SquarePen,
+        subItems: [
+          {
+            title: "All Notebooks",
+            url: `/workspace/${workspaceId}/notetaking`,
+          }
+        ]
       },
       {
-        title: "Drawing",
-        url: "/tools/drawing",
-        icon: Brush,
+        title: "Pomodoro",
+        url: `/workspace/${workspaceId}/tools/pomodoro`,
+        icon: Hourglass,
       },
     ],
     utilities: [
@@ -104,13 +129,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/feedback",
         icon: Send,
       },
-      {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings,
-      },
     ],
-  };
+  }), [workspaceId, user?.given_name, user?.email, user?.picture]); // Only recompute when these values change
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -118,7 +138,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={sidebarData.teams} />
       </SidebarHeader>
       <SidebarContent>
-      <Separator />
+        <Separator />
         <SidebarMain sections={sidebarData.pages} groupLabel="Pages" />
         <Separator />
         <SidebarMain sections={sidebarData.tools} groupLabel="Tools" />
@@ -132,3 +152,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   );
 }
+AppSidebarComponent.displayName = 'AppSidebarComponent';
+
+export const AppSidebar = React.memo(AppSidebarComponent);
