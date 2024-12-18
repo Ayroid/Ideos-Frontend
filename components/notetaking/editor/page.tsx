@@ -58,43 +58,13 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
   );
   const [showGraphView, setShowGraphView] = useState(false);
 
-  const debouncedSaveTitle = useRef(
-    _.debounce(async (note: Note) => {
-      try {
-        const response = await axios.put(`/api/notetaking/notetaking/${note._id}`, {
-          title: note.title,
-        });
-
-        const updatedNote = {
-          ...response.data,
-          content:
-            typeof response.data.content === "string"
-              ? JSON.parse(response.data.content)
-              : response.data.content,
-        };
-
-        setNotes((prevNotes) =>
-          prevNotes.map((n) => (n._id === note._id ? updatedNote : n)),
-        );
-      } catch (error) {
-        console.error("Failed to update note title:", error);
-        toast.error("Failed to update note title");
-      }
-    }, 1000),
-  ).current;
-  // Cleanup debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSaveTitle.cancel();
-    };
-  }, [debouncedSaveTitle]);
-
+    //  ✅
   const fetchNotesAndFolders = useCallback(
     async (notebookId: string) => {
       try {
         const [notesResponse, foldersResponse] = await Promise.all([
-          axios.get(`/api/notetaking/workspaces/${notebookId}/notes`),
-          axios.get(`/api/notetaking/workspaces/${notebookId}/folders`),
+          axios.get(`/api/notetaking/notebooks/${notebookId}/notes`),
+          axios.get(`/api/notetaking/notebooks/${notebookId}/folders`),
         ]);
 
         if (notesResponse.status === 200) {
@@ -119,6 +89,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     [currentNote], // Remove expandedFolders from dependencies
   );
 
+    //  ✅
   useEffect(() => {
     fetchNotesAndFolders(notebookId);
   }, [fetchNotesAndFolders, notebookId]);
@@ -140,26 +111,25 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Note operations
+  //  ✅
   const saveNote = async () => {
     if (currentNote && !isSaving) {
       try {
         setIsSaving(true);
         const response = await axios.put(
-          `/api/notetaking/notes/${currentNote._id}/save`,
+          `/api/notetaking/notebooks/${notebookId}/notes/${currentNote._id}`,
           {
             ...currentNote,
-            content: JSON.stringify(currentNote.content), // Stringify the content
+            content: JSON.stringify(currentNote.content),
           },
         );
 
-        // Parse the content when receiving response
         const updatedNotes = notes.map((note) =>
           note._id === currentNote._id
             ? {
                 ...currentNote,
                 ...response.data,
-                content: JSON.parse(response.data.content), // Parse the content
+                content: JSON.parse(response.data.content),
               }
             : note,
         );
@@ -168,7 +138,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
         if (currentNote._id === response.data._id) {
           setCurrentNote({
             ...response.data,
-            content: JSON.parse(response.data.content), // Parse the content
+            content: JSON.parse(response.data.content),
           });
         }
 
@@ -207,6 +177,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     return content;
   };
 
+  //  ✅
   const createNewNote = useCallback(
     async (folderId: string | null = null) => {
       try {
@@ -222,9 +193,10 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
           notebookId: notebookId,
         };
 
-        setSearchTerm(""); // Reset search term when creating a new note
-
-        const response = await axios.post("/api/notetaking/notes", newNoteData);
+        const response = await axios.post(
+          `/api/notetaking/notebooks/${notebookId}/notes`,
+          newNoteData,
+        );
 
         const parsedContent =
           typeof response.data.content === "string"
@@ -247,6 +219,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     },
     [notebookId],
   );
+
   const selectNote = (note: Note) => {
     if (currentNote && currentNote._id !== note._id) {
       setShowSaveWarning(true);
@@ -270,7 +243,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
           if (htmlContent !== lastSavedContent) {
             try {
               const response = await axios.put(
-                `/api/notetaking/notes/${currentNote._id}/save`,
+                `/api/notetaking/notebooks/${notebookId}/notes/${currentNote._id}`,
                 {
                   ...currentNote,
                   content: JSON.stringify(jsonContent),
@@ -343,6 +316,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     }
   };
 
+  //  ✅
   const createNewFolder = async () => {
     try {
       const newFolderData = {
@@ -350,13 +324,11 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
         notebookId: notebookId,
       };
       const response = await axios.post(
-        "/api/notetaking/folders",
+        `/api/notetaking/notebooks/${notebookId}/folders`,
         newFolderData,
       );
       const createdFolder = response.data;
       setFolders((prevFolders) => [...prevFolders, createdFolder]);
-
-      // Expand the newly created folder
 
       toast.success("New folder created");
     } catch (error) {
@@ -365,6 +337,7 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     }
   };
 
+  //  ✅
   const deleteNote = useCallback(
     async (noteId: string) => {
       try {
@@ -382,7 +355,9 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
         }
 
         // Make API call
-        await axios.delete(`/api/notetaking/notes/${noteId}`);
+        await axios.delete(
+          `/api/notetaking/notebooks/${notebookId}/notes/${noteId}`,
+        );
         toast.success("Note deleted successfully");
       } catch (error) {
         console.error("Failed to delete note:", error);
@@ -394,28 +369,13 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     [notes, currentNote, notebookId, fetchNotesAndFolders],
   );
 
+    //  ✅
   const deleteFolder = useCallback(
     async (folderId: string) => {
       try {
-        // Optimistically update UI
-        const updatedFolders = folders.filter(
-          (folder) => folder._id !== folderId,
-        );
-        setFolders(updatedFolders);
-
-        // Update notes to uncategorized
-        setNotes((prevNotes) =>
-          prevNotes.map((note) =>
-            note.folderId === folderId ? { ...note, folderId: null } : note,
-          ),
-        );
-
         await axios.delete(
-          `/api/notetaking/folders/${folderId}?notebookId=${notebookId}`,
+          `/api/notetaking/notebooks/${notebookId}/folders/${folderId}`,
         );
-
-        // Expand uncategorized if notes were moved there
-
         toast.success("Folder deleted successfully");
       } catch (error) {
         console.error("Failed to delete folder:", error);
@@ -427,11 +387,15 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     [folders, notes, notebookId, fetchNotesAndFolders],
   );
 
+    //  ✅
   const renameNote = async (noteId: string, newTitle: string) => {
     try {
-      const response = await axios.put(`/api/notetaking/notes/${noteId}`, {
-        title: newTitle,
-      });
+      const response = await axios.put(
+        `/api/notetaking/notebooks/${notebookId}/notes/${noteId}`,
+        {
+          title: newTitle,
+        },
+      );
 
       const updatedNote = {
         ...response.data,
@@ -457,12 +421,16 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     }
   };
 
+    //  ✅
   const renameFolder = async (folderId: string, newName: string) => {
     try {
-      const response = await axios.put(`/api/notetaking/folders/${folderId}`, {
-        name: newName,
-        notebookId: notebookId,
-      });
+      const response = await axios.put(
+        `/api/notetaking/notebooks/${notebookId}/folders/${folderId}`,
+        {
+          name: newName,
+          notebookId: notebookId,
+        },
+      );
 
       const updatedFolder = response.data;
       const updatedFolders = folders.map((folder) =>
@@ -477,11 +445,15 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
     }
   };
 
+      //  ✅
   const moveNote = async (noteId: string, targetFolderId: string | null) => {
     try {
-      const response = await axios.put(`/api/notetaking/notes/${noteId}/move`, {
-        folderId: targetFolderId,
-      });
+      const response = await axios.put(
+        `/api/notetaking/notebooks/${notebookId}/notes/${noteId}/move`,
+        {
+          folderId: targetFolderId,
+        },
+      );
 
       const updatedNote = {
         ...response.data,
@@ -524,9 +496,6 @@ export default function NoteTakingApp({ notebookId }: NoteTakingAppProps) {
         note._id === currentNote._id ? updatedNote : note,
       ),
     );
-
-    // Debounced API call
-    debouncedSaveTitle(updatedNote);
   };
 
   return (

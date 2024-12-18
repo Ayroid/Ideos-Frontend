@@ -4,23 +4,31 @@ import { NextRequest, NextResponse } from "next/server";
 
 const { getAccessTokenRaw } = getKindeServerSession();
 
-export async function PUT(req: NextRequest, { params }: { params: { noteId: string } }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { notebookId: string; noteId: string } },
+) {
   const accessToken = await getAccessTokenRaw();
-  const { noteId } = params;
+  const { notebookId, noteId } = params;
+
+  if (!noteId || !notebookId) {
+    return NextResponse.json(
+      { error: "notebookId and noteId are required" },
+      { status: 400 },
+    );
+  }
 
   try {
-    // Get the new folderId from the request body
-    const { folderId } = await req.json(); // Expecting { folderId: targetFolderId }
+    const { folderId } = await req.json();
 
-    // Send the request to the backend to move the note
     const response = await axios.put(
-      `${process.env.SERVER_URL}/note/move/${noteId}`,  // Use the correct route for moving the note
-      { folderId },  // Send the new folderId
+      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes/${noteId}/move`,
+      { folderId },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,  // Pass the authorization token
+          Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     return NextResponse.json(response.data);

@@ -2,18 +2,19 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
+const { getAccessTokenRaw } = getKindeServerSession();
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { workspaceId: string } },
+  { params }: { params: { notebookId: string } },
 ) {
-  const { getAccessTokenRaw } = await getKindeServerSession();
   const accessToken = await getAccessTokenRaw();
-  const { workspaceId } = params;
-  console.log("Workspace ID:", workspaceId);
+  const { notebookId } = params;
+  console.log("Notebook ID:", notebookId);
 
   try {
     const response = await axios.get(
-      `${process.env.SERVER_URL}/note/workspace/${workspaceId}`,
+      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -29,5 +30,38 @@ export async function GET(
   } catch (error) {
     console.error("Failed to fetch notes:", error);
     return NextResponse.json({ error: "Request failed" }, { status: 500 });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { notebookId: string } },
+) {
+  const accessToken = await getAccessTokenRaw();
+  const { notebookId } = params;
+  console.log("Notebook ID:", notebookId);
+
+  try {
+    const requestBody = await req.json();
+    console.log("Request body:", requestBody);
+    const response = await axios.post(
+      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes`,
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    console.log("Note response:", response.data);
+
+    return NextResponse.json(response.data);
+  } catch (error) {
+    console.error("Failed to create note:", error);
+    return NextResponse.json(
+      { error: "Failed to create note" },
+      { status: 500 },
+    );
   }
 }
