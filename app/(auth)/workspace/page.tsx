@@ -1,127 +1,135 @@
-// CreateWorkspace.tsx
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Building2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { WorkspaceLogoUpload } from "@/components/workspace/WorkspaceLogoUpload";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-interface WorkspaceFormData {
-  name: string;
-  logo?: File;
-}
+const CreateWorkspace = () => {
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
-const WORKSPACE_FEATURES = [
-  {
-    icon: "🎯",
-    title: "Unified Platform",
-    description: "Kanban, Pomodoro, and Notes all in one place",
-  },
-  {
-    icon: "🤖",
-    title: "AI Assistant",
-    description: "Powered by multi-agent conversation framework",
-  },
-  {
-    icon: "📝",
-    title: "Smart Notes",
-    description: "AI-powered summaries and intelligent tagging system",
-  },
-  {
-    icon: "⏱️",
-    title: "Focus Timer",
-    description: "Customizable Pomodoro timer for enhanced productivity",
-  },
-  {
-    icon: "🎨",
-    title: "Visual Management",
-    description: "Intuitive Kanban boards with drag-and-drop functionality",
-  },
-  {
-    icon: "🔄",
-    title: "Real-time Sync",
-    description: "Seamless collaboration and data synchronization",
-  },
-];
+  useEffect(() => {
+    checkExistingWorkspaces();
+  }, []);
 
-export default function CreateWorkspace() {
-  const [formData, setFormData] = useState<WorkspaceFormData>({
-    name: "",
-  });
+  const checkExistingWorkspaces = async () => {
+    try {
+      const response = await fetch("/api/workspace", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-  const handleSubmit = async () => {
-    console.log("Form data:", formData);
+      const data = await response.json();
+      console.log("Workspace data:", data);
+
+      if (response.ok && data.length > 0) {
+        router.push(`/workspace/${data[0]._id}`);
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking workspaces:", error);
+      toast.error("Failed to check existing workspaces");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <div className="mx-auto flex max-w-7xl justify-between gap-8 px-4 py-8">
-        <div className="w-7/12 space-y-6">
-          <div className="mb-8 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Building2 className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold">Create new workspace</h1>
-          </div>
+  const handleSubmit = async () => {
+    if (!workspaceName.trim()) return;
 
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/workspace", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: workspaceName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create workspace");
+      }
+
+      toast.success("Workspace created successfully!");
+      router.push(`/workspace/${data._id}`);
+    } catch (error) {
+      console.error("Error creating workspace:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create workspace");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <div>Loading...</div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="flex min-h-screen items-center justify-center">
+      <div className="w-full space-y-6 p-4 min-h-screen pt-20 md:pt-32 px-4 sm:px-6 md:px-8">
+        <div className="text-center">
+          <Image
+            src="/ideos.png"
+            alt="Logo"
+            height="80"
+            width="80"
+            className="mx-auto w-16 h-16 sm:w-20 sm:h-20 mb-20"
+          />
+        </div>
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold px-4">
+            What should we call{' '}
+            <span className="hidden sm:inline">
+              <br />
+            </span>
+            your workspace?
+          </h1>
+          <p className="text-sm sm:text-md text-muted-foreground px-4">
+            You can always change this later from settings.
+          </p>
+        </div>
+
+        <div className="mx-auto max-w-md space-y-4 px-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-lg">
-              Workspace Name
-            </Label>
+            <label className="text-sm font-medium">Workspace Name</label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
               placeholder="Enter workspace name"
-              className="h-12 text-lg"
+              className="h-10 sm:h-12"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && workspaceName.trim()) {
+                  handleSubmit();
+                }
+              }}
             />
           </div>
 
-          <WorkspaceLogoUpload
-            label="Workspace Logo"
-            onLogoChange={(file) =>
-              setFormData((prev) => ({ ...prev, logo: file }))
-            }
-          />
-
           <Button
             onClick={handleSubmit}
-            disabled={!formData.name.trim()}
-            className="w-full text-lg"
-            size="lg"
+            disabled={!workspaceName.trim() || isSubmitting}
+            className="w-full h-10 sm:h-12 text-base"
           >
-            Create Workspace
+            {isSubmitting ? "Creating..." : "Continue"}
           </Button>
-        </div>
-
-        <div className="w-5/12 space-y-6 px-4 py-8">
-          <h2 className="text-2xl font-semibold">Ideos Features</h2>
-          <Card className="grid p-2">
-            {WORKSPACE_FEATURES.map((feature, index) => (
-              <div key={index}>
-                <div className="flex gap-3 rounded-lg p-4 transition-colors hover:bg-accent/50">
-                  <span className="text-2xl">{feature.icon}</span>
-                  <div>
-                    <h3 className="font-medium">{feature.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {feature.description}
-                    </p>
-                  </div>
-                </div>
-                {index < WORKSPACE_FEATURES.length - 1 && (
-                  <Separator className="mx-2 my-2" />
-                )}
-              </div>
-            ))}
-          </Card>
         </div>
       </div>
     </main>
   );
-}
+};
+
+export default CreateWorkspace;
