@@ -1,274 +1,339 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   CardDescription,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
 import {
-  Wrench,
-  UserCheck,
+  ArrowRight,
+  Bot,
+  Check,
+  Clock,
+  FileText,
+  Brush,
+  SquarePen,
+  SquareKanban,
+  Hourglass,
   Bell,
-  LineChart,
-  Settings
+  PieChart,
+  Settings,
+  Search,
 } from "lucide-react";
 
-interface StatsCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-  subtext?: string;
-}
+const Dashboard = () => {
+  const { user } = useKindeBrowserClient();
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string;
+  const [mounted, setMounted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-const StatsCard = ({ title, value, icon: Icon, subtext }: StatsCardProps) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <Icon className="h-4 w-4 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      {subtext && (
-        <p className="text-xs text-muted-foreground">{subtext}</p>
-      )}
-    </CardContent>
-  </Card>
-);
+  const pagesData = React.useMemo(
+    () => [
+      {
+        id: 1,
+        title: "Kanban",
+        icon: <SquareKanban className="h-12 w-12" />,
+        link: `/workspaces/${workspaceId}/kanban`,
+        status: true,
+        description: "Visual task and project management",
+        features: [
+          "Drag and drop tasks",
+          "Multiple board views",
+          "Task priorities",
+          "Due dates",
+        ],
+      },
+      {
+        id: 2,
+        title: "Pomodoro",
+        icon: <Hourglass className="h-12 w-12" />,
+        link: `/workspaces/${workspaceId}/pomodoro`,
+        status: true,
+        description: "Focus timer with work-break cycles",
+        features: [
+          "Customizable intervals",
+          "Break reminders",
+          "Session statistics",
+          "Sound alerts",
+        ],
+      },
+      {
+        id: 3,
+        title: "Notes",
+        icon: <SquarePen className="h-12 w-12" />,
+        link: `/workspaces/${workspaceId}/notetaking`,
+        status: true,
+        description: "Simple and quick note-taking",
+        features: [
+          "Rich text editor",
+          "Categories",
+          "Search functionality",
+          "Export options",
+        ],
+      },
+      {
+        id: 4,
+        title: "Drawing",
+        icon: <Brush className="h-12 w-12" />,
+        link: `/workspaces/${workspaceId}/drawing`,
+        status: true,
+        description: "Digital canvas for sketching",
+        features: [
+          "Multiple brush types",
+          "Layer support",
+          "Export to PNG/SVG",
+          "Collaborative mode",
+        ],
+      },
+      {
+        id: 5,
+        title: "Note Summariser",
+        icon: <FileText className="h-12 w-12" />,
+        link: `/workspaces/${workspaceId}/summariser`,
+        status: false,
+        description: "AI-powered note condensing",
+        features: [
+          "AI-powered summaries",
+          "Multiple formats",
+          "Key points extraction",
+          "Custom length",
+        ],
+      },
+      {
+        id: 6,
+        title: "Idoe AI Assistant",
+        icon: <Bot className="h-12 w-12" />,
+        link: `/workspaces/${workspaceId}/ai-assistant`,
+        status: false,
+        description: "Smart help across all tools",
+        features: [
+          "24/7 assistance",
+          "Context-aware help",
+          "Task automation",
+          "Learning capabilities",
+        ],
+      },
+    ],
+    [workspaceId],
+  );
 
-function HomeContent() {
-  const searchParams = useSearchParams();
-  const login = searchParams.get("login");
-  const router = useRouter();
-  const [progress, setProgress] = useState(0);
-  const { user, isLoading } = useKindeBrowserClient();
+  const quickActions = React.useMemo(
+    () => [
+      {
+        id: "analytics",
+        title: "Analytics",
+        icon: <PieChart className="h-5 w-5" />,
+        path: `/workspaces/${workspaceId}/analytics`,
+      },
+      {
+        id: "notifications",
+        title: "Notifications",
+        icon: <Bell className="h-5 w-5" />,
+        path: `/workspaces/${workspaceId}/notifications`,
+      },
+      {
+        id: "settings",
+        title: "Settings",
+        icon: <Settings className="h-5 w-5" />,
+        path: `/workspaces/${workspaceId}/settings`,
+      },
+    ],
+    [workspaceId],
+  );
+
+  const filteredTools = pagesData.filter(
+    (tool) =>
+      tool.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   useEffect(() => {
-    try {
-      if (login === "true") {
-        fetch("/api/handleLogin", { method: "POST" });
-        router.push("/");
-      }
-    } catch (error) {
-      console.error("Failed to handle login:", error);
-    }
-  }, [login, router]);
-
-  useEffect(() => {
-    setProgress(13);
+    setMounted(true);
   }, []);
 
-  const pagesData = [
-    {
-      id: 1,
-      title: "Authentication",
-      icon: <UserCheck size={24} />,
-      link: "/auth",
-      description: "Manage user authentication and access control",
-      buttonText: "Manage Access",
-    },
-    {
-      id: 2,
-      title: "Tools",
-      icon: <Wrench size={24} />,
-      link: "/tools",
-      description: "Access and manage various tools and utilities",
-      buttonText: "View Tools",
-    },
-    {
-      id: 3,
-      title: "Settings",
-      icon: <Settings size={24} />,
-      link: "/settings",
-      description: "Configure system and user preferences",
-      buttonText: "Configure",
-    },
-  ];
-
-  const recentActivities = [
-    {
-      user: "Alice Johnson",
-      action: "Updated profile picture",
-      time: "2 hours ago",
-    },
-    { user: "Bob Smith", action: "Completed Project X", time: "5 hours ago" },
-    { user: "Charlie Brown", action: "Added new tool", time: "1 day ago" },
-    { user: "Diana Prince", action: "Joined the team", time: "2 days ago" },
-    { user: "Eve Adams", action: "Commented on a task", time: "3 days ago" },
-  ];
-
-  const quickTips = [
-    {
-      title: "Auth Management",
-      description: "Use the Auth section to manage your account and security settings.",
-    },
-    {
-      title: "Productivity Tools",
-      description: "Explore our Tools to enhance your productivity and workflow.",
-    },
-    {
-      title: "Customization",
-      description: "Customize your experience in the Settings area.",
-    },
-    {
-      title: "Notifications",
-      description: "Set up notifications to stay updated with the latest activities.",
-    },
-    {
-      title: "User Profiles",
-      description: "Update your profile to keep your information current.",
-    },
-  ];
+  if (!mounted) {
+    return (
+      <ScrollArea>
+        <div className="p-8">
+          <Skeleton className="mb-8 h-12 w-64" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <ToolCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
+      </ScrollArea>
+    );
+  }
 
   return (
-    <div className="space-y-8 p-8">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Welcome back, {user?.given_name ?? "User"}
-          </h1>
-          <p className="text-muted-foreground">
-            Here's what's happening with your projects today.
-          </p>
-        </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Bell className="h-4 w-4" />
-          <span>Notifications</span>
-        </Button>
-      </div>
+    <ScrollArea>
+      <div className="space-y-8 p-8">
+        {/* Header Section */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Welcome back, {user?.given_name ?? "User"}
+            </h1>
+            <p className="text-muted-foreground">
+              Access your productivity tools and workspace
+            </p>
+          </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Total Users"
-          value="26"
-          icon={UserCheck}
-          subtext="+40% from last month"
-        />
-        <StatsCard
-          title="Active Tools"
-          value="3"
-          icon={Wrench}
-          subtext="+2 new this week"
-        />
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Project Progress</CardTitle>
-            <LineChart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">13%</div>
-              <Badge variant="secondary">In Progress</Badge>
+          <div className="flex items-center gap-4">
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                className="w-[200px] rounded-lg border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="Search tools..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <Progress value={progress} />
-          </CardContent>
-        </Card>
-        <StatsCard
-          title="Upcoming Deadlines"
-          value="3"
-          icon={Bell}
-          subtext="within next 7 days"
-        />
-      </div>
+            {quickActions.map((action) => (
+              <Link key={action.id} href={action.path}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10"
+                  title={action.title}
+                >
+                  {action.icon}
+                </Button>
+              </Link>
+            ))}
+          </div>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {pagesData.map((page) => (
-          <Link key={page.id} href={page.link}>
-            <Card className="h-full">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                    {page.icon}
-                  </div>
-                  <div>
-                    <CardTitle>{page.title}</CardTitle>
-                    <CardDescription className="mt-1">{page.description}</CardDescription>
+        {/* Mobile Search */}
+        <div className="relative sm:hidden">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            className="w-full rounded-lg border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            placeholder="Search tools..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Tools Grid Layout */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredTools.map((page) => (
+            <Card
+              key={page.id}
+              className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg ${
+                !page.status ? "opacity-75" : ""
+              }`}
+            >
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="rounded-xl bg-primary/10 p-2 transition-colors group-hover:bg-primary/20">
+                      {page.icon}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-2xl">{page.title}</CardTitle>
+                      </div>
+                      <CardDescription className="mt-1.5">
+                        {page.description}
+                      </CardDescription>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardFooter>
-                <Button className="w-full">
-                  {page.buttonText}
+              <CardContent>
+                <div className="flex flex-col gap-3">
+                  {page.features.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                    >
+                      <div className="shrink-0 rounded-full bg-primary/10 p-1">
+                        <Check className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="line-clamp-1">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="pt-2">
+                <Button
+                  size="lg"
+                  className={`w-full transition-all duration-300 ${
+                    page.status
+                      ? "bg-primary hover:bg-primary/90"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                  disabled={!page.status}
+                  asChild={page.status}
+                >
+                  {page.status ? (
+                    <Link
+                      href={page.link}
+                      className="flex items-center justify-center"
+                    >
+                      Launch Tool
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <span className="flex items-center justify-center">
+                      Coming Soon
+                      <Clock className="ml-2 h-4 w-4" />
+                    </span>
+                  )}
                 </Button>
               </CardFooter>
             </Card>
-          </Link>
-        ))}
+          ))}
+        </div>
       </div>
+    </ScrollArea>
+  );
+};
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
-            <CardDescription>Your team's latest actions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px]">
-              <div className="space-y-4">
-                {recentActivities.map((activity, index) => (
-                  <div key={index}>
-                    <div className="flex items-center gap-4 px-2">
-                      <Avatar>
-                        <AvatarFallback>{activity.user[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">{activity.user}</p>
-                        <p className="text-sm text-muted-foreground">{activity.action}</p>
-                      </div>
-                      <Badge variant="secondary">{activity.time}</Badge>
-                    </div>
-                    {index !== recentActivities.length - 1 && (
-                      <Separator className="my-4" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Tips</CardTitle>
-            <CardDescription>Helpful information to get you started</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[300px]">
-              <div className="space-y-4">
-                {quickTips.map((tip, index) => (
-                  <div key={index}>
-                    <h3 className="font-semibold">{tip.title}</h3>
-                    <p className="text-sm text-muted-foreground">{tip.description}</p>
-                    {index !== quickTips.length - 1 && (
-                      <Separator className="my-4" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+const ToolCardSkeleton = () => (
+  <Card className="relative overflow-hidden">
+    <div className="flex h-full flex-col">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-16 w-16 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+      </CardHeader>
+      <CardContent className="flex-1">
+        <div className="flex flex-col gap-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Skeleton className="h-11 w-full" />
+      </CardFooter>
     </div>
-  );
-}
+  </Card>
+);
 
-export default function Home() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <HomeContent />
-    </Suspense>
-  );
-}
+export default Dashboard;

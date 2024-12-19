@@ -93,28 +93,28 @@ function AppSidebarComponent({ ...props }: React.ComponentProps<typeof Sidebar>)
     tools: [
       {
         title: "Drawing",
-        url: `/workspaces/${workspaceId}/tools/drawing`,
+        url: `/workspaces/${workspaceId}/drawing`,
         icon: Brush,
       },
       {
         title: "Kanban",
-        url: `/workspaces/${workspaceId}/tools/kanban`,
+        url: `/workspaces/${workspaceId}/kanban`,
         icon: SquareKanban,
       },
       {
         title: "Notes",
-        url: `/workspaces/${workspaceId}/tools/notetaking`,
+        url: `/workspaces/${workspaceId}/notetaking`,
         icon: SquarePen,
         subItems: [
           {
             title: "All Notebooks",
-            url: `/workspaces/${workspaceId}/tools/notetaking`,
+            url: `/workspaces/${workspaceId}/notetaking`,
           }
         ]
       },
       {
         title: "Pomodoro",
-        url: `/workspaces/${workspaceId}/tools/pomodoro`,
+        url: `/workspaces/${workspaceId}/pomodoro`,
         icon: Hourglass,
       },
     ],
