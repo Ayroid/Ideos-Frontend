@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Building2, Loader2, Plus, Users } from "lucide-react";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { Button } from "@/components/ui/button";
@@ -41,10 +41,10 @@ export default function WorkspacesPage() {
       if (isAuthLoading || !isAuthenticated) return;
 
       try {
-        const response = await fetch('/api/workspaces', {
-          method: 'GET',
+        const response = await fetch("/api/workspaces", {
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         });
 
@@ -53,7 +53,7 @@ export default function WorkspacesPage() {
           setWorkspaces(data);
         }
       } catch (error) {
-        console.error('Error fetching workspaces:', error);
+        console.error("Error fetching workspaces:", error);
       } finally {
         setIsLoading(false);
       }
@@ -62,10 +62,31 @@ export default function WorkspacesPage() {
     fetchWorkspaces();
   }, [isAuthenticated, isAuthLoading]);
 
+  const handleWorkspaceSelect = async (workspace: Workspace) => {
+    try {
+      const response = await fetch("/api/workspaces/active", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ workspaceId: workspace._id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to set active workspace");
+      }
+
+      router.push(`/workspaces/${workspace._id}`);
+    } catch (error) {
+      console.error("Error setting active workspace:", error);
+      router.push(`/workspaces/${workspace._id}`);
+    }
+  };
+
   const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => (
     <Card
       className="group relative cursor-pointer overflow-hidden p-6 transition-all hover:shadow-lg"
-      onClick={() => router.push(`/workspaces/${workspace._id}`)}
+      onClick={() => handleWorkspaceSelect(workspace)}
     >
       <div className="flex items-center gap-4">
         {workspace.logo ? (
@@ -82,7 +103,8 @@ export default function WorkspacesPage() {
         <div>
           <h3 className="font-semibold">{workspace.name}</h3>
           <p className="text-sm text-muted-foreground">
-            {workspace.members.length} member{workspace.members.length !== 1 ? 's' : ''}
+            {workspace.members.length} member
+            {workspace.members.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -123,7 +145,7 @@ export default function WorkspacesPage() {
             <h2 className="text-xl font-semibold">Your Workspaces</h2>
             <p className="text-sm text-muted-foreground">
               {workspaces.personal.length} workspace
-              {workspaces.personal.length !== 1 ? 's' : ''}
+              {workspaces.personal.length !== 1 ? "s" : ""}
             </p>
           </div>
           {workspaces.personal.length > 0 ? (
@@ -145,7 +167,7 @@ export default function WorkspacesPage() {
             <h2 className="text-xl font-semibold">Shared Workspaces</h2>
             <p className="text-sm text-muted-foreground">
               {workspaces.shared.length} workspace
-              {workspaces.shared.length !== 1 ? 's' : ''}
+              {workspaces.shared.length !== 1 ? "s" : ""}
             </p>
           </div>
           {workspaces.shared.length > 0 ? (

@@ -20,19 +20,46 @@ const Page = () => {
           return;
         }
 
-        const response = await fetch("/api/workspaces", {
+        const activeResponse = await fetch("/api/workspaces/active", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
 
-        const data = await response.json();
+        if (activeResponse.ok) {
+          const activeWorkspace = await activeResponse.json();
+          router.push(`/workspaces/${activeWorkspace._id}`);
+          return;
+        }
 
-        if (response.ok) {
+        const workspacesResponse = await fetch("/api/workspaces", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await workspacesResponse.json();
+
+        if (workspacesResponse.ok) {
           if (data.personal && data.personal.length > 0) {
+            await fetch("/api/workspaces/active", {
+              method: "PUT",
+              body: JSON.stringify({ workspaceId: data.personal[0]._id }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
             router.push(`/workspaces/${data.personal[0]._id}`);
           } else if (data.shared && data.shared.length > 0) {
+            await fetch("/api/workspaces/active", {
+              method: "PUT",
+              body: JSON.stringify({ workspaceId: data.shared[0]._id }),
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
             router.push(`/workspaces/${data.shared[0]._id}`);
           } else {
             router.push("/workspaces");
