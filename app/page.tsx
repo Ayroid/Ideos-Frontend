@@ -13,7 +13,6 @@ const Page = () => {
   useEffect(() => {
     const checkWorkspaces = async () => {
       try {
-        // Check authentication first
         if (isAuthLoading) return;
 
         if (!isAuthenticated) {
@@ -21,7 +20,7 @@ const Page = () => {
           return;
         }
 
-        const response = await fetch('/api/workspace', {
+        const response = await fetch('/api/workspaces', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -32,19 +31,15 @@ const Page = () => {
 
         if (response.ok) {
           if (data.length > 0) {
-            // User has workspaces, redirect to the first one
-            router.push(`/workspace/${data[0]._id}`);
+            router.push(`/workspaces/${data[0]._id}`);
           } else {
-            // No workspaces found, redirect to workspace creation
             router.push('/workspaces');
           }
         } else {
-          // Handle error by redirecting to workspace creation
           router.push('/workspaces');
         }
       } catch (error) {
         console.error('Error checking workspaces:', error);
-        // On error, redirect to workspace creation
         router.push('/workspaces');
       } finally {
         setIsLoading(false);
