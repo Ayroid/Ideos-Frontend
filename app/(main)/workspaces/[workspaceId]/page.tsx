@@ -38,32 +38,7 @@ const Dashboard = () => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { activeWorkspace, setActiveWorkspace, isLoading } =
-    useWorkspaceStore();
-
-  useEffect(() => {
-    const verifyWorkspace = async () => {
-      if (!activeWorkspace?._id) {
-        router.push("/workspaces");
-        return;
-      }
-
-      try {
-        const workspace = await workspaceService.getActiveWorkspace();
-        if (!workspace || workspace._id !== activeWorkspace?._id) {
-          const updated = await workspaceService.setActiveWorkspace(
-            activeWorkspace?._id,
-          );
-          setActiveWorkspace(updated);
-        }
-      } catch (error) {
-        console.error("Error verifying workspace:", error);
-        router.push("/workspaces");
-      }
-    };
-
-    verifyWorkspace();
-  }, [activeWorkspace?._id]);
+  const { activeWorkspace, isLoading } = useWorkspaceStore();
 
   const pagesData = React.useMemo(
     () => [
