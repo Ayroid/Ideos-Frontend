@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useWorkspaceStore } from "@/store/workspace";
 import { toast } from "sonner";
 import { ErrorBoundary } from "react-error-boundary";
 import axios from "axios";
@@ -19,8 +20,6 @@ interface CreateNotebookFormData {
 
 export default function NotesPage() {
   const router = useRouter();
-  const params = useParams();
-  const workspaceId = params?.workspaceId as string;
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,6 +36,8 @@ export default function NotesPage() {
     },
   });
 
+  const { activeWorkspace } = useWorkspaceStore();
+
   useEffect(() => {
     const checkExistingNotebook = async () => {
       try {
@@ -44,7 +45,9 @@ export default function NotesPage() {
         const notebook = response.data[0];
 
         if (notebook && notebook._id) {
-          router.push(`/workspaces/${workspaceId}/tools/notetaking/${notebook._id}`);
+          router.push(
+            `/workspaces/${activeWorkspace?._id}/notetaking/${notebook._id}`,
+          );
         }
         setIsLoading(false);
       } catch (error) {
@@ -69,7 +72,9 @@ export default function NotesPage() {
 
         if (response.data && response.data._id) {
           toast.success("Notebook created successfully");
-          router.push(`/workspace/${workspaceId}/tools/notetaking/${response.data._id}`);
+          router.push(
+            `/workspace/${activeWorkspace?._id}/notetaking/${response.data._id}`,
+          );
         } else {
           toast.error("Failed to create notebook");
         }

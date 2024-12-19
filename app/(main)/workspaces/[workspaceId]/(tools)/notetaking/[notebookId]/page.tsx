@@ -19,13 +19,13 @@ const Notebook = ({ params }: NotebookProps) => {
       try {
         const response = await fetch(`/api/notetaking/notebooks/${notebookId}`);
         if (!response.ok) {
-          router.push("/tools/notetaking");
+          router.push("/notetaking");
           return;
         }
         const data = await response.json();
       } catch (err) {
         console.error("Error fetching notebook:", err);
-        router.push("/tools/notetaking");
+        router.push("/notetaking");
       } finally {
         setIsLoading(false);
       }

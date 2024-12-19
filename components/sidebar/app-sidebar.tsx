@@ -1,23 +1,21 @@
 "use client";
 
 import {
-  AudioWaveform,
   Brush,
   Command,
   GalleryVerticalEnd,
   Hourglass,
   LayoutDashboard,
   LifeBuoy,
-  PencilRuler,
   PieChart,
   Send,
   Settings,
   SquareKanban,
   SquarePen,
-  Bell
+  Bell,
 } from "lucide-react";
 import * as React from "react";
-import { useParams } from 'next/navigation';
+import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 import { SidebarSection } from "@/components/sidebar/sidebar-sections";
@@ -35,107 +33,104 @@ import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { SecondarySidebarSection } from "./sidebar-secondary";
 import { SidebarMain } from "./sidebar-main";
 import { Separator } from "../ui/separator";
+import { useWorkspaceStore } from "@/store/workspace";
 
 const CircularLoader = React.memo(({ className }: { className?: string }) => {
   return (
-    <div className={cn("flex justify-center items-center", className)}>
-      <div className="w-5 h-5 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+    <div className={cn("flex items-center justify-center", className)}>
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
     </div>
   );
 });
-CircularLoader.displayName = 'CircularLoader';
+CircularLoader.displayName = "CircularLoader";
 
-function AppSidebarComponent({ ...props }: React.ComponentProps<typeof Sidebar>) {
+function AppSidebarComponent({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const { user } = useKindeBrowserClient();
-  const params = useParams();
-  const workspaceId = params?.workspaceId as string;
+  const { activeWorkspace, workspaces } = useWorkspaceStore();
 
-  const sidebarData = React.useMemo(() => ({
-    user: {
-      name: user?.given_name ?? "User",
-      email: user?.email ?? "user@gmail.com",
-      avatar: user?.picture ?? undefined,
-    },
-    teams: [
-      {
-        name: "Ideos",
-        logo: GalleryVerticalEnd,
-        plan: "Enterprise",
+  const sidebarData = React.useMemo(
+    () => ({
+      user: {
+        name: user?.given_name ?? "User",
+        email: user?.email ?? "user@gmail.com",
+        avatar: user?.picture ?? undefined,
       },
-      {
-        name: "Visual Rift",
-        logo: Command,
-        plan: "Enterprise",
-      },
-    ],
-    pages: [
-      {
-        title: "Dashboard",
-        url: `/workspaces/${workspaceId}`,
-        icon: LayoutDashboard,
-      },
-      {
-        title: "Analytics",
-        url: `/workspaces/${workspaceId}/analytics`,
-        icon: PieChart,
-      },
-      {
-        title: "Notifications",
-        url: `/workspaces/${workspaceId}/notifications`,
-        icon: Bell,
-      },
-      {
-        title: "Settings",
-        url: `/workspaces/${workspaceId}/settings`,
-        icon: Settings,
-      },
-    ],
-    tools: [
-      {
-        title: "Drawing",
-        url: `/workspaces/${workspaceId}/drawing`,
-        icon: Brush,
-      },
-      {
-        title: "Kanban",
-        url: `/workspaces/${workspaceId}/kanban`,
-        icon: SquareKanban,
-      },
-      {
-        title: "Notes",
-        url: `/workspaces/${workspaceId}/notetaking`,
-        icon: SquarePen,
-        subItems: [
-          {
-            title: "All Notebooks",
-            url: `/workspaces/${workspaceId}/notetaking`,
-          }
-        ]
-      },
-      {
-        title: "Pomodoro",
-        url: `/workspaces/${workspaceId}/pomodoro`,
-        icon: Hourglass,
-      },
-    ],
-    utilities: [
-      {
-        title: "Support",
-        url: "/support",
-        icon: LifeBuoy,
-      },
-      {
-        title: "Feedback",
-        url: "/feedback",
-        icon: Send,
-      },
-    ],
-  }), [workspaceId, user?.given_name, user?.email, user?.picture]); // Only recompute when these values change
+      pages: [
+        {
+          title: "Dashboard",
+          url: `/workspaces/${activeWorkspace?._id}`,
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Analytics",
+          url: `/workspaces/${activeWorkspace?._id}/analytics`,
+          icon: PieChart,
+        },
+        {
+          title: "Notifications",
+          url: `/workspaces/${activeWorkspace?._id}/notifications`,
+          icon: Bell,
+        },
+        {
+          title: "Settings",
+          url: `/workspaces/${activeWorkspace?._id}/settings`,
+          icon: Settings,
+        },
+      ],
+      tools: [
+        {
+          title: "Drawing",
+          url: `/workspaces/${activeWorkspace?._id}/drawing`,
+          icon: Brush,
+        },
+        {
+          title: "Kanban",
+          url: `/workspaces/${activeWorkspace?._id}/kanban`,
+          icon: SquareKanban,
+        },
+        {
+          title: "Notes",
+          url: `/workspaces/${activeWorkspace?._id}/notetaking`,
+          icon: SquarePen,
+          subItems: [
+            {
+              title: "All Notebooks",
+              url: `/workspaces/${activeWorkspace?._id}/notetaking`,
+            },
+          ],
+        },
+        {
+          title: "Pomodoro",
+          url: `/workspaces/${activeWorkspace?._id}/pomodoro`,
+          icon: Hourglass,
+        },
+      ],
+      utilities: [
+        {
+          title: "Support",
+          url: "/support",
+          icon: LifeBuoy,
+        },
+        {
+          title: "Feedback",
+          url: "/feedback",
+          icon: Send,
+        },
+      ],
+    }),
+    [activeWorkspace?._id, user?.given_name, user?.email, user?.picture],
+  );
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={sidebarData.teams} />
+        <TeamSwitcher
+          personal={workspaces.personal}
+          shared={workspaces.shared}
+          activeWorkspace={activeWorkspace}
+        />
       </SidebarHeader>
       <SidebarContent>
         <Separator />
@@ -152,6 +147,6 @@ function AppSidebarComponent({ ...props }: React.ComponentProps<typeof Sidebar>)
     </Sidebar>
   );
 }
-AppSidebarComponent.displayName = 'AppSidebarComponent';
+AppSidebarComponent.displayName = "AppSidebarComponent";
 
 export const AppSidebar = React.memo(AppSidebarComponent);

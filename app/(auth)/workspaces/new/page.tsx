@@ -1,70 +1,76 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useWorkspaceStore } from "@/store/workspace";
+import { workspaceService } from "@/services/workspace";
 
 const CreateWorkspace = () => {
-  const [workspaceName, setWorkspaceName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    workspaces,
+    setWorkspaces,
+    setActiveWorkspace,
+    isLoading,
+    setLoading,
+    setError
+  } = useWorkspaceStore();
 
-  useEffect(() => {
+  React.useEffect(() => {
+    const checkExistingWorkspaces = async () => {
+      setLoading(true);
+      try {
+        const data = await workspaceService.getWorkspaces();
+        setWorkspaces(data);
+
+        // If there are existing workspaces, redirect to the first one
+        if (data.personal.length > 0 || data.shared.length > 0) {
+          const firstWorkspace = data.personal[0] || data.shared[0];
+          router.push(`/workspaces/${firstWorkspace._id}`);
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking workspaces:", error);
+        toast.error("Failed to check existing workspaces");
+        setError(error instanceof Error ? error : new Error("Failed to check workspaces"));
+      } finally {
+        setLoading(false);
+      }
+    };
+
     checkExistingWorkspaces();
   }, []);
-
-  const checkExistingWorkspaces = async () => {
-    try {
-      const response = await fetch("/api/workspaces", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-      console.log("Workspace data:", data);
-
-      if (response.ok && data.length > 0) {
-        router.push(`/workspaces/${data[0]._id}`);
-        return;
-      }
-    } catch (error) {
-      console.error("Error checking workspaces:", error);
-      toast.error("Failed to check existing workspaces");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async () => {
     if (!workspaceName.trim()) return;
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/workspaces", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: workspaceName }),
+      // Create the workspace
+      const newWorkspace = await workspaceService.createWorkspace(workspaceName);
+
+      // Update store with new workspace
+      setWorkspaces({
+        ...workspaces,
+        personal: [...workspaces.personal, newWorkspace]
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create workspace");
-      }
+      // Set as active workspace
+      await workspaceService.setActiveWorkspace(newWorkspace._id);
+      setActiveWorkspace(newWorkspace);
 
       toast.success("Workspace created successfully!");
-      router.push(`/workspaces/${data._id}`);
+      router.push(`/workspaces/${newWorkspace._id}`);
     } catch (error) {
       console.error("Error creating workspace:", error);
       toast.error(error instanceof Error ? error.message : "Failed to create workspace");
+      setError(error instanceof Error ? error : new Error("Failed to create workspace"));
     } finally {
       setIsSubmitting(false);
     }

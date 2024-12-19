@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,34 +9,61 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
+import { workspaceService } from "@/services/workspace";
+import { useWorkspaceStore } from "@/store/workspace";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import {
   ArrowRight,
+  Bell,
   Bot,
+  Brush,
   Check,
   Clock,
   FileText,
-  Brush,
-  SquarePen,
-  SquareKanban,
   Hourglass,
-  Bell,
   PieChart,
-  Settings,
   Search,
+  Settings,
+  SquareKanban,
+  SquarePen,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const { user } = useKindeBrowserClient();
-  const params = useParams();
-  const workspaceId = params?.workspaceId as string;
-  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { activeWorkspace, setActiveWorkspace, isLoading } =
+    useWorkspaceStore();
+
+  useEffect(() => {
+    const verifyWorkspace = async () => {
+      if (!activeWorkspace?._id) {
+        router.push("/workspaces");
+        return;
+      }
+
+      try {
+        const workspace = await workspaceService.getActiveWorkspace();
+        if (!workspace || workspace._id !== activeWorkspace?._id) {
+          const updated = await workspaceService.setActiveWorkspace(
+            activeWorkspace?._id,
+          );
+          setActiveWorkspace(updated);
+        }
+      } catch (error) {
+        console.error("Error verifying workspace:", error);
+        router.push("/workspaces");
+      }
+    };
+
+    verifyWorkspace();
+  }, [activeWorkspace?._id]);
 
   const pagesData = React.useMemo(
     () => [
@@ -45,7 +71,7 @@ const Dashboard = () => {
         id: 1,
         title: "Kanban",
         icon: <SquareKanban className="h-12 w-12" />,
-        link: `/workspaces/${workspaceId}/kanban`,
+        link: `/workspaces/${activeWorkspace?._id}/kanban`,
         status: true,
         description: "Visual task and project management",
         features: [
@@ -59,7 +85,7 @@ const Dashboard = () => {
         id: 2,
         title: "Pomodoro",
         icon: <Hourglass className="h-12 w-12" />,
-        link: `/workspaces/${workspaceId}/pomodoro`,
+        link: `/workspaces/${activeWorkspace?._id}/pomodoro`,
         status: true,
         description: "Focus timer with work-break cycles",
         features: [
@@ -73,7 +99,7 @@ const Dashboard = () => {
         id: 3,
         title: "Notes",
         icon: <SquarePen className="h-12 w-12" />,
-        link: `/workspaces/${workspaceId}/notetaking`,
+        link: `/workspaces/${activeWorkspace?._id}/notetaking`,
         status: true,
         description: "Simple and quick note-taking",
         features: [
@@ -87,7 +113,7 @@ const Dashboard = () => {
         id: 4,
         title: "Drawing",
         icon: <Brush className="h-12 w-12" />,
-        link: `/workspaces/${workspaceId}/drawing`,
+        link: `/workspaces/${activeWorkspace?._id}/drawing`,
         status: true,
         description: "Digital canvas for sketching",
         features: [
@@ -101,7 +127,7 @@ const Dashboard = () => {
         id: 5,
         title: "Note Summariser",
         icon: <FileText className="h-12 w-12" />,
-        link: `/workspaces/${workspaceId}/summariser`,
+        link: `/workspaces/${activeWorkspace?._id}/summariser`,
         status: false,
         description: "AI-powered note condensing",
         features: [
@@ -115,7 +141,7 @@ const Dashboard = () => {
         id: 6,
         title: "Idoe AI Assistant",
         icon: <Bot className="h-12 w-12" />,
-        link: `/workspaces/${workspaceId}/ai-assistant`,
+        link: `/workspaces/${activeWorkspace?._id}/ai-assistant`,
         status: false,
         description: "Smart help across all tools",
         features: [
@@ -126,7 +152,7 @@ const Dashboard = () => {
         ],
       },
     ],
-    [workspaceId],
+    [activeWorkspace?._id],
   );
 
   const quickActions = React.useMemo(
@@ -135,22 +161,22 @@ const Dashboard = () => {
         id: "analytics",
         title: "Analytics",
         icon: <PieChart className="h-5 w-5" />,
-        path: `/workspaces/${workspaceId}/analytics`,
+        path: `/workspaces/${activeWorkspace?._id}/analytics`,
       },
       {
         id: "notifications",
         title: "Notifications",
         icon: <Bell className="h-5 w-5" />,
-        path: `/workspaces/${workspaceId}/notifications`,
+        path: `/workspaces/${activeWorkspace?._id}/notifications`,
       },
       {
         id: "settings",
         title: "Settings",
         icon: <Settings className="h-5 w-5" />,
-        path: `/workspaces/${workspaceId}/settings`,
+        path: `/workspaces/${activeWorkspace?._id}/settings`,
       },
     ],
-    [workspaceId],
+    [activeWorkspace?._id],
   );
 
   const filteredTools = pagesData.filter(
@@ -159,11 +185,7 @@ const Dashboard = () => {
       tool.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  if (isLoading) {
     return (
       <ScrollArea>
         <div className="p-8">
@@ -181,14 +203,15 @@ const Dashboard = () => {
   return (
     <ScrollArea>
       <div className="space-y-8 p-8">
-        {/* Header Section */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">
               Welcome back, {user?.given_name ?? "User"}
             </h1>
             <p className="text-muted-foreground">
-              Access your productivity tools and workspace
+              {activeWorkspace
+                ? `Workspace: ${activeWorkspace.name}`
+                : "Access your productivity tools and workspace"}
             </p>
           </div>
 
@@ -217,7 +240,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Mobile Search */}
         <div className="relative sm:hidden">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -228,7 +250,6 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Tools Grid Layout */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredTools.map((page) => (
             <Card

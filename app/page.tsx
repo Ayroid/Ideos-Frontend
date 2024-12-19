@@ -1,82 +1,69 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { useWorkspaceStore } from "@/store/workspace";
+import { workspaceService } from "@/services/workspace";
 
 const Page = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated, isLoading: isAuthLoading } = useKindeBrowserClient();
+  const { setActiveWorkspace, setWorkspaces, setLoading, setError, isLoading } =
+    useWorkspaceStore();
 
-  useEffect(() => {
-    const checkWorkspaces = async () => {
+  React.useEffect(() => {
+    const initializeWorkspaces = async () => {
+      if (isAuthLoading) return;
+
+      if (!isAuthenticated) {
+        router.push("/");
+        return;
+      }
+
+      setLoading(true);
       try {
-        if (isAuthLoading) return;
-
-        if (!isAuthenticated) {
-          router.push("/");
-          return;
-        }
-
-        const activeResponse = await fetch("/api/workspaces/active", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (activeResponse.ok) {
-          const activeWorkspace = await activeResponse.json();
+        const activeWorkspace = await workspaceService.getActiveWorkspace();
+        if (activeWorkspace) {
+          setActiveWorkspace(activeWorkspace);
           router.push(`/workspaces/${activeWorkspace._id}`);
           return;
         }
 
-        const workspacesResponse = await fetch("/api/workspaces", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const workspaces = await workspaceService.getWorkspaces();
+        setWorkspaces(workspaces);
 
-        const data = await workspacesResponse.json();
-
-        if (workspacesResponse.ok) {
-          if (data.personal && data.personal.length > 0) {
-            await fetch("/api/workspaces/active", {
-              method: "PUT",
-              body: JSON.stringify({ workspaceId: data.personal[0]._id }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-            router.push(`/workspaces/${data.personal[0]._id}`);
-          } else if (data.shared && data.shared.length > 0) {
-            await fetch("/api/workspaces/active", {
-              method: "PUT",
-              body: JSON.stringify({ workspaceId: data.shared[0]._id }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-            router.push(`/workspaces/${data.shared[0]._id}`);
-          } else {
-            router.push("/workspaces");
-          }
+        if (workspaces.personal.length > 0) {
+          const workspace = await workspaceService.setActiveWorkspace(
+            workspaces.personal[0]._id,
+          );
+          setActiveWorkspace(workspace);
+          router.push(`/workspaces/${workspace._id}`);
+        } else if (workspaces.shared.length > 0) {
+          const workspace = await workspaceService.setActiveWorkspace(
+            workspaces.shared[0]._id,
+          );
+          setActiveWorkspace(workspace);
+          router.push(`/workspaces/${workspace._id}`);
         } else {
           router.push("/workspaces");
         }
       } catch (error) {
-        console.error("Error checking workspaces:", error);
+        console.error("Error initializing workspaces:", error);
+        setError(
+          error instanceof Error
+            ? error
+            : new Error("Failed to initialize workspaces"),
+        );
         router.push("/workspaces");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    checkWorkspaces();
-  }, [router, isAuthenticated, isAuthLoading]);
+    initializeWorkspaces();
+  }, [isAuthenticated, isAuthLoading]);
 
   if (isLoading || isAuthLoading) {
     return (
