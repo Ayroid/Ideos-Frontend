@@ -71,50 +71,50 @@ function AppSidebarComponent({ ...props }: React.ComponentProps<typeof Sidebar>)
     pages: [
       {
         title: "Dashboard",
-        url: `/workspace/${workspaceId}`,
+        url: `/workspaces/${workspaceId}`,
         icon: LayoutDashboard,
       },
       {
         title: "Analytics",
-        url: `/workspace/${workspaceId}/analytics`,
+        url: `/workspaces/${workspaceId}/analytics`,
         icon: PieChart,
       },
       {
         title: "Notifications",
-        url: `/workspace/${workspaceId}/notifications`,
+        url: `/workspaces/${workspaceId}/notifications`,
         icon: Bell,
       },
       {
         title: "Settings",
-        url: `/workspace/${workspaceId}/settings`,
+        url: `/workspaces/${workspaceId}/settings`,
         icon: Settings,
       },
     ],
     tools: [
       {
         title: "Drawing",
-        url: `/workspace/${workspaceId}/tools/drawing`,
+        url: `/workspaces/${workspaceId}/tools/drawing`,
         icon: Brush,
       },
       {
         title: "Kanban",
-        url: `/workspace/${workspaceId}/tools/kanban`,
+        url: `/workspaces/${workspaceId}/tools/kanban`,
         icon: SquareKanban,
       },
       {
         title: "Notes",
-        url: `/workspace/${workspaceId}/tools/notetaking`,
+        url: `/workspaces/${workspaceId}/tools/notetaking`,
         icon: SquarePen,
         subItems: [
           {
             title: "All Notebooks",
-            url: `/workspace/${workspaceId}/tools/notetaking`,
+            url: `/workspaces/${workspaceId}/tools/notetaking`,
           }
         ]
       },
       {
         title: "Pomodoro",
-        url: `/workspace/${workspaceId}/tools/pomodoro`,
+        url: `/workspaces/${workspaceId}/tools/pomodoro`,
         icon: Hourglass,
       },
     ],

@@ -44,7 +44,7 @@ export default function NotesPage() {
         const notebook = response.data[0];
 
         if (notebook && notebook._id) {
-          router.push(`/workspace/${workspaceId}/tools/notetaking/${notebook._id}`);
+          router.push(`/workspaces/${workspaceId}/tools/notetaking/${notebook._id}`);
         }
         setIsLoading(false);
       } catch (error) {

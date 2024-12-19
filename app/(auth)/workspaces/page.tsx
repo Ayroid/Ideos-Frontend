@@ -8,25 +8,33 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 interface Workspace {
   _id: string;
   name: string;
   logo?: string;
   userId: string;
-  members: string[];
+  members: User[];
+}
+
+interface WorkspacesState {
+  personal: Workspace[];
+  shared: Workspace[];
 }
 
 export default function WorkspacesPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [workspaces, setWorkspaces] = useState<{
-    personal: Workspace[];
-    shared: Workspace[];
-  }>({
+  const [workspaces, setWorkspaces] = useState<WorkspacesState>({
     personal: [],
     shared: [],
   });
-  const { user, isAuthenticated, isLoading: isAuthLoading } = useKindeBrowserClient();
+  const { isAuthenticated, isLoading: isAuthLoading } = useKindeBrowserClient();
 
   useEffect(() => {
     const fetchWorkspaces = async () => {
@@ -42,12 +50,7 @@ export default function WorkspacesPage() {
 
         if (response.ok) {
           const data = await response.json();
-
-          // Separate personal and shared workspaces
-          const personal = data.filter((ws: Workspace) => ws.userId === user?.id);
-          const shared = data.filter((ws: Workspace) => ws.userId !== user?.id);
-
-          setWorkspaces({ personal, shared });
+          setWorkspaces(data);
         }
       } catch (error) {
         console.error('Error fetching workspaces:', error);
@@ -57,7 +60,7 @@ export default function WorkspacesPage() {
     };
 
     fetchWorkspaces();
-  }, [isAuthenticated, isAuthLoading, user]);
+  }, [isAuthenticated, isAuthLoading]);
 
   const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => (
     <Card
@@ -119,7 +122,8 @@ export default function WorkspacesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Your Workspaces</h2>
             <p className="text-sm text-muted-foreground">
-              {workspaces.personal.length} workspace{workspaces.personal.length !== 1 ? 's' : ''}
+              {workspaces.personal.length} workspace
+              {workspaces.personal.length !== 1 ? 's' : ''}
             </p>
           </div>
           {workspaces.personal.length > 0 ? (
@@ -140,7 +144,8 @@ export default function WorkspacesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Shared Workspaces</h2>
             <p className="text-sm text-muted-foreground">
-              {workspaces.shared.length} workspace{workspaces.shared.length !== 1 ? 's' : ''}
+              {workspaces.shared.length} workspace
+              {workspaces.shared.length !== 1 ? 's' : ''}
             </p>
           </div>
           {workspaces.shared.length > 0 ? (
