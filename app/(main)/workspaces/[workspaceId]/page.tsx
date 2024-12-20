@@ -43,7 +43,7 @@ const Dashboard = () => {
         id: 1,
         title: "Kanban",
         icon: <SquareKanban className="h-12 w-12" />,
-        link: `/workspaces/${activeWorkspace?._id}/kanban`,
+        link: `/workspaces/${activeWorkspace?.name.toLowerCase()}/kanban`,
         status: true,
         description: "Visual task and project management",
         features: [
@@ -57,7 +57,7 @@ const Dashboard = () => {
         id: 2,
         title: "Pomodoro",
         icon: <Hourglass className="h-12 w-12" />,
-        link: `/workspaces/${activeWorkspace?._id}/pomodoro`,
+        link: `/workspaces/${activeWorkspace?.name.toLowerCase()}/pomodoro`,
         status: true,
         description: "Focus timer with work-break cycles",
         features: [
@@ -71,7 +71,7 @@ const Dashboard = () => {
         id: 3,
         title: "Notes",
         icon: <SquarePen className="h-12 w-12" />,
-        link: `/workspaces/${activeWorkspace?._id}/notetaking`,
+        link: `/workspaces/${activeWorkspace?.name.toLowerCase()}/notetaking`,
         status: true,
         description: "Simple and quick note-taking",
         features: [
@@ -85,7 +85,7 @@ const Dashboard = () => {
         id: 4,
         title: "Drawing",
         icon: <Brush className="h-12 w-12" />,
-        link: `/workspaces/${activeWorkspace?._id}/drawing`,
+        link: `/workspaces/${activeWorkspace?.name.toLowerCase()}/drawing`,
         status: true,
         description: "Digital canvas for sketching",
         features: [
@@ -99,7 +99,7 @@ const Dashboard = () => {
         id: 5,
         title: "Note Summariser",
         icon: <FileText className="h-12 w-12" />,
-        link: `/workspaces/${activeWorkspace?._id}/summariser`,
+        link: `/workspaces/${activeWorkspace?.name.toLowerCase()}/summariser`,
         status: false,
         description: "AI-powered note condensing",
         features: [
@@ -113,7 +113,7 @@ const Dashboard = () => {
         id: 6,
         title: "Idoe AI Assistant",
         icon: <Bot className="h-12 w-12" />,
-        link: `/workspaces/${activeWorkspace?._id}/ai-assistant`,
+        link: `/workspaces/${activeWorkspace?.name.toLowerCase()}/ai-assistant`,
         status: false,
         description: "Smart help across all tools",
         features: [
@@ -124,7 +124,7 @@ const Dashboard = () => {
         ],
       },
     ],
-    [activeWorkspace?._id],
+    [activeWorkspace?.name.toLowerCase()],
   );
 
   const quickActions = React.useMemo(
@@ -133,22 +133,22 @@ const Dashboard = () => {
         id: "analytics",
         title: "Analytics",
         icon: <PieChart className="h-5 w-5" />,
-        path: `/workspaces/${activeWorkspace?._id}/analytics`,
+        path: `/workspaces/${activeWorkspace?.name.toLowerCase()}/analytics`,
       },
       {
         id: "notifications",
         title: "Notifications",
         icon: <Bell className="h-5 w-5" />,
-        path: `/workspaces/${activeWorkspace?._id}/notifications`,
+        path: `/workspaces/${activeWorkspace?.name.toLowerCase()}/notifications`,
       },
       {
         id: "settings",
         title: "Settings",
         icon: <Settings className="h-5 w-5" />,
-        path: `/workspaces/${activeWorkspace?._id}/settings`,
+        path: `/workspaces/${activeWorkspace?.name.toLowerCase()}/settings`,
       },
     ],
-    [activeWorkspace?._id],
+    [activeWorkspace?.name.toLowerCase()],
   );
 
   const filteredTools = pagesData.filter(

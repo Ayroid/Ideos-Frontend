@@ -80,13 +80,12 @@ export default function WorkspacesPage() {
 
   const handleWorkspaceSelect = async (workspace: Workspace) => {
     try {
-      const updatedWorkspace = await workspaceService.setActiveWorkspace(workspace._id);
+      const updatedWorkspace = await workspaceService.setActiveWorkspace(workspace.name.toLowerCase());
       setActiveWorkspace(updatedWorkspace);
-      router.push(`/workspaces/${workspace._id}`);
+      router.push(`/workspaces/${workspace.name.toLowerCase()}`);
     } catch (error) {
       console.error("Error setting active workspace:", error);
-      // Still redirect even if setting active workspace fails
-      router.push(`/workspaces/${workspace._id}`);
+      router.push(`/workspaces/${workspace.name.toLowerCase()}`);
     }
   };
 
@@ -104,13 +103,6 @@ export default function WorkspacesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Workspaces</h1>
-          {/* <Button
-            onClick={() => router.push('/workspaces/new')}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Create Workspace
-          </Button> */}
         </div>
 
         <Separator />
@@ -128,7 +120,7 @@ export default function WorkspacesPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {workspaces.personal.map((workspace) => (
                 <WorkspaceCard
-                  key={workspace._id}
+                  key={workspace.name.toLowerCase()}
                   workspace={workspace}
                   onSelect={handleWorkspaceSelect}
                 />
@@ -154,7 +146,7 @@ export default function WorkspacesPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {workspaces.shared.map((workspace) => (
                 <WorkspaceCard
-                  key={workspace._id}
+                  key={workspace.name.toLowerCase()}
                   workspace={workspace}
                   onSelect={handleWorkspaceSelect}
                 />

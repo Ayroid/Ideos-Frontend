@@ -19,7 +19,7 @@ const CreateWorkspace = () => {
     setActiveWorkspace,
     isLoading,
     setLoading,
-    setError
+    setError,
   } = useWorkspaceStore();
 
   React.useEffect(() => {
@@ -29,16 +29,19 @@ const CreateWorkspace = () => {
         const data = await workspaceService.getWorkspaces();
         setWorkspaces(data);
 
-        // If there are existing workspaces, redirect to the first one
         if (data.personal.length > 0 || data.shared.length > 0) {
           const firstWorkspace = data.personal[0] || data.shared[0];
-          router.push(`/workspaces/${firstWorkspace._id}`);
+          router.push(`/workspaces/${firstWorkspace.name.toLowerCase()}`);
           return;
         }
       } catch (error) {
         console.error("Error checking workspaces:", error);
         toast.error("Failed to check existing workspaces");
-        setError(error instanceof Error ? error : new Error("Failed to check workspaces"));
+        setError(
+          error instanceof Error
+            ? error
+            : new Error("Failed to check workspaces"),
+        );
       } finally {
         setLoading(false);
       }
@@ -52,25 +55,31 @@ const CreateWorkspace = () => {
 
     setIsSubmitting(true);
     try {
-      // Create the workspace
-      const newWorkspace = await workspaceService.createWorkspace(workspaceName);
+      const newWorkspace =
+        await workspaceService.createWorkspace(workspaceName);
 
-      // Update store with new workspace
       setWorkspaces({
         ...workspaces,
-        personal: [...workspaces.personal, newWorkspace]
+        personal: [...workspaces.personal, newWorkspace],
       });
 
-      // Set as active workspace
-      await workspaceService.setActiveWorkspace(newWorkspace._id);
+      await workspaceService.setActiveWorkspace(
+        newWorkspace.name.toLowerCase(),
+      );
       setActiveWorkspace(newWorkspace);
 
       toast.success("Workspace created successfully!");
-      router.push(`/workspaces/${newWorkspace._id}`);
+      router.push(`/workspaces/${newWorkspace.name.toLowerCase()}`);
     } catch (error) {
       console.error("Error creating workspace:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to create workspace");
-      setError(error instanceof Error ? error : new Error("Failed to create workspace"));
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create workspace",
+      );
+      setError(
+        error instanceof Error
+          ? error
+          : new Error("Failed to create workspace"),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -86,25 +95,25 @@ const CreateWorkspace = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center">
-      <div className="w-full space-y-6 p-4 min-h-screen pt-20 md:pt-32 px-4 sm:px-6 md:px-8">
+      <div className="min-h-screen w-full space-y-6 p-4 px-4 pt-20 sm:px-6 md:px-8 md:pt-32">
         <div className="text-center">
           <Image
             src="/ideos.png"
             alt="Logo"
             height="80"
             width="80"
-            className="mx-auto w-16 h-16 sm:w-20 sm:h-20 mb-20"
+            className="mx-auto mb-20 h-16 w-16 sm:h-20 sm:w-20"
           />
         </div>
         <div className="space-y-2 text-center">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold px-4">
-            What should we call{' '}
+          <h1 className="px-4 text-2xl font-bold sm:text-3xl md:text-4xl">
+            What should we call{" "}
             <span className="hidden sm:inline">
               <br />
             </span>
             your workspace?
           </h1>
-          <p className="text-sm sm:text-md text-muted-foreground px-4">
+          <p className="sm:text-md px-4 text-sm text-muted-foreground">
             You can always change this later from settings.
           </p>
         </div>
@@ -128,7 +137,7 @@ const CreateWorkspace = () => {
           <Button
             onClick={handleSubmit}
             disabled={!workspaceName.trim() || isSubmitting}
-            className="w-full h-10 sm:h-12 text-base"
+            className="h-10 w-full text-base sm:h-12"
           >
             {isSubmitting ? "Creating..." : "Continue"}
           </Button>

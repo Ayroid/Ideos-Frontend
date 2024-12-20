@@ -60,50 +60,50 @@ function AppSidebarComponent({
       pages: [
         {
           title: "Dashboard",
-          url: `/workspaces/${activeWorkspace?._id}`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}`,
           icon: LayoutDashboard,
         },
         {
           title: "Analytics",
-          url: `/workspaces/${activeWorkspace?._id}/analytics`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/analytics`,
           icon: PieChart,
         },
         {
           title: "Notifications",
-          url: `/workspaces/${activeWorkspace?._id}/notifications`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/notifications`,
           icon: Bell,
         },
         {
           title: "Settings",
-          url: `/workspaces/${activeWorkspace?._id}/settings`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/settings`,
           icon: Settings,
         },
       ],
       tools: [
         {
           title: "Drawing",
-          url: `/workspaces/${activeWorkspace?._id}/drawing`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/drawing`,
           icon: Brush,
         },
         {
           title: "Kanban",
-          url: `/workspaces/${activeWorkspace?._id}/kanban`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/kanban`,
           icon: SquareKanban,
         },
         {
           title: "Notes",
-          url: `/workspaces/${activeWorkspace?._id}/notetaking`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/notetaking`,
           icon: SquarePen,
           subItems: [
             {
               title: "All Notebooks",
-              url: `/workspaces/${activeWorkspace?._id}/notetaking`,
+              url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/notetaking`,
             },
           ],
         },
         {
           title: "Pomodoro",
-          url: `/workspaces/${activeWorkspace?._id}/pomodoro`,
+          url: `/workspaces/${activeWorkspace?.name.toLowerCase()}/pomodoro`,
           icon: Hourglass,
         },
       ],
@@ -120,7 +120,7 @@ function AppSidebarComponent({
         },
       ],
     }),
-    [activeWorkspace?._id, user?.given_name, user?.email, user?.picture],
+    [activeWorkspace?.name.toLowerCase(), user?.given_name, user?.email, user?.picture],
   );
 
   return (

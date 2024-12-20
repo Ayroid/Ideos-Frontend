@@ -35,9 +35,9 @@ export function TeamSwitcher({ personal, shared, activeWorkspace }: TeamSwitcher
 
   const handleWorkspaceSelect = async (workspace: Workspace) => {
     try {
-      const updatedWorkspace = await workspaceService.setActiveWorkspace(workspace._id);
+      const updatedWorkspace = await workspaceService.setActiveWorkspace(workspace.name);
       setActiveWorkspace(updatedWorkspace);
-      router.push(`/workspaces/${workspace._id}`);
+      router.push(`/workspaces/${workspace.name.toLowerCase()}`);
     } catch (error) {
       console.error("Error switching workspace:", error);
     }
@@ -69,7 +69,7 @@ export function TeamSwitcher({ personal, shared, activeWorkspace }: TeamSwitcher
                   {activeWorkspace?.name ?? "Select Workspace"}
                 </span>
                 <span className="truncate text-xs">
-                  {personal.some(w => w._id === activeWorkspace?._id) ? "Personal" : "Shared"}
+                  {personal.some(w => w.name.toLowerCase() === activeWorkspace?.name.toLowerCase()) ? "Personal" : "Shared"}
                 </span>
               </div>
               <ChevronsUpDown className="ml-auto" />
@@ -88,7 +88,7 @@ export function TeamSwitcher({ personal, shared, activeWorkspace }: TeamSwitcher
                 </DropdownMenuLabel>
                 {personal.map((workspace, index) => (
                   <DropdownMenuItem
-                    key={workspace._id}
+                    key={workspace.name.toLowerCase()}
                     onClick={() => handleWorkspaceSelect(workspace)}
                     className="gap-2 p-2"
                   >
@@ -112,14 +112,14 @@ export function TeamSwitcher({ personal, shared, activeWorkspace }: TeamSwitcher
                 </DropdownMenuLabel>
                 {shared.map((workspace) => (
                   <DropdownMenuItem
-                    key={workspace._id}
+                    key={workspace.name.toLowerCase()}
                     onClick={() => handleWorkspaceSelect(workspace)}
                     className="gap-2 p-2"
                   >
                     <div className="flex size-6 items-center justify-center rounded-sm border">
                       <WorkspaceIcon />
                     </div>
-                    {workspace.name}
+                    {workspace.name.toLowerCase()}
                   </DropdownMenuItem>
                 ))}
               </>

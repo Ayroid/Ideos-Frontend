@@ -40,14 +40,14 @@ const NotFound = () => {
           </p>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          {activeWorkspace?._id ? (
+          {activeWorkspace?.name.toLowerCase() ? (
             <>
               <Button
                 variant="default"
                 className="w-full"
                 asChild
               >
-                <Link href={`/workspaces/${activeWorkspace?._id}`} className="flex items-center justify-center gap-2">
+                <Link href={`/workspaces/${activeWorkspace?.name.toLowerCase()}`} className="flex items-center justify-center gap-2">
                   <LayoutDashboard className="h-4 w-4" />
                   Back to Workspace
                 </Link>

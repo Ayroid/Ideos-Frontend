@@ -27,7 +27,7 @@ const Page = () => {
         const activeWorkspace = await workspaceService.getActiveWorkspace();
         if (activeWorkspace) {
           setActiveWorkspace(activeWorkspace);
-          router.push(`/workspaces/${activeWorkspace._id}`);
+          router.push(`/workspaces/${activeWorkspace.name.toLowerCase()}`);
           return;
         }
 
@@ -39,13 +39,13 @@ const Page = () => {
             workspaces.personal[0]._id,
           );
           setActiveWorkspace(workspace);
-          router.push(`/workspaces/${workspace._id}`);
+          router.push(`/workspaces/${workspace.name.toLowerCase()}`);
         } else if (workspaces.shared.length > 0) {
           const workspace = await workspaceService.setActiveWorkspace(
             workspaces.shared[0]._id,
           );
           setActiveWorkspace(workspace);
-          router.push(`/workspaces/${workspace._id}`);
+          router.push(`/workspaces/${workspace.name.toLowerCase()}`);
         } else {
           router.push("/workspaces");
         }
