@@ -6,24 +6,21 @@ const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { notebookId: string; noteId: string } },
+  { params }: { params: { noteId: string } },
 ) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId, noteId } = params;
+  const { noteId } = params;
 
-  console.log("notebookId:", notebookId);
-  console.log("noteId:", noteId);
-
-  if (!noteId || !notebookId) {
+  if (!noteId) {
     return NextResponse.json(
-      { error: "notebookId and noteId are required" },
+      { error: "noteId is required" },
       { status: 400 },
     );
   }
 
   try {
     const response = await axios.delete(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes/${noteId}`,
+      `${process.env.SERVER_URL}/notetaking/notes/${noteId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -43,16 +40,16 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { notebookId: string; noteId: string } },
+  { params }: { params: { noteId: string } },
 ) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId, noteId } = params;
+  const { noteId } = params;
 
   try {
     const body = await req.json();
 
     const response = await axios.put(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes/${noteId}`,
+      `${process.env.SERVER_URL}/notetaking/notes/${noteId}`,
       body,
       {
         headers: {
@@ -66,6 +63,40 @@ export async function PUT(
     console.error("Failed to update note:", error);
     return NextResponse.json(
       { error: "Failed to update note" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { noteId: string } },
+) {
+  const accessToken = await getAccessTokenRaw();
+  const { noteId } = params;
+
+  if (!noteId) {
+    return NextResponse.json(
+      { error: "noteId is required" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const response = await axios.get(
+      `${process.env.SERVER_URL}/notetaking/notes/${noteId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    return NextResponse.json(response.data);
+  } catch (error) {
+    console.error("Failed to get note:", error);
+    return NextResponse.json(
+      { error: "Failed to get note" },
       { status: 500 },
     );
   }

@@ -6,23 +6,20 @@ const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { notebookId: string; noteId: string } },
+  { params }: { params: { noteId: string } },
 ) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId, noteId } = params;
+  const { noteId } = params;
 
-  if (!noteId || !notebookId) {
-    return NextResponse.json(
-      { error: "notebookId and noteId are required" },
-      { status: 400 },
-    );
+  if (!noteId) {
+    return NextResponse.json({ error: "noteId is required" }, { status: 400 });
   }
 
   try {
     const { folderId } = await req.json();
 
     const response = await axios.put(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes/${noteId}/move`,
+      `${process.env.SERVER_URL}/notetaking/notes/${noteId}/move`,
       { folderId },
       {
         headers: {

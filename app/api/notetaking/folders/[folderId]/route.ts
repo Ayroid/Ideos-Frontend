@@ -6,24 +6,21 @@ const { getAccessTokenRaw } = getKindeServerSession();
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { notebookId: string; folderId: string } },
+  { params }: { params: { folderId: string } },
 ) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId, folderId } = params;
+  const { folderId } = params;
 
-  console.log("notebookId:", notebookId);
-  console.log("folderId:", folderId);
-
-  if (!folderId || !notebookId) {
+  if (!folderId) {
     return NextResponse.json(
-      { error: "notebookId and folderId are required" },
+      { error: "folderId is required" },
       { status: 400 },
     );
   }
 
   try {
     const response = await axios.delete(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/folders/${folderId}`,
+      `${process.env.SERVER_URL}/notetaking/folders/${folderId}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -43,16 +40,16 @@ export async function DELETE(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { notebookId: string; folderId: string } },
+  { params }: { params: { folderId: string } },
 ) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId, folderId } = params;
+  const { folderId } = params;
 
   try {
     const body = await req.json();
 
     const response = await axios.put(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/folders/${folderId}`,
+      `${process.env.SERVER_URL}/notetaking/folders/${folderId}`,
       body,
       {
         headers: {
@@ -66,6 +63,40 @@ export async function PUT(
     console.error("Failed to update folder:", error);
     return NextResponse.json(
       { error: "Failed to update folder" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { folderId: string } },
+) {
+  const accessToken = await getAccessTokenRaw();
+  const { folderId } = params;
+
+  if (!folderId) {
+    return NextResponse.json(
+      { error: "folderId is required" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const response = await axios.get(
+      `${process.env.SERVER_URL}/notetaking/folders/${folderId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    return NextResponse.json(response.data);
+  } catch (error) {
+    console.error("Failed to get folder:", error);
+    return NextResponse.json(
+      { error: "Failed to get folder" },
       { status: 500 },
     );
   }

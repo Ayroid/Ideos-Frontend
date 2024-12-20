@@ -4,17 +4,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 const { getAccessTokenRaw } = getKindeServerSession();
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { notebookId: string } },
-) {
+export async function GET(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId } = params;
-  console.log("Notebook ID:", notebookId);
 
   try {
     const response = await axios.get(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes`,
+      `${process.env.SERVER_URL}/notetaking/notes`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -33,19 +28,14 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { notebookId: string } },
-) {
+export async function POST(req: NextRequest) {
   const accessToken = await getAccessTokenRaw();
-  const { notebookId } = params;
-  console.log("Notebook ID:", notebookId);
 
   try {
     const requestBody = await req.json();
     console.log("Request body:", requestBody);
     const response = await axios.post(
-      `${process.env.SERVER_URL}/notetaking/notebooks/${notebookId}/notes`,
+      `${process.env.SERVER_URL}/notetaking/notes`,
       requestBody,
       {
         headers: {
