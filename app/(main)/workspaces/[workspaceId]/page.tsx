@@ -10,8 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { workspaceService } from "@/services/workspace";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import {
@@ -30,15 +28,13 @@ import {
   SquarePen,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const Dashboard = () => {
   const { user } = useKindeBrowserClient();
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { activeWorkspace, isLoading } = useWorkspaceStore();
+  const { activeWorkspace } = useWorkspaceStore();
 
   const pagesData = React.useMemo(
     () => [
@@ -160,41 +156,21 @@ const Dashboard = () => {
       tool.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  if (isLoading) {
-    return (
-      <ScrollArea>
-        <div className="p-8">
-          <Skeleton className="mb-8 h-12 w-64" />
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <ToolCardSkeleton key={i} />
-            ))}
-          </div>
-        </div>
-      </ScrollArea>
-    );
-  }
-
   return (
     <ScrollArea>
       <div className="space-y-8 p-8">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
+          <div className="mb-8 space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">
               Welcome back, {user?.given_name ?? "User"}
             </h1>
-            <p className="text-muted-foreground">
-              {activeWorkspace
-                ? `Workspace: ${activeWorkspace.name}`
-                : "Access your productivity tools and workspace"}
-            </p>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
-                className="w-[200px] rounded-lg border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-[300px] rounded-lg border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 placeholder="Search tools..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -203,7 +179,7 @@ const Dashboard = () => {
             {quickActions.map((action) => (
               <Link key={action.id} href={action.path}>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
                   className="h-10 w-10"
                   title={action.title}
@@ -236,7 +212,7 @@ const Dashboard = () => {
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="rounded-xl bg-primary/10 p-2 transition-colors group-hover:bg-primary/20">
+                    <div className="rounded-xl bg-primary/10 p-2">
                       {page.icon}
                     </div>
                     <div>
@@ -299,37 +275,5 @@ const Dashboard = () => {
     </ScrollArea>
   );
 };
-
-const ToolCardSkeleton = () => (
-  <Card className="relative overflow-hidden">
-    <div className="flex h-full flex-col">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-16 w-16 rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-7 w-32" />
-              <Skeleton className="h-4 w-48" />
-            </div>
-          </div>
-          <Skeleton className="h-6 w-24 rounded-full" />
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1">
-        <div className="flex flex-col gap-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Skeleton className="h-5 w-5 rounded-full" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Skeleton className="h-11 w-full" />
-      </CardFooter>
-    </div>
-  </Card>
-);
 
 export default Dashboard;
