@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -179,22 +180,17 @@ const Dashboard = () => {
     <ScrollArea>
       <div className="space-y-8 p-8">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-2">
+          <div className="mb-8 space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">
               Welcome back, {user?.given_name ?? "User"}
             </h1>
-            <p className="text-muted-foreground">
-              {activeWorkspace
-                ? `Workspace: ${activeWorkspace.name}`
-                : "Access your productivity tools and workspace"}
-            </p>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
-                className="w-[200px] rounded-lg border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-[300px] rounded-lg border border-input bg-background px-10 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 placeholder="Search tools..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -203,7 +199,7 @@ const Dashboard = () => {
             {quickActions.map((action) => (
               <Link key={action.id} href={action.path}>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="icon"
                   className="h-10 w-10"
                   title={action.title}
