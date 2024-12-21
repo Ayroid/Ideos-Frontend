@@ -1,12 +1,10 @@
 "use client";
 
 import ColumnContainer from "@/components/kanban/ColumnContainer";
-import TodoForm from "@/components/kanban/CreateTodoForm";
-import Popup from "@/components/Popup";
 import Todo from "@/components/kanban/Todo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ColumnTypes, TodoTypes } from "@/types/kanban";
 import { generateUniqueId } from "@/utils/generateId";
 import {
   DndContext,
@@ -21,24 +19,24 @@ import {
 import { SortableContext } from "@dnd-kit/sortable";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ColumnTypes, TodoTypes } from "@/types/kanban";
-import { useRouter } from "next/navigation";
 
 // ICONS
+import { ArrowLeft } from "lucide-react";
 import { GoPlusCircle } from "react-icons/go";
 import { PiKanbanLight } from "react-icons/pi";
-import { ArrowLeft } from "lucide-react";
 
 // STATE MANAGEMENT IMPORTS
+import CreateTodoForm from "@/components/kanban/CreateTodoForm";
+import TodoColumnDeleteConfirmation from "@/components/kanban/TodoColumnDeleteConfirmation";
 import { TodoStore, useTodo } from "@/store/kanban/todo";
 import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
 import { getRandomColor } from "@/utils/randomColor";
-import { toast } from "sonner";
 import Link from "next/link";
-import TodoColumnDeleteConfirmation from "@/components/kanban/TodoColumnDeleteConfirmation";
+import { toast } from "sonner";
 
 interface Board {
   id: string;
@@ -440,24 +438,18 @@ const BoardPage = ({ params }: BoardPageProps) => {
         </DndContext>
       )}
 
-      {popUpVisible && popupType === "createTodo" && (
-        <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
-          <TodoForm
-            activeColumnId={activeColumnId}
-            onClose={() => closePopUp()}
-            boardId={boardId}
-          />
-        </Popup>
-      )}
+      <CreateTodoForm
+        isOpen={popUpVisible && popupType === "createTodo"}
+        onClose={closePopUp}
+        activeColumnId={activeColumnId}
+        boardId={boardId}
+      />
 
-      {popUpVisible && popupType === "deleteColumn" && (
-        <Popup isOpen={popUpVisible} onClose={() => closePopUp()}>
-          <TodoColumnDeleteConfirmation
-            closePopUp={closePopUp}
-            deleteColumn={deleteColumn}
-          />
-        </Popup>
-      )}
+      <TodoColumnDeleteConfirmation
+        isOpen={popUpVisible && popupType === "deleteColumn"}
+        onClose={closePopUp}
+        deleteColumn={deleteColumn}
+      />
     </div>
   );
 };

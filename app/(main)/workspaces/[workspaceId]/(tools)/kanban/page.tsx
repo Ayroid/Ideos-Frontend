@@ -1,7 +1,4 @@
-"use client";
-
 import CreateBoardForm from "@/components/kanban/CreateBoardForm";
-import Popup from "@/components/Popup";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,11 +121,7 @@ const KanbanPage = () => {
           </Button>
         </div>
 
-        {popUpVisible && (
-          <Popup isOpen={popUpVisible} onClose={closePopUp}>
-            <CreateBoardForm onClose={closePopUp} />
-          </Popup>
-        )}
+        <CreateBoardForm isOpen={popUpVisible} onClose={closePopUp} />
       </div>
     );
   }
@@ -199,11 +192,7 @@ const KanbanPage = () => {
         ))}
       </div>
 
-      {popUpVisible && (
-        <Popup isOpen={popUpVisible} onClose={closePopUp}>
-          <CreateBoardForm onClose={closePopUp} />
-        </Popup>
-      )}
+      <CreateBoardForm isOpen={popUpVisible} onClose={closePopUp} />
     </div>
   );
 };

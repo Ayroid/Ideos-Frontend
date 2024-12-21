@@ -8,15 +8,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { IoClose } from "react-icons/io5";
-import { GoPlusCircle } from "react-icons/go";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface CreateBoardFormProps {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-const CreateBoardForm = ({ onClose }: CreateBoardFormProps) => {
+const CreateBoardForm = ({ isOpen, onClose }: CreateBoardFormProps) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -41,21 +46,11 @@ const CreateBoardForm = ({ onClose }: CreateBoardFormProps) => {
   };
 
   return (
-    <Card className="w-[450px]">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-semibold">
-          Create New Board
-        </CardTitle>
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-        >
-          <IoClose className="h-4 w-4" />
-        </Button>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[450px]">
+        <DialogHeader>
+          <DialogTitle>Create New Board</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title" className="text-sm font-medium">
@@ -89,7 +84,7 @@ const CreateBoardForm = ({ onClose }: CreateBoardFormProps) => {
             />
           </div>
 
-          <div className="mt-6 flex justify-end gap-3">
+          <DialogFooter>
             <Button
               type="button"
               onClick={onClose}
@@ -102,10 +97,10 @@ const CreateBoardForm = ({ onClose }: CreateBoardFormProps) => {
             <Button type="submit" className="min-w-24" disabled={loading}>
               {loading ? "Creating..." : "Create"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
 

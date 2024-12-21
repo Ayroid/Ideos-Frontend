@@ -1,34 +1,30 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FiMinus } from "react-icons/fi";
-
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TodoTypes } from "@/types/kanban";
 import { PlusCircledIcon } from "@radix-ui/react-icons";
-import { IoClose } from "react-icons/io5";
 import { useState } from "react";
-
 import { createTodo as createTodoService } from "@/services/kanban/todo";
 import { useTodo } from "@/store/kanban/todo";
-import { usePopup } from "@/store/popup";
 import { useTodoColumn } from "@/store/kanban/todoColumn";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface TodoFormProps {
+  isOpen: boolean;
+  onClose: () => void;
   activeColumnId: string | null;
   boardId: string;
-  onClose: () => void;
 }
 
-const CreateTodoForm = ({ activeColumnId, boardId, onClose }: TodoFormProps) => {
+const CreateTodoForm = ({ isOpen, onClose, activeColumnId, boardId }: TodoFormProps) => {
   const { addTodos } = useTodo((state) => state);
   const { addTodoToColumn } = useTodoColumn((state) => state);
-  const { close: closePopUp } = usePopup((state) => state);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -74,7 +70,6 @@ const CreateTodoForm = ({ activeColumnId, boardId, onClose }: TodoFormProps) => 
       return;
     }
 
-    // Validate tags
     const validTags = tags.filter(tag => tag.title.trim() !== "");
     if (tags.length > 0 && validTags.length !== tags.length) {
       toast.error("Please fill in all tag titles or remove empty tags");
@@ -93,7 +88,7 @@ const CreateTodoForm = ({ activeColumnId, boardId, onClose }: TodoFormProps) => 
         assignedTo: "",
       };
 
-      await createTodoService(boardId, newTodo, addTodos, addTodoToColumn, closePopUp);
+      await createTodoService(boardId, newTodo, addTodos, addTodoToColumn, onClose);
 
       // Reset form
       setTitle("");
@@ -102,26 +97,17 @@ const CreateTodoForm = ({ activeColumnId, boardId, onClose }: TodoFormProps) => 
       setTags([]);
     } catch (error) {
       console.error("Error creating todo:", error);
-      // Error toast is handled in the service
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="min-h-[30rem] w-[450px]">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-semibold">Add Task</CardTitle>
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-        >
-          <IoClose className="h-4 w-4" />
-        </Button>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[450px]">
+        <DialogHeader>
+          <DialogTitle>Add Task</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="todoFormTitle">Title</Label>
@@ -216,8 +202,8 @@ const CreateTodoForm = ({ activeColumnId, boardId, onClose }: TodoFormProps) => 
             {isSubmitting ? "Creating..." : "Create Task"}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -1,31 +1,41 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FiMinus } from "react-icons/fi";
-
-import { TodoTypes } from "@/types/kanban";
-import { PlusCircledIcon } from "@radix-ui/react-icons";
-import { IoClose } from "react-icons/io5";
-import { useState } from "react";
-
 import { updateTodo as updateTodoService } from "@/services/kanban/todo";
 import { useTodo } from "@/store/kanban/todo";
 import { usePopup } from "@/store/popup";
+import { TodoTypes } from "@/types/kanban";
+import { PlusCircledIcon } from "@radix-ui/react-icons";
+import { useState } from "react";
+import { FiMinus } from "react-icons/fi";
 import { toast } from "sonner";
 
 interface TodoFormProps {
+  isOpen: boolean;
   onClose: () => void;
   todo: TodoTypes;
   activeColumnId: string;
   boardId: string;
 }
 
-const UpdateTodoForm = ({ onClose, todo, activeColumnId, boardId }: TodoFormProps) => {
+const UpdateTodoForm = ({
+  isOpen,
+  onClose,
+  todo,
+  activeColumnId,
+  boardId,
+}: TodoFormProps) => {
   const { updateTodos } = useTodo((state) => state);
   const { close: closePopUp } = usePopup((state) => state);
 
@@ -70,8 +80,7 @@ const UpdateTodoForm = ({ onClose, todo, activeColumnId, boardId }: TodoFormProp
       return;
     }
 
-    // Validate tags
-    const validTags = tags.filter(tag => tag.title.trim() !== "");
+    const validTags = tags.filter((tag) => tag.title.trim() !== "");
     if (tags.length > 0 && validTags.length !== tags.length) {
       toast.error("Please fill in all tag titles or remove empty tags");
       return;
@@ -86,39 +95,30 @@ const UpdateTodoForm = ({ onClose, todo, activeColumnId, boardId }: TodoFormProp
         dueDate: dueDate.toISOString(),
         tags: validTags,
         columnId: activeColumnId,
-        originalColumnId: todo.columnId, // For tracking column changes
+        originalColumnId: todo.columnId,
       };
 
       await updateTodoService(
         boardId,
         todoData,
         updateTodos,
-        undefined, // Column update handler optional here
-        closePopUp
+        undefined,
+        closePopUp,
       );
       onClose();
     } catch (error) {
       console.error("Error updating todo:", error);
-      // Error toast is handled in the service
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="min-h-[30rem] w-[450px]">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-semibold">Update Task</CardTitle>
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-        >
-          <IoClose className="h-4 w-4" />
-        </Button>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[450px]">
+        <DialogHeader>
+          <DialogTitle>Update Task</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="todoFormTitle">Title</Label>
@@ -203,16 +203,14 @@ const UpdateTodoForm = ({ onClose, todo, activeColumnId, boardId }: TodoFormProp
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Updating..." : "Update Task"}
-          </Button>
+          <DialogFooter>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Updating..." : "Update Task"}
+            </Button>
+          </DialogFooter>
         </form>
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
 
