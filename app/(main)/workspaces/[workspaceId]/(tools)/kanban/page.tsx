@@ -593,3 +593,5 @@ const KanbanBoard = () => {
     </Tabs>
   );
 };
+
+export default KanbanBoard;
