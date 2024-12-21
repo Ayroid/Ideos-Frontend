@@ -29,7 +29,7 @@ import { PiKanbanLight } from "react-icons/pi";
 import { toast } from "sonner";
 
 interface Board {
-  id: string;
+  _id: string;
   title: string;
   isDefault: boolean;
   description?: string;
@@ -73,7 +73,7 @@ const KanbanPage = () => {
       await axios.put(`/api/kanban/boards/${boardId}/default`);
       const updatedBoards = boards.map((board) => ({
         ...board,
-        isDefault: board.id === boardId,
+        isDefault: board._id === boardId,
       }));
       setBoards(updatedBoards);
       toast.success("Default board updated");
@@ -86,7 +86,7 @@ const KanbanPage = () => {
   const deleteBoard = async (boardId: string) => {
     try {
       await axios.delete(`/api/kanban/boards/${boardId}`);
-      setBoards(boards.filter((board) => board.id !== boardId));
+      setBoards(boards.filter((board) => board._id !== boardId));
       toast.success("Board deleted successfully");
     } catch (error) {
       console.error("Error deleting board:", error);
@@ -143,8 +143,8 @@ const KanbanPage = () => {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {boards.map((board) => (
-          <Card key={board.id} className="relative">
-            <Link href={`/kanban/${board.id}`}>
+          <Card key={board._id} className="relative">
+            <Link href={`/kanban/${board._id}`}>
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -173,14 +173,14 @@ const KanbanPage = () => {
                   <DropdownMenuContent align="end">
                     {!board.isDefault && (
                       <DropdownMenuItem
-                        onClick={() => setDefaultBoard(board.id)}
+                        onClick={() => setDefaultBoard(board._id)}
                       >
                         Set as Default
                       </DropdownMenuItem>
                     )}
                     {boards.length > 1 && !board.isDefault && (
                       <DropdownMenuItem
-                        onClick={() => deleteBoard(board.id)}
+                        onClick={() => deleteBoard(board._id)}
                         className="text-destructive"
                       >
                         Delete
