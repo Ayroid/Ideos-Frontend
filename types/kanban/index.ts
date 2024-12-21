@@ -27,6 +27,7 @@ export type ColumnTypes = {
 };
 
 export type TodoTypes = {
+  assignedTo: string;
   uniqueId: string;
   title: string;
   columnId: string;
@@ -36,6 +37,7 @@ export type TodoTypes = {
     color: string;
   }[];
   dueDate: string | null;
+  originalColumnId?: string;
 };
 
 export type PopupProps = {

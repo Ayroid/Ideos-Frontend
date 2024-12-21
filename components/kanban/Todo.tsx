@@ -11,19 +11,22 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { FaUserCircle } from "react-icons/fa";
 import Popup from "../Popup";
 import UpdateTodoForm from "./UpdateTodoForm";
 
 import { deleteTodo as deleteTodoService } from "@/services/kanban/todo";
 import { useTodo } from "@/store/kanban/todo";
 import { useTodoColumn } from "@/store/kanban/todoColumn";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   todo: TodoTypes;
   columnId?: string;
+  boardId: string;
 }
 
-const Todo = ({ todo, columnId }: Props) => {
+const Todo = ({ todo, columnId, boardId }: Props) => {
   const { deleteTodos } = useTodo((state) => state);
   const { deleteTodoIdFromColumn } = useTodoColumn((state) => state);
 
@@ -39,6 +42,7 @@ const Todo = ({ todo, columnId }: Props) => {
     data: {
       type: "Todo",
       todo,
+      columnId,
     },
   });
 
@@ -48,6 +52,27 @@ const Todo = ({ todo, columnId }: Props) => {
   };
 
   const [popUpVisible, setPopUpVisible] = useState<boolean>(false);
+  const [isAssignPopupOpen, setIsAssignPopupOpen] = useState<boolean>(false);
+
+  const handleDelete = async () => {
+    if (!columnId) {
+      console.error("Column ID is required for deleting todo");
+      return;
+    }
+
+    try {
+      await deleteTodoService(
+        boardId,
+        todo.uniqueId,
+        columnId,
+        deleteTodos,
+        deleteTodoIdFromColumn,
+      );
+    } catch (error) {
+      // Error handling is done in the service
+      console.error("Error in delete handler:", error);
+    }
+  };
 
   return (
     <>
@@ -56,44 +81,47 @@ const Todo = ({ todo, columnId }: Props) => {
         style={style}
         {...attributes}
         {...listeners}
-        className={`h-fit w-full rounded-md border-2 bg-primary-foreground p-4 ${isDragging ? "opacity-40" : "opacity-100"} flex flex-col`}
+        className={`group h-fit w-full rounded-md border-2 bg-primary-foreground p-4
+          ${isDragging ? "opacity-40" : "opacity-100"}
+          hover:border-primary/50 flex flex-col gap-3`}
       >
         <div className="flex items-start justify-between">
-          <div id="tags" className="mb-2 flex flex-wrap gap-2">
+          <div id="tags" className="flex flex-wrap gap-2">
             {todo.tags.map((tag: { title: string; color: string }) => (
-              <p
+              <Badge
                 key={tag.title}
-                style={{ backgroundColor: tag.color }}
-                className="text-nowrap rounded-sm px-2 py-1 text-[0.75rem] font-bold text-white"
+                style={{
+                  backgroundColor: tag.color,
+                  color: 'white'
+                }}
+                className="px-2 py-1 text-[0.75rem] font-bold"
               >
                 {tag.title}
-              </p>
+              </Badge>
             ))}
           </div>
-          <div className="mt-1 flex gap-1">
+          <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <BsThreeDotsVertical className="cursor-pointer" />
+                <BsThreeDotsVertical className="cursor-pointer hover:text-primary" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="mr-24">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={() => {
-                    setPopUpVisible(true);
-                  }}
+                  onClick={() => setPopUpVisible(true)}
+                  className="cursor-pointer"
                 >
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem>Assign</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsAssignPopupOpen(true)}
+                  className="cursor-pointer"
+                >
+                  Assign
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-500 focus:text-red-500"
-                  onClick={() => {
-                    deleteTodoService(
-                      todo.uniqueId,
-                      deleteTodos,
-                      deleteTodoIdFromColumn,
-                    );
-                  }}
+                  onClick={handleDelete}
+                  className="cursor-pointer text-red-500 focus:text-red-500"
                 >
                   Delete
                 </DropdownMenuItem>
@@ -101,24 +129,53 @@ const Todo = ({ todo, columnId }: Props) => {
             </DropdownMenu>
           </div>
         </div>
+
         <div id="content">
-          <h1 className="my-2 bg-transparent text-xl font-bold">
+          <h1 className="mb-2 bg-transparent text-xl font-bold">
             {todo.title}
           </h1>
-
           <p className="text-wrap break-words text-muted-foreground">
             {todo.description}
           </p>
         </div>
-        <DatePicker disabled selectedDate={new Date(String(todo.dueDate))} />
+
+        <div className="mt-2 flex items-center justify-between">
+          <DatePicker
+            disabled
+            selectedDate={new Date(String(todo.dueDate))}
+          />
+          {todo.assignedTo && (
+            <div className="flex items-center gap-2">
+              <FaUserCircle className="h-5 w-5 text-primary" />
+              <span className="text-sm text-muted-foreground">
+                {todo.assignedTo}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
+
       {popUpVisible && (
         <Popup isOpen={popUpVisible} onClose={() => setPopUpVisible(false)}>
           <UpdateTodoForm
             todo={todo}
+            boardId={boardId}
             activeColumnId={columnId!}
             onClose={() => setPopUpVisible(false)}
           />
+        </Popup>
+      )}
+
+      {/* Add your AssignTodoForm component here when ready */}
+      {isAssignPopupOpen && (
+        <Popup isOpen={isAssignPopupOpen} onClose={() => setIsAssignPopupOpen(false)}>
+          {/* Add your AssignTodoForm component here when ready */}
+          {/* <AssignTodoForm
+            todo={todo}
+            boardId={boardId}
+            onClose={() => setIsAssignPopupOpen(false)}
+          /> */}
+          <div />
         </Popup>
       )}
     </>

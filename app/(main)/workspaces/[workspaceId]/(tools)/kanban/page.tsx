@@ -28,6 +28,7 @@ import { ColumnTypes, TodoTypes } from "@/types/kanban";
 // ICONS
 import { GoPlusCircle } from "react-icons/go";
 import { PiKanbanLight } from "react-icons/pi";
+import { CgMenuGridR } from "react-icons/cg";
 
 // STATE MANAGEMENT IMPORTS
 import FeatureComingSoon from "@/components/FeatureComingSoon";
@@ -37,6 +38,19 @@ import { ColumnStore, useTodoColumn } from "@/store/kanban/todoColumn";
 import { usePopup } from "@/store/popup";
 import { getRandomColor } from "@/utils/randomColor";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface Board {
+  id: string;
+  title: string;
+  isDefault: boolean;
+}
 
 const ViewKanbanBoard = () => {
   // STATE MANAGEMENT
@@ -76,6 +90,11 @@ const ViewKanbanBoard = () => {
 
   // LOADING STATES
   const [columnsLoading, setColumnsLoading] = useState<boolean>(true);
+  const [boardsLoading, setBoardsLoading] = useState<boolean>(true);
+
+  // BOARD STATES
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [currentBoard, setCurrentBoard] = useState<string>("");
 
   // ACTIVE STATES
   const [activeTodo, setActiveTodo] = useState<TodoTypes | null>(null);
@@ -102,13 +121,45 @@ const ViewKanbanBoard = () => {
     setIsClient(true);
   }, []);
 
+  // Fetch boards
+  useEffect(() => {
+    const fetchBoards = async () => {
+      try {
+        const response = await axios.get("/api/kanban/boards");
+        const fetchedBoards = response.data;
+        setBoards(fetchedBoards);
+
+        // Set current board to default board or first board
+        const defaultBoard =
+          fetchedBoards.find((b: Board) => b.isDefault) || fetchedBoards[0];
+        if (defaultBoard) {
+          setCurrentBoard(defaultBoard.id);
+        }
+      } catch (error) {
+        console.error("Error fetching boards:", error);
+        toast.error("Error fetching boards");
+      } finally {
+        setBoardsLoading(false);
+      }
+    };
+
+    if (accessToken) {
+      fetchBoards();
+    }
+  }, [accessToken]);
+
+  // Fetch columns for current board
   useEffect(() => {
     const fetchColumns = async () => {
+      if (!currentBoard) return;
+
       try {
-        console.log("/api/kanban/columns");
-        const response = await axios.get("/api/kanban/columns");
+        setColumnsLoading(true);
+        const response = await axios.get(
+          `/api/kanban/boards/${currentBoard}/columns`,
+        );
         const fetchedColumns = response.data;
-        console.log("fetchedColumns", fetchedColumns);
+
         const fetchedTodos = fetchedColumns.reduce(
           (acc: TodoTypes[], col: ColumnTypes) => {
             if (col.todoIds && col.todoIds.length > 0) {
@@ -118,6 +169,7 @@ const ViewKanbanBoard = () => {
           },
           [],
         );
+
         addAllTodoColumns(fetchedColumns);
         addAllTodos(fetchedTodos);
       } catch (error) {
@@ -128,10 +180,10 @@ const ViewKanbanBoard = () => {
       }
     };
 
-    if (accessToken) {
+    if (accessToken && currentBoard) {
       fetchColumns();
     }
-  }, [accessToken]);
+  }, [accessToken, currentBoard]);
 
   async function updateColumn(
     columnId: string,
@@ -140,7 +192,10 @@ const ViewKanbanBoard = () => {
   ) {
     try {
       if (serverUpdate) {
-        await axios.put(`/api/kanban/columns/${columnId}`, { title });
+        await axios.put(
+          `/api/kanban/boards/${currentBoard}/columns/${columnId}`,
+          { title },
+        );
         toast.success("Column updated successfully");
       } else {
         updateTodoColumnName(columnId, title);
@@ -172,7 +227,9 @@ const ViewKanbanBoard = () => {
       closePopUp();
       deleteTodoColumn(deleteColumnId!);
       deleteAllColumnTodos(deleteColumnId!);
-      await axios.delete(`/api/kanban/columns/${deleteColumnId}`);
+      await axios.delete(
+        `/api/kanban/boards/${currentBoard}/columns/${deleteColumnId}`,
+      );
       toast.success("Column deleted successfully");
     } catch (error) {
       console.error("Error deleting column:", error);
@@ -196,31 +253,44 @@ const ViewKanbanBoard = () => {
 
     const { active, over } = event;
 
-    if (!over) {
-      return;
-    }
+    if (!over) return;
+
     const activeColumnId = active.id;
     const overColumnId = over.id;
 
-    if (activeColumnId === overColumnId) {
-      return;
-    }
+    if (activeColumnId === overColumnId) return;
+
     updateTodoColumnOrder(String(activeColumnId), String(overColumnId));
+
+    // Update server
+    axios
+      .put(`/api/kanban/boards/${currentBoard}/columns/reorder`, {
+        columnOrders: [
+          {
+            columnId: String(activeColumnId),
+            order: over.data.current?.sortable?.index,
+          },
+          {
+            columnId: String(overColumnId),
+            order: active.data.current?.sortable?.index,
+          },
+        ],
+      })
+      .catch((error) => {
+        console.error("Error updating column order:", error);
+        toast.error("Error updating column order");
+      });
   }
 
   function onDragOver(event: DragOverEvent) {
     const { active, over } = event;
 
-    if (!over) {
-      return;
-    }
+    if (!over) return;
 
     const activeId = active.id;
     const overId = over.id;
 
-    if (activeId === overId) {
-      return;
-    }
+    if (activeId === overId) return;
 
     const isActivatingTodo = active.data.current?.type === "Todo";
     const isOverTodo = over.data.current?.type === "Todo";
@@ -229,23 +299,126 @@ const ViewKanbanBoard = () => {
 
     if (isActivatingTodo && isOverTodo) {
       updateTodosOrderOverTodo(String(activeId), String(overId));
+      // Update server
+      axios
+        .put(`/api/kanban/boards/${currentBoard}/todos/reorder`, {
+          todoOrders: [
+            {
+              todoId: String(activeId),
+              order: over.data.current?.sortable?.index,
+            },
+            {
+              todoId: String(overId),
+              order: active.data.current?.sortable?.index,
+            },
+          ],
+        })
+        .catch((error) => {
+          console.error("Error updating todo order:", error);
+          toast.error("Error updating todo order");
+        });
     }
 
     const isOverAColumn = over.data.current?.type === "Column";
 
     if (isActivatingTodo && isOverAColumn) {
       updateTodosOrderOverColumn(String(activeId), String(overId));
+      // Update server
+      axios
+        .put(`/api/kanban/boards/${currentBoard}/todos/${activeId}`, {
+          columnId: String(overId),
+        })
+        .catch((error) => {
+          console.error("Error moving todo to column:", error);
+          toast.error("Error moving todo to column");
+        });
     }
+  }
+
+  if (boardsLoading) {
+    return (
+      <div className="flex h-[65dvh] items-center justify-center">
+        <Skeleton className="h-[400px] w-[600px]" />
+      </div>
+    );
+  }
+
+  if (!currentBoard) {
+    return (
+      <div className="flex h-[65dvh] items-center justify-center">
+        <div className="flex flex-col items-center">
+          <PiKanbanLight className="h-36 w-36 text-primary" />
+          <p className="text-2xl font-bold text-primary">Welcome to Kanban</p>
+          <p className="mt-1 text-center text-lg text-primary">
+            Create your first board to get started
+          </p>
+          <Button
+            onClick={async () => {
+              try {
+                const response = await axios.post("/api/kanban/boards", {
+                  title: "My First Board",
+                  description: "Get started by adding columns and tasks",
+                });
+                setBoards([response.data]);
+                setCurrentBoard(response.data.id);
+              } catch (error) {
+                console.error("Error creating board:", error);
+                toast.error("Error creating board");
+              }
+            }}
+            className="mt-4"
+          >
+            Create Board
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
+      <div className="mb-6 flex items-center gap-4">
+        <Select value={currentBoard} onValueChange={setCurrentBoard}>
+          <SelectTrigger className="w-[300px]">
+            <SelectValue placeholder="Select a board" />
+          </SelectTrigger>
+          <SelectContent>
+            {boards.map((board) => (
+              <SelectItem key={board.id} value={board.id}>
+                {board.title} {board.isDefault && "(Default)"}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {boards.length < 5 && (
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                const response = await axios.post("/api/kanban/boards", {
+                  title: "New Board",
+                  description: "",
+                });
+                setBoards([...boards, response.data]);
+                setCurrentBoard(response.data.id);
+                toast.success("Board created successfully");
+              } catch (error) {
+                console.error("Error creating board:", error);
+                toast.error("Error creating board");
+              }
+            }}
+          >
+            <GoPlusCircle className="mr-2 h-4 w-4" /> New Board
+          </Button>
+        )}
+      </div>
+
       {!columnsLoading && columns.length === 0 && (
         <div className="flex h-[65dvh] items-center justify-center p-10">
           <div className="flex flex-col items-center">
             <PiKanbanLight className="h-36 w-36 text-primary" />
             <p className="text-2xl font-bold text-primary">
-              Welcome to your Kanban Board
+              This board is empty
             </p>
             <p className="mt-1 text-center text-lg text-primary">
               Get started by adding a new column
@@ -256,9 +429,6 @@ const ViewKanbanBoard = () => {
       <div>
         {columnsLoading ? (
           <div className="mt-10 flex gap-4 overflow-auto">
-            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
-            <Skeleton className="h-[500px] w-[350px] rounded-lg" />
             <Skeleton className="h-[500px] w-[350px] rounded-lg" />
           </div>
         ) : (
@@ -284,6 +454,7 @@ const ViewKanbanBoard = () => {
                       setActiveColumnId(col.uniqueId);
                     }}
                     todos={todos.filter((t) => t.columnId === col.uniqueId)}
+                    boardId={currentBoard}
                   />
                 ))}
               </SortableContext>
@@ -302,9 +473,12 @@ const ViewKanbanBoard = () => {
                       todos={todos.filter(
                         (t) => t.columnId === activeColumn.uniqueId,
                       )}
+                      boardId={currentBoard}
                     />
                   )}
-                  {activeTodo && <Todo todo={activeTodo} />}
+                  {activeTodo && (
+                    <Todo todo={activeTodo} boardId={currentBoard} />
+                  )}
                 </DragOverlay>,
                 document.body,
               )}
@@ -315,6 +489,7 @@ const ViewKanbanBoard = () => {
             <TodoForm
               activeColumnId={activeColumnId}
               onClose={() => closePopUp()}
+              boardId={currentBoard}
             />
           </Popup>
         )}
@@ -349,9 +524,15 @@ const KanbanBoard = () => {
   ]);
 
   const [activePage, setActivePage] = useState<string>("board");
+  const [currentBoard, setCurrentBoard] = useState<string>("");
+
   async function createNewColumn() {
+    if (!currentBoard) {
+      toast.error("Please select a board first");
+      return;
+    }
+
     try {
-      console.log(getRandomColor());
       const data: ColumnTypes = {
         uniqueId: generateUniqueId({ obj: "Col" }),
         color: getRandomColor(),
@@ -360,13 +541,14 @@ const KanbanBoard = () => {
       };
 
       addTodoColumn(data);
-      await axios.post("/api/kanban/columns", data);
+      await axios.post(`/api/kanban/boards/${currentBoard}/columns`, data);
       toast.success("Column created successfully");
     } catch (error) {
       console.error("Error creating new column:", error);
       toast.error("Error creating new column");
     }
   }
+
   return (
     <Tabs
       defaultValue="board"
@@ -411,4 +593,3 @@ const KanbanBoard = () => {
     </Tabs>
   );
 };
-export default KanbanBoard;
