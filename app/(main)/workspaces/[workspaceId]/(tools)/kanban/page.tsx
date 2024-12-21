@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePopup } from "@/store/popup";
+import { useWorkspaceStore } from "@/store/workspace";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import axios from "axios";
 import { MoreVertical } from "lucide-react";
@@ -41,6 +42,8 @@ const KanbanPage = () => {
   const [boardsLoading, setBoardsLoading] = useState<boolean>(true);
   const { getAccessTokenRaw } = useKindeBrowserClient();
   const accessToken = getAccessTokenRaw();
+
+  const { activeWorkspace } = useWorkspaceStore();
 
   const [popUpVisible, openPopUp, closePopUp] = usePopup((state) => [
     state.isOpen,
@@ -144,7 +147,9 @@ const KanbanPage = () => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {boards.map((board) => (
           <Card key={board._id} className="relative">
-            <Link href={`/kanban/${board._id}`}>
+            <Link
+              href={`/workspaces/${activeWorkspace?.name.toLowerCase()}/kanban/${board._id}`}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
