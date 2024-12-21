@@ -1,4 +1,3 @@
-// app/api/kanban/boards/[boardId]/route.ts
 import { parseRequestBody } from "@/utils/requestparser";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import axios from "axios";
@@ -96,36 +95,6 @@ export async function DELETE(
     return NextResponse.json(
       {
         error: "Failed to delete board",
-        details: error.response?.data || "An unexpected error occurred"
-      },
-      { status: error.response?.status || 500 }
-    );
-  }
-}
-
-// Set default board endpoint
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { boardId: string } }
-) {
-  const accessToken = await getAccessTokenRaw();
-  try {
-    const response = await axios.put(
-      `${process.env.SERVER_URL}/kanban/boards/${params.boardId}/default`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    return NextResponse.json(response.data);
-  } catch (error: any) {
-    console.error("Failed to set default board:", error.response?.data || error.message);
-    return NextResponse.json(
-      {
-        error: "Failed to set default board",
         details: error.response?.data || "An unexpected error occurred"
       },
       { status: error.response?.status || 500 }
